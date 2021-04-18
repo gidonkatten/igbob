@@ -21,6 +21,9 @@ function Navbar() {
       {isAuthenticated && (
         <Link to="/issuer">Issuer</Link>
       )}
+      {isAuthenticated && (
+        <Link to="/investor">Investor</Link>
+      )}
     </div>
   );
 }

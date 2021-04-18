@@ -11,8 +11,8 @@ function App() {
     <div>
       <Navbar/>
       <Switch>
-        <ProtectedRoute path="/issuer" component={IssuerPage} />
-        <Route exact path="/investor" component={InvestorPage}/>
+        <ProtectedRoute path="/issuer" component={IssuerPage} role={"issuer"} />
+        <ProtectedRoute exact path="/investor" component={InvestorPage}/>
         {/*Placed last to catch all unknown paths*/}
         <Route path="/" component={HomePage}/>
       </Switch>
