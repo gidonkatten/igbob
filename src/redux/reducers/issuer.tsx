@@ -1,17 +1,18 @@
 interface IssuerState {
-  id: number
+  addresses: string[];
 }
 
 const initialState: IssuerState = {
-  id: 0
+  addresses: []
 };
 
 export function issuerReducer(state = initialState, action: any) {
   switch (action.type) {
-    case "SET_ID": {
-      const { id } = action.payload;
+    case "SET_ACCOUNT_ADDRESSES": {
+      const { addresses } = action.payload;
       return {
-        id: id
+        ...state,
+        addresses: addresses
       };
     }
     default:

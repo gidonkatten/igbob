@@ -1,17 +1,18 @@
 interface InvestorState {
-  id: number
+  addresses: string[];
 }
 
 const initialState: InvestorState = {
-  id: 0
+  addresses: []
 };
 
 export function investorReducer(state = initialState, action: any) {
   switch (action.type) {
-    case "SET_ID": {
-      const { id } = action.payload;
+    case "SET_ACCOUNT_ADDRESSES": {
+      const { addresses } = action.payload;
       return {
-        id: id
+        ...state,
+        addresses: addresses
       };
     }
     default:

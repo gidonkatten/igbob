@@ -1,5 +1,5 @@
-import { client, waitForConfirmation } from '../utils/Utils';
-import { printAssetHolding, printCreatedAsset } from './Utils';
+import { algodClient, masterAccount, waitForConfirmation } from '../utils/Utils';
+import { ConfirmedTxInfo, SuggestedParams, Transaction, TxnBytes, TxResult } from 'algosdk';
 
 const algosdk = require('algosdk');
 
@@ -7,48 +7,42 @@ const algosdk = require('algosdk');
  * Create asset using stored account
  * @function
  * @param {number} totalIssuance -
- * @param {number} decimals - Number of decimals for asset unit calculation
+ * @param {number} assetDecimals - Number of decimals for asset unit calculation
+ * @param {boolean} defaultFrozen -
  * @param {string} unitName -
  * @param {string} assetName -
+ * @param {SuggestedParams | undefined} params -
  * @returns {Promise<number>} The ID of the created asset
  */
 export async function createAsset(
   totalIssuance: number,
-  decimals: number,
+  assetDecimals: number,
+  defaultFrozen: boolean,
   unitName: string,
-  assetName: string
+  assetName: string,
+  params?: SuggestedParams
 ): Promise<number> {
-  let recoveredAccount = algosdk.mnemonicToSecretKey(process.env.REACT_APP_ALGOD_ACCOUNT_MNEMONIC);
+  if (params === undefined) {
+    // Get node suggested parameters
+    let txParams = await algodClient.getTransactionParams().do();
+    txParams.fee = 1000;
+    txParams.flatFee = true;
+    params = txParams;
+  }
 
-  // Get node suggested parameters
-  let params = await client.getTransactionParams().do();
-  params.fee = 1000;
-  params.flatFee = true;
-
-  // Asset creation specific parameters
-  let addr = recoveredAccount.addr;
-  let defaultFrozen = false; // whether user accounts will need to be unfrozen before transacting
-
-  // Signing and sending "txn" allows "addr" to create an asset
-  let txn = algosdk.makeAssetCreateTxnWithSuggestedParams(addr, undefined,
-    totalIssuance, decimals, defaultFrozen, undefined, undefined, undefined,
+  // create, sign and submit
+  const txn: Transaction = algosdk.makeAssetCreateTxnWithSuggestedParams(masterAccount.addr, undefined,
+    totalIssuance, assetDecimals, defaultFrozen, undefined, undefined, undefined,
     undefined, unitName, assetName, undefined, undefined, params);
+  const rawSignedTxn: TxnBytes = txn.signTxn(masterAccount.sk)
+  const txResult: TxResult = (await algodClient.sendRawTransaction(rawSignedTxn).do());
 
-  let rawSignedTxn = txn.signTxn(recoveredAccount.sk)
-  let tx = (await client.sendRawTransaction(rawSignedTxn).do());
-  console.log("Transaction : " + tx.txId);
+  await waitForConfirmation(txResult.txId);
 
-  // Wait for transaction to be confirmed
-  await waitForConfirmation(client, tx.txId);
+  // Get the new asset's id
+  const pendingTx: ConfirmedTxInfo = await algodClient.pendingTransactionInformation(txResult.txId).do();
+  const assetId: number = pendingTx["asset-index"];
+  console.log("AssetId = " + assetId);
 
-  // Get the new asset's information from the creator account
-  let ptx = await client.pendingTransactionInformation(tx.txId).do();
-  let assetID = ptx["asset-index"];
-  console.log("AssetID = " + assetID);
-
-  // Print asset details
-  await printCreatedAsset(client, recoveredAccount.addr, assetID);
-  await printAssetHolding(client, recoveredAccount.addr, assetID);
-
-  return assetID;
+  return assetId;
 }

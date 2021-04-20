@@ -1,5 +1,6 @@
-import { client, waitForConfirmation } from '../utils/Utils';
+import { algodClient, masterAccount, waitForConfirmation } from '../utils/Utils';
 import { compileProgram, loadFile } from './Utils';
+import { ConfirmedTxInfo, SuggestedParams, Transaction, TxnBytes, TxResult } from 'algosdk';
 
 const algosdk = require('algosdk');
 
@@ -17,6 +18,7 @@ export interface StateStorage {
  * @param {string} clearProgramUrl - Url of clear program (in TEAL)
  * @param {StateStorage} stateStorage -
  * @param {Uint8Array[]} appArgs - arguments to the smart contract
+ * @param {SuggestedParams | undefined} params -
  * @returns {Promise<number>} The ID of the created application
  */
 export async function createStatefulContract(
@@ -24,49 +26,42 @@ export async function createStatefulContract(
   clearProgramUrl: string,
   stateStorage: StateStorage,
   appArgs: Uint8Array[],
+  params?: SuggestedParams
 ): Promise<number> {
-  let approval = loadFile(approvalProgramUrl);
-  let clear = loadFile(clearProgramUrl);
+  if (params === undefined) {
+    // Get node suggested parameters
+    let txParams = await algodClient.getTransactionParams().do();
+    txParams.fee = 1000;
+    txParams.flatFee = true;
+    params = txParams;
+  }
+
+  const approval: string | null = loadFile(approvalProgramUrl);
+  const clear: string | null  = loadFile(clearProgramUrl);
   if (approval === null || clear === null) {
     console.error("Cannot get teal programs");
     return -1;
   }
 
-  let creatorAccount = algosdk.mnemonicToSecretKey(process.env.REACT_APP_ALGOD_ACCOUNT_MNEMONIC);
-  let sender = creatorAccount.addr;
-  let approvalProgram: Uint8Array = await compileProgram(client, approval);
-  let clearProgram: Uint8Array = await compileProgram(client, clear);
+  let approvalProgram: Uint8Array = await compileProgram(approval);
+  let clearProgram: Uint8Array = await compileProgram(clear);
 
   const { localInts, localBytes, globalInts, globalBytes } = stateStorage;
+  const onComplete: number = algosdk.OnApplicationComplete.NoOpOC;
 
-  // Get node suggested parameters
-  let params = await client.getTransactionParams().do();
-  params.fee = 1000;
-  params.flatFee = true;
-
-  // Declare onComplete as NoOp
-  let onComplete = algosdk.OnApplicationComplete.NoOpOC;
-
-  // create unsigned transaction
-  let txn = algosdk.makeApplicationCreateTxn(sender, params, onComplete,
-    approvalProgram, clearProgram, localInts, localBytes, globalInts,
+  // // create unsigned transaction
+  const txn: Transaction = algosdk.makeApplicationCreateTxn(masterAccount.addr, params,
+    onComplete, approvalProgram, clearProgram, localInts, localBytes, globalInts,
     globalBytes, appArgs);
-  let txId = txn.txID().toString();
+  const rawSignedTxn: TxnBytes = txn.signTxn(masterAccount.sk)
+  const txResult: TxResult  = (await algodClient.sendRawTransaction(rawSignedTxn).do());
 
-  // Sign the transaction
-  let signedTxn = txn.signTxn(creatorAccount.sk);
-  console.log("Signed transaction with txID: %s", txId);
+  await waitForConfirmation(txResult.txId);
 
-  // Submit the transaction
-  await client.sendRawTransaction(signedTxn).do();
-
-  // Wait for confirmation
-  await waitForConfirmation(client, txId);
-
-  // Display results
-  let transactionResponse = await client.pendingTransactionInformation(txId).do();
-  let appId = transactionResponse['application-index'];
-  console.log("Created new app-id: ", appId);
+  // Get the new app's id
+  const pendingTx: ConfirmedTxInfo = await algodClient.pendingTransactionInformation(txResult.txId).do();
+  const appId: number = pendingTx["application-index"];
+  console.log("AppId = " + appId);
 
   return appId;
 }

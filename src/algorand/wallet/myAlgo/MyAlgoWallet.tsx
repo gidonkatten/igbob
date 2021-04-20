@@ -1,6 +1,6 @@
 import MyAlgo, { Accounts } from '@randlabs/myalgo-connect';
-import store from '../../redux/store';
-import { setAccountAddresses } from '../../redux/actions/actions';
+import store from '../../../redux/store';
+import { setAccountAddresses } from '../../../redux/actions/actions';
 
 export const myAlgoWallet = new MyAlgo();
 

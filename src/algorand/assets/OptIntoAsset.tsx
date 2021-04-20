@@ -1,9 +1,7 @@
 import { SuggestedParams, TxSig } from "algosdk";
-import { client, waitForConfirmation } from '../utils/Utils';
+import { algodClient, waitForConfirmation } from '../utils/Utils';
 import { AssetTxn } from '@randlabs/myalgo-connect';
-import { myAlgoWallet } from '../wallet/Wallet';
-
-const algosdk = require('algosdk');
+import { myAlgoWallet } from '../wallet/myAlgo/MyAlgoWallet';
 
 /**
  * Opt into asset using MyAlgo
@@ -15,9 +13,9 @@ export async function optIntoAsset(
   assetId: number,
   addr: string,
 ) {
-  let params: SuggestedParams = await client.getTransactionParams().do();
+  let params: SuggestedParams = await algodClient.getTransactionParams().do();
 
-  let assetTransferTxn: AssetTxn = {
+  let optTxn: AssetTxn = {
     ...params,
     fee: 1000,
     flatFee: true,
@@ -28,12 +26,11 @@ export async function optIntoAsset(
     assetIndex: assetId
   };
 
-  // let rawSignedAssetTransferTxn = assetTransferTxn.signTxn(recoveredAccountOwner.sk)
-  let rawSignedAssetTransferTxn = await myAlgoWallet.signTransaction(assetTransferTxn) as TxSig;
-  let tx = (await client.sendRawTransaction(rawSignedAssetTransferTxn.blob).do());
+  let rawSignedOptTxn = await myAlgoWallet.signTransaction(optTxn) as TxSig;
+  let tx = (await algodClient.sendRawTransaction(rawSignedOptTxn.blob).do());
 
   console.log("Transaction : " + tx.txId);
 
   // Wait for confirmation
-  await waitForConfirmation(client, tx.txId);
+  await waitForConfirmation(algodClient, tx.txId);
 }
