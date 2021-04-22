@@ -5,7 +5,7 @@ import { userHasAccess } from './Utils';
 
 class RedirectToHome extends React.Component {
   render() {
-    return <Redirect to="/"/>
+    return <Redirect to="/igbob"/>
   };
 }
 

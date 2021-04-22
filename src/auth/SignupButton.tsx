@@ -9,6 +9,7 @@ const SignupButton = () => {
       onClick={() =>
       loginWithRedirect({
         screen_hint: "signup",
+        redirectUri: window.location.origin + '/igbob'
       })}
     >
       Sign Up

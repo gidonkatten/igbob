@@ -12,11 +12,11 @@ function App() {
     <div>
       <Navbar/>
       <Switch>
-        <ProtectedRoute path="/issuer" component={IssuerPage} role={"issuer"} />
-        <ProtectedRoute exact path="/investor" component={InvestorPage} role={"investor"}/>
-        <ProtectedRoute exact path="/profile" component={Profile}/>
+        <ProtectedRoute exact path="/igbob/issuer" component={IssuerPage} role={"issuer"} />
+        <ProtectedRoute exact path="/igbob/investor" component={InvestorPage} role={"investor"}/>
+        <ProtectedRoute exact path="/igbob/profile" component={Profile}/>
         {/*Placed last to catch all unknown paths*/}
-        <Route path="/" component={HomePage}/>
+        <Route path="/igbob" component={HomePage}/>
       </Switch>
     </div>
   );

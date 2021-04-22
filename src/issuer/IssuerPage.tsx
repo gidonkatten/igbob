@@ -26,12 +26,12 @@ function IssuerPage(props: IssuerPageProps) {
       scope: "issue:bonds",
     });
 
+    const headers = new Headers();
+    headers.append("Content-Type", "application/json");
+    headers.append("Authorization", `Bearer ${accessToken}`);
     const response = await fetch("https://igbob.herokuapp.com/apps/create-app", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${accessToken}`
-      },
+      headers: headers,
       body: JSON.stringify({
         "totalIssuance": 1,
         "bondUnitName": "TB",
