@@ -14,7 +14,7 @@ const Auth0ProviderWithHistory = ({ children }) => {
       domain={process.env.REACT_APP_AUTH0_DOMAIN}
       clientId={process.env.REACT_APP_AUTH0_CLIENT_ID}
       redirectUri={window.location.origin}
-      audience="https://igbob/api"
+      audience={process.env.REACT_APP_AUTH0_AUDIENCE}
       onRedirectCallback={onRedirectCallback}
     >
       {children}

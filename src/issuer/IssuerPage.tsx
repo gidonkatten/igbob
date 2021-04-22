@@ -1,11 +1,6 @@
 import React, { useState } from 'react';
-import { useAuth0, withAuthenticationRequired } from "@auth0/auth0-react";
-import { createAsset } from '../algorand/assets/CreateAsset';
-import { createStatefulContract, StateStorage } from '../algorand/contracts/CreateStatefulContract';
-import { convertDateToUnixTime } from '../utils/Utils';
 import { connect } from 'react-redux';
-import { algodClient } from '../algorand/utils/Utils';
-import { issueBond } from '../algorand/issue/IssueBond';
+import { useAuth0 } from '@auth0/auth0-react';
 
 interface IssuerPageProps {
   addresses: string[];
@@ -22,11 +17,38 @@ function IssuerPage(props: IssuerPageProps) {
 
   const { addresses } = props;
 
+  const { getAccessTokenSilently } = useAuth0();
+
   const handleSubmit = async (e: any) => {
     e.preventDefault();
 
-    await issueBond(1, "TB", "TestBond", fromAddr, startBuyDate, endBuyDate,
-      maturityDate, bondCost, 10, 1, 100);
+    const accessToken = await getAccessTokenSilently({
+      scope: "issue:bonds",
+    });
+
+    const response = await fetch("https://igbob.herokuapp.com/apps/create-app", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`
+      },
+      body: JSON.stringify({
+        "totalIssuance": 1,
+        "bondUnitName": "TB",
+        "bondName": "TestBond",
+        "issuerAddr": fromAddr,
+        "startBuyDate": startBuyDate,
+        "endBuyDate": endBuyDate,
+        "maturityDate": maturityDate,
+        "bondCost": bondCost,
+        "bondCouponPaymentVal": 10,
+        "bondCouponInstallments": 1,
+        "bondPrincipal": bondPrincipal
+      })
+    });
+
+    const parseResponse = await response.text();
+    console.log(parseResponse);
   }
 
   return (
@@ -34,7 +56,7 @@ function IssuerPage(props: IssuerPageProps) {
       <h3>Issue Bond</h3>
       <form onSubmit={handleSubmit}>
         <label>
-          <p>Bond Cost:</p>
+          <p>Your Address:</p>
           <select onChange={e => setFromAddr(e.target.value)}>
             <option value="">Get accounts first</option>
             {addresses.map((addr) => {

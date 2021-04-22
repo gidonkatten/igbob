@@ -1,9 +1,5 @@
 /**
  * Function used to print created asset for account and assetId
- * @function
- * @param {any} algodclient -
- * @param {any} account -
- * @param {number} assetId -
  */
 export async function printCreatedAsset(algodclient: any, account: any, assetId: any) {
   // note: if you have an indexer instance available it is easier to just use this
@@ -25,10 +21,6 @@ export async function printCreatedAsset(algodclient: any, account: any, assetId:
 
 /**
  * Function used to print asset holding for account and assetId
- * @function
- * @param {any} algodclient -
- * @param {any} account -
- * @param {number} assetId -
  */
 export async function printAssetHolding(algodclient: any, account: any, assetId: any) {
   // note: if you have an indexer instance available it is easier to just use this

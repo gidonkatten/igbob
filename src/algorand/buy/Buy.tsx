@@ -7,12 +7,6 @@ const algosdk = require('algosdk');
 
 /**
  * Create and submit a stateful smart contract
- * @function
- * @param {number} appId -
- * @param {string} buyer -
- * @param {number} bondId -
- * @param {number} amountBond -
- * @param {number} amountAlgo -
  */
 export async function buyBond(
   appId: number,

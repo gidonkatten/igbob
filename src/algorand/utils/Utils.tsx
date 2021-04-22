@@ -1,5 +1,3 @@
-import { SuggestedParams, Transaction, TxnBytes, TxResult } from 'algosdk';
-
 const algosdk = require('algosdk');
 
 const baseServer = 'https://testnet-algorand.api.purestake.io/ps2'
@@ -21,16 +19,16 @@ export const waitForConfirmation = async function (txId: string, timeout: number
   // pending transaction information, or throws an error if the transaction
   // is not confirmed or rejected in the next timeout rounds
   if (algodClient == null || txId == null || timeout < 0) {
-    throw "Bad arguments.";
+    throw new Error("Bad arguments.");
   }
   let status = (await algodClient.status().do());
-  if (status == undefined) throw new Error("Unable to get node status");
+  if (status === undefined) throw new Error("Unable to get node status");
   let startround = status["last-round"] + 1;
   let currentround = startround;
 
   while (currentround < (startround + timeout)) {
     let pendingInfo = await algodClient.pendingTransactionInformation(txId).do();
-    if (pendingInfo != undefined) {
+    if (pendingInfo !== undefined) {
       if (pendingInfo["confirmed-round"] !== null && pendingInfo["confirmed-round"] > 0) {
         //Got the completed Transaction
         return pendingInfo;
@@ -38,7 +36,7 @@ export const waitForConfirmation = async function (txId: string, timeout: number
       else {
         if (pendingInfo["pool-error"] != null && pendingInfo["pool-error"].length > 0) {
           // If there was a pool error, then the transaction has been rejected!
-          throw new Error("Transaction Rejected" + " pool error" + pendingInfo["pool-error"]);
+          throw new Error("Transaction Rejected pool error" + pendingInfo["pool-error"]);
         }
       }
     }
@@ -48,26 +46,3 @@ export const waitForConfirmation = async function (txId: string, timeout: number
   throw new Error("Transaction not confirmed after " + timeout + " rounds!");
 };
 
-export const masterAccount = algosdk.mnemonicToSecretKey(process.env.REACT_APP_ALGOD_ACCOUNT_MNEMONIC);
-
-export const fundAccount = async function (
-  address: string,
-  amount: number,
-  params?: SuggestedParams
-): Promise<string> {
-  if (params === undefined) {
-    // Get node suggested parameters
-    let txParams = await algodClient.getTransactionParams().do();
-    txParams.fee = 1000;
-    txParams.flatFee = true;
-    params = txParams;
-  }
-
-  // create, sign and submit
-  const txn: Transaction = algosdk.makePaymentTxnWithSuggestedParams(masterAccount.addr, address, 0,
-    undefined, undefined, params);
-  const rawSignedTxn: TxnBytes = txn.signTxn(masterAccount.sk)
-  const txResult: TxResult = (await algodClient.sendRawTransaction(rawSignedTxn).do());
-
-  return txResult.txId;
-}

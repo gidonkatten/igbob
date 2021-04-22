@@ -5,9 +5,6 @@ import { myAlgoWallet } from '../wallet/myAlgo/MyAlgoWallet';
 
 /**
  * Opt into asset using MyAlgo
- * @function
- * @param {number} assetId -
- * @param {string} addr -
  */
 export async function optIntoAsset(
   assetId: number,
@@ -32,5 +29,5 @@ export async function optIntoAsset(
   console.log("Transaction : " + tx.txId);
 
   // Wait for confirmation
-  await waitForConfirmation(algodClient, tx.txId);
+  await waitForConfirmation(tx.txId);
 }

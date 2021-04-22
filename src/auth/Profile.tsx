@@ -5,11 +5,10 @@ const Profile = () => {
   const { user, getAccessTokenSilently } = useAuth0();
 
   const printToken = async () => {
+    console.log(JSON.stringify(user));
     const token = await getAccessTokenSilently();
     console.log(token);
   }
-
-  console.log(JSON.stringify(user));
 
   return (
     <div>

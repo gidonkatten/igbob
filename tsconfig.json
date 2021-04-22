@@ -2,7 +2,7 @@
   "compilerOptions": {
     "typeRoots": [
       "node_modules/@types",
-      "node_modules/@algorand-builder/types-algosdk"
+      "node_modules/@algo-builder/types-algosdk"
     ],
     "target": "es5",
     "lib": [
