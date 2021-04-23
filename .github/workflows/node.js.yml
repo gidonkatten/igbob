@@ -43,23 +43,10 @@ jobs:
       
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v1
-      
-    - name: Build
-      run: npm run build
 
     - name: Deploy
-      run: |
-        git config --global user.name $user_name
-        git config --global user.email $user_email
-        git remote set-url origin https://${github_token}@github.com/${repository}
-        npm run deploy
-      env:
-        user_name: 'github-actions[bot]'
-        user_email: 'github-actions[bot]@users.noreply.github.com'
-        github_token: ${{ secrets.ACTIONS_DEPLOY_ACCESS_TOKEN }}
-        repository: ${{ github.repository }}
-        REACT_APP_ALGOD_ACCOUNT_MNEMONIC: ${{ secrets.REACT_APP_ALGOD_ACCOUNT_MNEMONIC }}
-        REACT_APP_PURESTAKE_API_KEY: ${{ secrets.REACT_APP_PURESTAKE_API_KEY }}
-        REACT_APP_AUTH0_AUDIENCE: ${{ secrets.REACT_APP_AUTH0_AUDIENCE }}
-        REACT_APP_AUTH0_DOMAIN: ${{ secrets.REACT_APP_AUTH0_DOMAIN }}
-        REACT_APP_AUTH0_CLIENT_ID: ${{ secrets.REACT_APP_AUTH0_CLIENT_ID }}
+      uses: akhileshns/heroku-deploy@v3.12.12 # This is the action
+      with:
+        heroku_api_key: ${{secrets.HEROKU_API_KEY}}
+        heroku_app_name: "blockchain-bonds" #Must be unique in Heroku
+        heroku_email: "gidonkatten@gmail.com"

@@ -13,16 +13,16 @@ function Navbar() {
 
   return (
     <div>
-      <Link to="/igbob">Home</Link>
+      <Link to="/">Home</Link>
       {!isAuthenticated && (
         <SignupButton/>
       )}
       <AuthenticationButton/>
       {isAuthenticated && (
-        <Link to="/igbob/issuer">Issuer</Link>
+        <Link to="/issuer">Issuer</Link>
       )}
       {isAuthenticated && (
-        <Link to="/igbob/investor">Investor</Link>
+        <Link to="/investor">Investor</Link>
       )}
     </div>
   );

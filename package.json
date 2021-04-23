@@ -2,7 +2,7 @@
   "name": "igbob",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://gidonkatten.github.io/igbob",
+  "homepage": "https://blockchain-bonds.herokuapp.com",
   "dependencies": {
     "@algo-builder/types-algosdk": "^0.2.3",
     "@auth0/auth0-react": "^1.4.0",

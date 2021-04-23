@@ -7,7 +7,7 @@ const LoginButton = () => {
     <button
       className="btn btn-primary btn-block"
       onClick={() => loginWithRedirect({
-        redirectUri: window.location.origin + '/igbob'
+        redirectUri: window.location.origin
       })}
     >
       Log In
