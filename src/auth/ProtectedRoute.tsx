@@ -9,7 +9,6 @@ class RedirectToHome extends React.Component {
   };
 }
 
-// @ts-ignore
 const ProtectedRoute = ({ component, role, ...args }) => {
 
   const { user } = useAuth0();

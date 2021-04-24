@@ -5,6 +5,7 @@ import store from "./redux/store";
 import App from './App';
 import { BrowserRouter } from "react-router-dom";
 import Auth0ProviderWithHistory from "./auth/Auth0ProviderWithHistory";
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 ReactDOM.render(
   <React.StrictMode>
