@@ -16,9 +16,6 @@ function NavbarManager() {
 
         {/*Left hand side of navbar*/}
         <Nav className="mr-auto">
-          <LinkContainer to="/home">
-            <Nav.Link>Home</Nav.Link>
-          </LinkContainer>
           {isAuthenticated && (
             <LinkContainer to="/dashboard">
               <Nav.Link>Dashboard</Nav.Link>

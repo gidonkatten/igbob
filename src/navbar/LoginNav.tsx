@@ -8,7 +8,7 @@ const LoginNav = () => {
     <Nav.Link
       onClick={() =>
         loginWithRedirect({
-          redirectUri: window.location.origin
+          redirectUri: window.location.origin + '/dashboard',
         })
       }
     >

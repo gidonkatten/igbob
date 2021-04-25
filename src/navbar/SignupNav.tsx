@@ -9,7 +9,7 @@ const SignupNav = () => {
       onClick={() =>
         loginWithRedirect({
           screen_hint: "signup",
-          redirectUri: window.location.origin
+          redirectUri: window.location.origin + '/dashboard',
         })
       }
     >

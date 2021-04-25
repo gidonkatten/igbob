@@ -9,8 +9,9 @@ class RedirectToHome extends React.Component {
   };
 }
 
-const ProtectedRoute = ({ component, role, ...args }) => {
+const ProtectedRoute = ({ component, ...args }) => {
 
+  const { role, ...otherProps } = args;
   const { user } = useAuth0();
   const page = role === undefined ? component : (userHasAccess(user, role) ? component : RedirectToHome)
 
@@ -18,8 +19,9 @@ const ProtectedRoute = ({ component, role, ...args }) => {
     <Route
       component={withAuthenticationRequired(page, {
         onRedirecting: () => <div>Redirecting you to the login...</div>,
+        returnTo: '/dashboard'
       })}
-      {...args}
+      {...otherProps}
     />
   );
 };
