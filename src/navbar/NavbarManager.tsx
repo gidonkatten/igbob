@@ -4,15 +4,11 @@ import SignupNav from './SignupNav';
 import { LinkContainer } from "react-router-bootstrap";
 import Navbar from 'react-bootstrap/Navbar';
 import Nav from 'react-bootstrap/Nav';
-import { userHasAccess } from '../auth/Utils';
 import LogoutNav from './LogoutNav';
 import LoginNav from './LoginNav';
 
 function NavbarManager() {
-  const { isAuthenticated, user } = useAuth0();
-
-  const isIssuer = userHasAccess(user, 'issuer')
-  const isInvestor = userHasAccess(user, 'investor')
+  const { isAuthenticated } = useAuth0();
 
   return (
     <div>
@@ -20,15 +16,20 @@ function NavbarManager() {
 
         {/*Left hand side of navbar*/}
         <Nav className="mr-auto">
-          <LinkContainer to="/">
+          <LinkContainer to="/home">
             <Nav.Link>Home</Nav.Link>
           </LinkContainer>
-          {isAuthenticated && isIssuer && (
+          {isAuthenticated && (
+            <LinkContainer to="/dashboard">
+              <Nav.Link>Dashboard</Nav.Link>
+            </LinkContainer>
+          )}
+          {isAuthenticated && (
             <LinkContainer to="/issuer">
               <Nav.Link>Issuer</Nav.Link>
             </LinkContainer>
           )}
-          {isAuthenticated && isInvestor && (
+          {isAuthenticated && (
             <LinkContainer to="/investor">
               <Nav.Link>Investor</Nav.Link>
             </LinkContainer>
@@ -37,12 +38,12 @@ function NavbarManager() {
 
         {/*Right hand side of navbar*/}
         <Nav>
-          {isAuthenticated && isIssuer && (
+          {isAuthenticated && (
             <LinkContainer to="/settings">
               <Nav.Link>Settings</Nav.Link>
             </LinkContainer>
           )}
-          {isAuthenticated && isIssuer && (
+          {isAuthenticated && (
             <LinkContainer to="/profile">
               <Nav.Link>Profile</Nav.Link>
             </LinkContainer>

@@ -7,12 +7,14 @@ import ProtectedRoute from "./auth/ProtectedRoute";
 import Profile from "./auth/Profile";
 import SettingsPage from "./settings/SettingsPage";
 import NavbarManager from "./navbar/NavbarManager";
+import DashboardPage from "./dashboard/DashboardPage";
 
 function App() {
   return (
     <div>
       <NavbarManager/>
       <Switch>
+        <ProtectedRoute exact path="/dashboard" component={DashboardPage}/>
         <ProtectedRoute exact path="/issuer" component={IssuerPage}/>
         <ProtectedRoute exact path="/investor" component={InvestorPage}/>
         <ProtectedRoute exact path="/settings" component={SettingsPage}/>

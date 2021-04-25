@@ -1,5 +1,4 @@
 import React from 'react';
-import { connect } from 'react-redux';
 
 interface HomePageProps {
 }
@@ -8,6 +7,7 @@ function HomePage(props: HomePageProps) {
 
   return (
     <div>
+      Welcome to Green Bonds on the Blockchain. This is a demo application. Get started by creating an account.
     </div>
   );
 }
