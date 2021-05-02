@@ -107,7 +107,7 @@ function InvestorPage(props: InvestorPageProps) {
 }
 
 const mapStateToProps = (state: any) => ({
-  addresses: state.investorReducer.addresses
+  addresses: state.userReducer.addresses
 });
 
 export default connect(mapStateToProps, undefined)(InvestorPage);

@@ -9,25 +9,28 @@ import SettingsPage from "./settings/SettingsPage";
 import NavbarManager from "./navbar/NavbarManager";
 import DashboardPage from "./dashboard/DashboardPage";
 import { useAuth0 } from '@auth0/auth0-react';
-import { setAccountAddresses } from './redux/actions/actions';
+import { setAccountAddresses, setSelectedAddress } from './redux/actions/actions';
 import { connect } from 'react-redux';
 
 interface AppProps {
   setAccountAddresses: typeof setAccountAddresses;
+  setSelectedAddress: typeof setSelectedAddress;
 }
 
 function App(props: AppProps) {
 
+  const { setAccountAddresses, setSelectedAddress } = props;
   const { isAuthenticated, getAccessTokenSilently } = useAuth0();
 
   async function fetchAddresses() {
     try {
       const accessToken = await getAccessTokenSilently();
-      const response = await fetch("http://localhost:5000/accounts/get-addresses", {
+      const response = await fetch("https://igbob.herokuapp.com/accounts/get-addresses", {
         headers: { Authorization: `Bearer ${accessToken}`},
       });
       const parseResponse = await response.json();
-      props.setAccountAddresses(parseResponse.addresses);
+      setAccountAddresses(parseResponse.addresses);
+      if (parseResponse.addresses[0]) setSelectedAddress(parseResponse.addresses[0]);
     } catch (err) {
       console.error(err.message);
     }
@@ -56,6 +59,7 @@ function App(props: AppProps) {
 
 const mapDispatchToProps = {
   setAccountAddresses,
+  setSelectedAddress
 };
 
 export default connect(undefined, mapDispatchToProps)(App);

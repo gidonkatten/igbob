@@ -16,21 +16,17 @@ function IssuerPage(props: IssuerPageProps) {
   const [maturityDate, setMaturityDate] = useState<string>('');
 
   const { addresses } = props;
-
   const { getAccessTokenSilently } = useAuth0();
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
 
-    const accessToken = await getAccessTokenSilently({
-      scope: "issue:bonds",
-    });
+    const accessToken = await getAccessTokenSilently({ scope: "issue:bonds" });
 
     const headers = new Headers();
     headers.append("Content-Type", "application/json");
     headers.append("Authorization", `Bearer ${accessToken}`);
-    // const response = await fetch("https://igbob.herokuapp.com/apps/create-app", {
-    const response = await fetch("http://localhost:5000/apps/create-app", {
+    const response = await fetch("https://igbob.herokuapp.com/apps/create-app", {
       method: "POST",
       headers: headers,
       body: JSON.stringify({
@@ -64,7 +60,8 @@ function IssuerPage(props: IssuerPageProps) {
               return <option key={addr} value={addr}>{addr}</option>
             })}
           </select>
-        </label>   <label>
+        </label>
+        <label>
           <p>Bond Cost:</p>
           <input
             value={bondCost}
@@ -123,7 +120,7 @@ function IssuerPage(props: IssuerPageProps) {
 }
 
 const mapStateToProps = (state: any) => ({
-  addresses: state.investorReducer.addresses
+  addresses: state.userReducer.addresses
 });
 
 export default connect(mapStateToProps, undefined)(IssuerPage);

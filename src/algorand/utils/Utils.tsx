@@ -5,6 +5,8 @@ const port = '';
 const token = { 'X-API-Key': process.env.REACT_APP_PURESTAKE_API_KEY }
 export const algodClient = new algosdk.Algodv2(token, baseServer, port);
 
+export const STABLECOIN_ID = 15435388;
+
 /**
  * utility function to wait on a transaction to be confirmed
  * the timeout parameter indicates how many rounds do you wish to check pending transactions for

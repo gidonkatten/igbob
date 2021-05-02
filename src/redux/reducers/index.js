@@ -1,5 +1,4 @@
 import { combineReducers } from "redux";
-import { issuerReducer } from "./issuer";
-import { investorReducer } from "./investor";
+import { userReducer } from "./user";
 
-export default combineReducers({ issuerReducer, investorReducer });
+export default combineReducers({ userReducer });
