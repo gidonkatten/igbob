@@ -3,19 +3,20 @@ import { connect } from 'react-redux';
 import { useAuth0 } from '@auth0/auth0-react';
 
 interface IssuerPageProps {
-  addresses: string[];
+  selectedAddress: string
 }
 
 function IssuerPage(props: IssuerPageProps) {
 
-  const [fromAddr, setFromAddr] = useState<string>('');
+  const [totalIssuance, setTotalIssuance] = useState<number>(0);
   const [bondCost, setBondCost] = useState<number>(0);
+  const [bondCoupon, setBondCoupon] = useState<number>(0);
   const [bondPrincipal, setBondPrincipal] = useState<number>(0);
   const [startBuyDate, setStartBuyDate] = useState<string>('');
   const [endBuyDate, setEndBuyDate] = useState<string>('');
-  const [maturityDate, setMaturityDate] = useState<string>('');
+  const [bondLength, setBondLength] = useState<string>('');
 
-  const { addresses } = props;
+  const { selectedAddress } = props;
   const { getAccessTokenSilently } = useAuth0();
 
   const handleSubmit = async (e: any) => {
@@ -30,16 +31,15 @@ function IssuerPage(props: IssuerPageProps) {
       method: "POST",
       headers: headers,
       body: JSON.stringify({
-        "totalIssuance": 1,
+        "totalIssuance": totalIssuance,
         "bondUnitName": "TB",
         "bondName": "TestBond",
-        "issuerAddr": fromAddr,
+        "issuerAddr": selectedAddress,
+        "bondLength": bondLength,
         "startBuyDate": startBuyDate,
         "endBuyDate": endBuyDate,
-        "maturityDate": maturityDate,
         "bondCost": bondCost,
-        "bondCouponPaymentVal": 10,
-        "bondCouponInstallments": 1,
+        "bondCoupon": bondCoupon,
         "bondPrincipal": bondPrincipal
       })
     });
@@ -53,13 +53,20 @@ function IssuerPage(props: IssuerPageProps) {
       <h3>Issue Bond</h3>
       <form onSubmit={handleSubmit}>
         <label>
-          <p>Your Address:</p>
-          <select onChange={e => setFromAddr(e.target.value)}>
-            <option value="">Get accounts first</option>
-            {addresses.map((addr) => {
-              return <option key={addr} value={addr}>{addr}</option>
-            })}
-          </select>
+          <p>Selected Address (this is where the proceeds will go):</p>
+          <p>
+            {selectedAddress !== undefined ? <>{selectedAddress}</> : <>No address selected</>}
+          </p>
+        </label>
+        <label>
+          <p>Number of Bonds:</p>
+          <input
+            value={totalIssuance}
+            onChange={e => setTotalIssuance(parseInt(e.target.value))}
+            type="number"
+            name="totalIssuance"
+            required
+          />
         </label>
         <label>
           <p>Bond Cost:</p>
@@ -84,6 +91,16 @@ function IssuerPage(props: IssuerPageProps) {
           />
         </label>
         <label>
+          <p>Bond Coupon (payed every 6 months for duration of bond):</p>
+          <input
+            value={bondCoupon}
+            onChange={e => setBondCoupon(parseInt(e.target.value))}
+            type="number"
+            name="bondCoupon"
+            required
+          />
+        </label>
+        <label>
           <p>Start buy date:</p>
           <input
             value={startBuyDate}
@@ -104,12 +121,12 @@ function IssuerPage(props: IssuerPageProps) {
           />
         </label>
         <label>
-          <p>Maturity date:</p>
+          <p>Bond Length (number of 6 month periods):</p>
           <input
-            value={maturityDate}
-            onChange={e => setMaturityDate(e.target.value)}
-            type="datetime-local"
-            name="endDate"
+            value={bondLength}
+            onChange={e => setBondLength(e.target.value)}
+            type="number"
+            name="bondLength"
             required
           />
         </label>
@@ -120,7 +137,8 @@ function IssuerPage(props: IssuerPageProps) {
 }
 
 const mapStateToProps = (state: any) => ({
-  addresses: state.userReducer.addresses
+  addresses: state.userReducer.addresses,
+  selectedAddress: state.userReducer.selectedAddress
 });
 
 export default connect(mapStateToProps, undefined)(IssuerPage);
