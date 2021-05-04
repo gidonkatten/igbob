@@ -13,13 +13,16 @@ interface InvestorPageProps {
 }
 
 function InvestorPage(props: InvestorPageProps) {
-  const [optInBondId, setOptInBondId] = useState<number>(0);
+
+  const [inOverview, setInOverview] = useState<boolean>(true);
   const [appId, setAppId] = useState<number>(0);
+
+  const [optInBondId, setOptInBondId] = useState<number>(0);
   const [buyBondId, setBuyBondId] = useState<number>(0);
   const [bondAmount, setBondAmount] = useState<number>(0);
   const [algoAmount, setAlgoAmount] = useState<number>(0);
 
-  const { selectedAddress } = props;
+  const { selectedAddress, apps, setApps } = props;
   const { getAccessTokenSilently } = useAuth0();
 
   async function fetchApps() {
@@ -29,6 +32,7 @@ function InvestorPage(props: InvestorPageProps) {
         headers: { Authorization: `Bearer ${accessToken}`},
       });
       const parseResponse = await response.json();
+      console.log(parseResponse);
       setApps(parseResponse);
     } catch (err) {
       console.error(err.message);
@@ -52,16 +56,44 @@ function InvestorPage(props: InvestorPageProps) {
     await buyBond(appId, selectedAddress, buyBondId, bondAmount, algoAmount);
   }
 
+  const enterAppView = (appId) => {
+    setInOverview(false);
+    setAppId(appId);
+  }
+
+  const appsList = (
+    <div>
+      {apps && apps.map((app) => {
+        return (
+          <div
+            onClick={() => enterAppView(app.app_id)}
+            key={app.app_id}
+          >
+            {app.app_id} {app.name}
+          </div>
+        )
+      })}
+    </div>
+  )
+
+  const appView = (
+    <div>
+      <div onClick={() => setInOverview(true)}>
+        Go Back
+      </div>
+    </div>
+  )
+
   return (
     <div>
-
+      {inOverview ? appsList : appView}
     </div>
   );
 }
 
 const mapStateToProps = (state: any) => ({
   selectedAddress: state.userReducer.selectedAddress,
-  apps: state.userReducer.apps
+  apps: state.bondReducer.apps
 });
 
 const mapDispatchToProps = {

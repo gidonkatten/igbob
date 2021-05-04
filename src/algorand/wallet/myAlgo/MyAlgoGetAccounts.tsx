@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import { setAccountAddresses, setSelectedAccount } from '../../../redux/actions/actions';
 import { myAlgoWallet } from './MyAlgoWallet';
 import { useAuth0 } from '@auth0/auth0-react';
+import Button from 'react-bootstrap/Button';
 import { getAccountInformation } from '../../balance/Balance';
 
 interface GetAccountsProps {
@@ -46,7 +47,7 @@ const MyAlgoGetAccounts = (props: GetAccountsProps) => {
   }
 
   return (
-    <button onClick={connectToMyAlgo}>Connect</button>
+    <Button variant="primary" onClick={connectToMyAlgo}>Connect</Button>
   )
 };
 
