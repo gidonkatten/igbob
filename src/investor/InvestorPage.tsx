@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux'
 import { buyBond } from '../algorand/buy/Buy';
 import { optIntoAsset } from '../algorand/assets/OptIntoAsset';
+import { useAuth0 } from '@auth0/auth0-react';
 
 interface InvestorPageProps {
   addresses: string[];
@@ -15,6 +16,25 @@ function InvestorPage(props: InvestorPageProps) {
   const [algoAmount, setAlgoAmount] = useState<number>(0);
 
   const { addresses } = props;
+  const { getAccessTokenSilently } = useAuth0();
+
+  async function fetchApps() {
+    try {
+      const accessToken = await getAccessTokenSilently();
+      const response = await fetch("https://igbob.herokuapp.com/apps/all-apps", {
+        headers: { Authorization: `Bearer ${accessToken}`},
+      });
+      const parseResponse = await response.json();
+      console.log(parseResponse);
+    } catch (err) {
+      console.error(err.message);
+    }
+  }
+
+  // fetch apps after initial render
+  useEffect( () => {
+    fetchApps();
+  }, []);
 
   const handleAssetOptIn = async (e: any) => {
     e.preventDefault();

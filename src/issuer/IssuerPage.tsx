@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { connect } from 'react-redux';
 import { useAuth0 } from '@auth0/auth0-react';
+import Button from 'react-bootstrap/Button';
+import Form from 'react-bootstrap/Form';
 
 interface IssuerPageProps {
   selectedAddress: string
@@ -8,13 +10,15 @@ interface IssuerPageProps {
 
 function IssuerPage(props: IssuerPageProps) {
 
+  const [name, setName] = useState<string>('');
+  const [des, setDes] = useState<string>('');
   const [totalIssuance, setTotalIssuance] = useState<number>(0);
+  const [bondLength, setBondLength] = useState<number>(0);
+  const [startBuyDate, setStartBuyDate] = useState<string>('');
+  const [endBuyDate, setEndBuyDate] = useState<string>('');
   const [bondCost, setBondCost] = useState<number>(0);
   const [bondCoupon, setBondCoupon] = useState<number>(0);
   const [bondPrincipal, setBondPrincipal] = useState<number>(0);
-  const [startBuyDate, setStartBuyDate] = useState<string>('');
-  const [endBuyDate, setEndBuyDate] = useState<string>('');
-  const [bondLength, setBondLength] = useState<string>('');
 
   const { selectedAddress } = props;
   const { getAccessTokenSilently } = useAuth0();
@@ -31,9 +35,11 @@ function IssuerPage(props: IssuerPageProps) {
       method: "POST",
       headers: headers,
       body: JSON.stringify({
-        "totalIssuance": totalIssuance,
+        "name": name,
+        "description": des,
         "bondUnitName": "TB",
         "bondName": "TestBond",
+        "totalIssuance": totalIssuance,
         "issuerAddr": selectedAddress,
         "bondLength": bondLength,
         "startBuyDate": startBuyDate,
@@ -51,26 +57,91 @@ function IssuerPage(props: IssuerPageProps) {
   return (
     <div>
       <h3>Issue Bond</h3>
-      <form onSubmit={handleSubmit}>
-        <label>
-          <p>Selected Address (this is where the proceeds will go):</p>
-          <p>
+
+      <Form onSubmit={handleSubmit}>
+
+        <Form.Group>
+          <Form.Label>Name:</Form.Label>
+            <Form.Control
+              value={name}
+              onChange={e => setName(e.target.value)}
+              type="input"
+              name="name"
+              required
+              maxLength={63}
+            />
+          <Form.Text muted>This is what investors will see</Form.Text>
+        </Form.Group>
+
+        <Form.Group>
+          <Form.Label>Description:</Form.Label>
+          <Form.Control
+            value={des}
+            onChange={e => setDes(e.target.value)}
+            type="input"
+            name="des"
+            required
+            maxLength={511}
+          />
+          <Form.Text muted>This is what investors will see</Form.Text>
+        </Form.Group>
+
+        <Form.Group>
+          <Form.Label>Selected Address:</Form.Label>
+          <Form.Text>
             {selectedAddress !== undefined ? <>{selectedAddress}</> : <>No address selected</>}
-          </p>
-        </label>
-        <label>
-          <p>Number of Bonds:</p>
-          <input
-            value={totalIssuance}
-            onChange={e => setTotalIssuance(parseInt(e.target.value))}
+          </Form.Text>
+          <Form.Text muted>This is where the bond proceeds will go</Form.Text>
+        </Form.Group>
+
+        <Form.Group>
+          <Form.Label>Number of Bonds:</Form.Label>
+          <Form.Control
+              value={totalIssuance}
+              onChange={e => setTotalIssuance(parseInt(e.target.value))}
+              type="number"
+              name="totalIssuance"
+              required
+          />
+        </Form.Group>
+
+        <Form.Group>
+          <Form.Label>Bond Length:</Form.Label>
+          <Form.Control
+            value={bondLength}
+            onChange={e => setBondLength(parseInt(e.target.value))}
             type="number"
-            name="totalIssuance"
+            name="bondLength"
             required
           />
-        </label>
-        <label>
-          <p>Bond Cost:</p>
-          <input
+          <Form.Text muted>Number of 6 month periods</Form.Text>
+        </Form.Group>
+
+        <Form.Group>
+          <Form.Label>Start buy date:</Form.Label>
+          <Form.Control
+            value={startBuyDate}
+            onChange={e => setStartBuyDate(e.target.value)}
+            type="datetime-local"
+            name="startDate"
+            required
+          />
+        </Form.Group>
+
+        <Form.Group>
+          <Form.Label>End buy date:</Form.Label>
+          <Form.Control
+            value={endBuyDate}
+            onChange={e => setEndBuyDate(e.target.value)}
+            type="datetime-local"
+            name="endDate"
+            required
+          />
+        </Form.Group>
+
+        <Form.Group>
+          <Form.Label>Bond Cost:</Form.Label>
+          <Form.Control
             value={bondCost}
             onChange={e => setBondCost(parseInt(e.target.value))}
             type="number"
@@ -78,10 +149,23 @@ function IssuerPage(props: IssuerPageProps) {
             required
             // placeholder="Micro Algos"
           />
-        </label>
-        <label>
-          <p>Bond Principal:</p>
-          <input
+        </Form.Group>
+
+        <Form.Group>
+          <Form.Label>Bond Coupon:</Form.Label>
+          <Form.Control
+            value={bondCoupon}
+            onChange={e => setBondCoupon(parseInt(e.target.value))}
+            type="number"
+            name="bondCoupon"
+            required
+          />
+          <Form.Text muted>Payed every 6 months for duration of bond</Form.Text>
+        </Form.Group>
+
+        <Form.Group>
+          <Form.Label>Bond Principal:</Form.Label>
+          <Form.Control
             value={bondPrincipal}
             onChange={e => setBondPrincipal(parseInt(e.target.value))}
             type="number"
@@ -89,49 +173,10 @@ function IssuerPage(props: IssuerPageProps) {
             required
             // placeholder="Micro Algos"
           />
-        </label>
-        <label>
-          <p>Bond Coupon (payed every 6 months for duration of bond):</p>
-          <input
-            value={bondCoupon}
-            onChange={e => setBondCoupon(parseInt(e.target.value))}
-            type="number"
-            name="bondCoupon"
-            required
-          />
-        </label>
-        <label>
-          <p>Start buy date:</p>
-          <input
-            value={startBuyDate}
-            onChange={e => setStartBuyDate(e.target.value)}
-            type="datetime-local"
-            name="startDate"
-            required
-          />
-        </label>
-        <label>
-          <p>End buy date:</p>
-          <input
-            value={endBuyDate}
-            onChange={e => setEndBuyDate(e.target.value)}
-            type="datetime-local"
-            name="endDate"
-            required
-          />
-        </label>
-        <label>
-          <p>Bond Length (number of 6 month periods):</p>
-          <input
-            value={bondLength}
-            onChange={e => setBondLength(e.target.value)}
-            type="number"
-            name="bondLength"
-            required
-          />
-        </label>
-        <p><button type="submit">Create</button></p>
-      </form>
+        </Form.Group>
+
+        <Button variant="primary" type="submit">Create</Button>
+      </Form>
     </div>
   );
 }
