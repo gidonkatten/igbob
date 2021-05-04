@@ -4,6 +4,7 @@ import { useAuth0 } from '@auth0/auth0-react';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import { UserAccount } from '../redux/reducers/user';
+import { selectedAccountSelector } from '../redux/selectors/selectors';
 
 interface IssuerPageProps {
   selectedAccount: UserAccount
@@ -183,8 +184,7 @@ function IssuerPage(props: IssuerPageProps) {
 }
 
 const mapStateToProps = (state: any) => ({
-  addresses: state.userReducer.addresses,
-  selectedAccount: state.userReducer.selectedAccount
+  selectedAccount: selectedAccountSelector(state),
 });
 
 export default connect(mapStateToProps, undefined)(IssuerPage);

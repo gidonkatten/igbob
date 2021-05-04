@@ -5,6 +5,7 @@ import { optIntoAsset } from '../algorand/assets/OptIntoAsset';
 import { useAuth0 } from '@auth0/auth0-react';
 import { setApps } from '../redux/actions/actions';
 import { App } from '../redux/reducers/bond';
+import { appsSelector, selectedAccountSelector } from '../redux/selectors/selectors';
 
 interface InvestorPageProps {
   selectedAddress?: string;
@@ -92,8 +93,8 @@ function InvestorPage(props: InvestorPageProps) {
 }
 
 const mapStateToProps = (state: any) => ({
-  selectedAddress: state.userReducer.selectedAddress,
-  apps: state.bondReducer.apps
+  selectedAccount: selectedAccountSelector(state),
+  apps: appsSelector(state)
 });
 
 const mapDispatchToProps = {

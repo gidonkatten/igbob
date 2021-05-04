@@ -7,6 +7,7 @@ import { getAccountInformation } from '../algorand/balance/Balance';
 import Button from 'react-bootstrap/Button';
 import { optIntoAsset } from '../algorand/assets/OptIntoAsset';
 import { STABLECOIN_ID } from '../algorand/utils/Utils';
+import { addressesSelector, selectedAccountSelector } from '../redux/selectors/selectors';
 
 interface SettingsPageProps {
   addresses: string[];
@@ -93,8 +94,8 @@ function SettingsPage(props: SettingsPageProps) {
 }
 
 const mapStateToProps = (state: any) => ({
-  addresses: state.userReducer.addresses,
-  selectedAccount: state.userReducer.selectedAccount,
+  addresses: addressesSelector(state),
+  selectedAccount: selectedAccountSelector(state),
 });
 
 const mapDispatchToProps = {

@@ -4,6 +4,7 @@ import { useAuth0 } from '@auth0/auth0-react';
 import { UserAccount } from '../redux/reducers/user';
 import { getAccountInformation } from '../algorand/balance/Balance';
 import { setSelectedAccount } from '../redux/actions/actions';
+import { selectedAccountSelector } from '../redux/selectors/selectors';
 
 interface DashboardPageProps {
   selectedAccount?: UserAccount,
@@ -91,7 +92,7 @@ function DashboardPage(props: DashboardPageProps) {
 }
 
 const mapStateToProps = (state: any) => ({
-  selectedAccount: state.userReducer.selectedAccount,
+  selectedAccount: selectedAccountSelector(state),
 });
 
 const mapDispatchToProps = {
