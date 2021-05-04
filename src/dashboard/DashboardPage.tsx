@@ -1,32 +1,35 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
 import { useAuth0 } from '@auth0/auth0-react';
+import { UserAccount } from '../redux/reducers/user';
 import { getAccountInformation } from '../algorand/balance/Balance';
+import { setSelectedAccount } from '../redux/actions/actions';
 
 interface DashboardPageProps {
-  selectedAddress: string
+  selectedAccount?: UserAccount,
+  setSelectedAccount: typeof setSelectedAccount;
 }
 
 function DashboardPage(props: DashboardPageProps) {
 
-  const [algoBalance, setAlgoBalance] = useState<number>(0);
-  const [stablecoinBalance, setStablecoinBalance] = useState<number>(0);
-
-  const { selectedAddress } = props;
+  const { selectedAccount, setSelectedAccount } = props;
   const { getAccessTokenSilently } = useAuth0();
 
-  // every 5 seconds update state
+  const updateSelectedAccount = (account?: UserAccount) => {
+    if (account) getAccountInformation(account.address).then(acc => setSelectedAccount(acc));
+  }
+
+  // initial call then every 5 seconds to update state
   useEffect(() => {
-    const interval = setInterval(() => {
-      if (selectedAddress) getAccountInformation(selectedAddress, setAlgoBalance, setStablecoinBalance);
-    }, 5000);
+    updateSelectedAccount(selectedAccount);
+    const interval = setInterval(() => updateSelectedAccount(selectedAccount), 5000);
     return () => clearInterval(interval);
-  }, [selectedAddress]);
+  }, [selectedAccount?.address]);
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
 
-    if (!selectedAddress) return;
+    if (!selectedAccount) return;
 
     const accessToken = await getAccessTokenSilently({ scope: "issue:bonds" });
 
@@ -36,7 +39,7 @@ function DashboardPage(props: DashboardPageProps) {
     const response = await fetch("https://igbob.herokuapp.com/fund/", {
       method: "POST",
       headers: headers,
-      body: JSON.stringify({ "addr": selectedAddress })
+      body: JSON.stringify({ "addr": selectedAccount.address })
     });
 
     const parseResponse = await response.text();
@@ -45,17 +48,17 @@ function DashboardPage(props: DashboardPageProps) {
 
   return (
     <div>
+
       <div>
         <h3>Selected Address</h3>
         <p>
-          {selectedAddress !== undefined ? <>{selectedAddress}</> : <>No address selected</>}
+          {selectedAccount ? <>{selectedAccount.address}</> : <>No address selected</>}
         </p>
       </div>
+
       <div>
         <h3>Algo Balance</h3>
-        <p>
-          Current balance is {algoBalance} algos
-        </p>
+        <p>Current balance is {selectedAccount ? selectedAccount.algoBalance : 0} algos</p>
         <p>
           Can use TestNet algo &nbsp;
           <a
@@ -68,26 +71,31 @@ function DashboardPage(props: DashboardPageProps) {
           &nbsp; to add 10 algos for transaction and minimum balance fees.
         </p>
       </div>
+
       <div>
         <h3>Stablecoin Balance</h3>
-        <p>
-          Current balance is ${stablecoinBalance}
-        </p>
-        <form onSubmit={handleSubmit}>
-          <p>
-            Can use TestNet stablecoin dispenser to add $1000 for bond payments.
-            You must ensure your selected address is opted into the stablecoin asset in order to receive it.
-          </p>
-          <p>
-          <button type="submit" disabled={selectedAddress === undefined}>Fund</button></p>
-        </form>
+        {selectedAccount && selectedAccount.optedIntoStablecoin ?
+          <div>
+            <p>Current balance is ${selectedAccount.stablecoinBalance}</p>
+            <form onSubmit={handleSubmit}>
+              <p>Can use TestNet stablecoin dispenser below to add $1000 for bond payments.</p>
+              <p><button type="submit" disabled={!selectedAccount}>Fund</button></p>
+            </form>
+          </div> :
+          <p>Go to settings to opt in account to the stablecoin asset</p>
+        }
       </div>
+
     </div>
   );
 }
 
 const mapStateToProps = (state: any) => ({
-  selectedAddress: state.userReducer.selectedAddress
+  selectedAccount: state.userReducer.selectedAccount,
 });
 
-export default connect(mapStateToProps, undefined)(DashboardPage);
+const mapDispatchToProps = {
+  setSelectedAccount
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(DashboardPage);

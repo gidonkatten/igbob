@@ -9,17 +9,18 @@ import SettingsPage from "./settings/SettingsPage";
 import NavbarManager from "./navbar/NavbarManager";
 import DashboardPage from "./dashboard/DashboardPage";
 import { useAuth0 } from '@auth0/auth0-react';
-import { setAccountAddresses, setSelectedAddress } from './redux/actions/actions';
+import { setAccountAddresses, setSelectedAccount } from './redux/actions/actions';
 import { connect } from 'react-redux';
+import { getAccountInformation } from './algorand/balance/Balance';
 
 interface AppProps {
   setAccountAddresses: typeof setAccountAddresses;
-  setSelectedAddress: typeof setSelectedAddress;
+  setSelectedAccount: typeof setSelectedAccount;
 }
 
 function App(props: AppProps) {
 
-  const { setAccountAddresses, setSelectedAddress } = props;
+  const { setAccountAddresses, setSelectedAccount } = props;
   const { isAuthenticated, getAccessTokenSilently } = useAuth0();
 
   async function fetchAddresses() {
@@ -30,7 +31,12 @@ function App(props: AppProps) {
       });
       const parseResponse = await response.json();
       setAccountAddresses(parseResponse.addresses);
-      if (parseResponse.addresses[0]) setSelectedAddress(parseResponse.addresses[0]);
+
+      const firstAddr = parseResponse.addresses[0];
+      if (firstAddr) {
+        const userAccount = await getAccountInformation(firstAddr);
+        setSelectedAccount(userAccount);
+      }
     } catch (err) {
       console.error(err.message);
     }
@@ -59,7 +65,7 @@ function App(props: AppProps) {
 
 const mapDispatchToProps = {
   setAccountAddresses,
-  setSelectedAddress
+  setSelectedAccount
 };
 
 export default connect(undefined, mapDispatchToProps)(App);

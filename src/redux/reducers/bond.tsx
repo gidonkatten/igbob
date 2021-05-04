@@ -1,13 +1,13 @@
 export interface App {
-  appId: number,
+  app_id: number,
   name: string,
   description: string,
-  issuerAddr: string,
-  bondId: number,
-  bondEscrowAddr: string,
-  stablecoinEscrowAddr: string,
-  bondEscrowProg: string,
-  stablecoinEscrowProg: string
+  issuer_address: string,
+  bond_id: number,
+  bond_escrow_address: string,
+  stablecoin_escrow_address: string,
+  bond_escrow_program: string,
+  stablecoin_escrow_program: string
 }
 
 interface BondState {

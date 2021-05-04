@@ -1,16 +1,18 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import MyAlgoGetAccounts from '../algorand/wallet/myAlgo/MyAlgoGetAccounts';
-import { setSelectedAddress } from '../redux/actions/actions';
+import { setSelectedAccount } from '../redux/actions/actions';
+import { UserAccount } from '../redux/reducers/user';
+import { getAccountInformation } from '../algorand/balance/Balance';
 
-interface HomePageProps {
+interface SettingsPageProps {
   addresses: string[];
-  selectedAddress: string;
-  setSelectedAddress: typeof setSelectedAddress
+  selectedAccount?: UserAccount;
+  setSelectedAccount: typeof setSelectedAccount,
 }
 
-function SettingsPage(props: HomePageProps) {
-  const { addresses, selectedAddress, setSelectedAddress } = props;
+function SettingsPage(props: SettingsPageProps) {
+  const { addresses, selectedAccount, setSelectedAccount } = props;
 
   const addressesListed = (
     <ul>
@@ -20,8 +22,15 @@ function SettingsPage(props: HomePageProps) {
     </ul>
   )
 
+  async function onSelectAddress(address: string) {
+    if (address) {
+      const userAccount = await getAccountInformation(address);
+      setSelectedAccount(userAccount);
+    }
+  }
+
   const selectAddress = (
-    <select value={selectedAddress} onChange={e => setSelectedAddress(e.target.value)}>
+    <select value={selectedAccount?.address} onChange={e => onSelectAddress(e.target.value)}>
       {addresses.map((addr) => {
         return <option key={addr} value={addr}>{addr}</option>
       })}
@@ -30,6 +39,7 @@ function SettingsPage(props: HomePageProps) {
 
   return (
     <div>
+
       <h3>Instructions</h3>
       <p>
         Connect accounts by creating a &nbsp;
@@ -48,28 +58,35 @@ function SettingsPage(props: HomePageProps) {
         You can edit which accounts are connected by disconnecting from this site on
         MyAlgo and reconnecting using the button below.
       </p>
+
       <h3>Connected Accounts</h3>
       {addresses.length > 0 ?
         addressesListed :
         <p>No addresses</p>
       }
       <MyAlgoGetAccounts/>
+
       <h3>Selected Address</h3>
-      {addresses.length > 0?
+      {addresses.length > 0 ?
         selectAddress :
         <p>No addresses</p>
       }
+
+      {selectedAccount && !selectedAccount.optedIntoStablecoin && (
+        <h3>Opt into stablecoin</h3>
+      )}
+
     </div>
   );
 }
 
 const mapStateToProps = (state: any) => ({
   addresses: state.userReducer.addresses,
-  selectedAddress: state.userReducer.selectedAddress
+  selectedAccount: state.userReducer.selectedAccount,
 });
 
 const mapDispatchToProps = {
-  setSelectedAddress
+  setSelectedAccount
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(SettingsPage);

@@ -1,15 +1,17 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { setAccountAddresses } from '../../../redux/actions/actions';
+import { setAccountAddresses, setSelectedAccount } from '../../../redux/actions/actions';
 import { myAlgoWallet } from './MyAlgoWallet';
 import { useAuth0 } from '@auth0/auth0-react';
+import { getAccountInformation } from '../../balance/Balance';
 
 interface GetAccountsProps {
   setAccountAddresses: typeof setAccountAddresses;
+  setSelectedAccount: typeof setSelectedAccount;
 }
 
 const MyAlgoGetAccounts = (props: GetAccountsProps) => {
-  const { setAccountAddresses } = props;
+  const { setAccountAddresses, setSelectedAccount } = props;
   const { getAccessTokenSilently } = useAuth0();
 
   const connectToMyAlgo = async() => {
@@ -30,10 +32,14 @@ const MyAlgoGetAccounts = (props: GetAccountsProps) => {
           "addresses": addresses
         })
       });
-
-      // Update account addresses in state
       const parseResponse = await response.json();
       setAccountAddresses(parseResponse.addresses);
+
+      const firstAddr = parseResponse.addresses[0];
+      if (firstAddr) {
+        const userAccount = await getAccountInformation(firstAddr);
+        setSelectedAccount(userAccount);
+      }
     } catch (err) {
       console.error(err);
     }
@@ -46,6 +52,7 @@ const MyAlgoGetAccounts = (props: GetAccountsProps) => {
 
 const mapDispatchToProps = {
   setAccountAddresses,
+  setSelectedAccount
 };
 
 export default connect(undefined, mapDispatchToProps)(MyAlgoGetAccounts);

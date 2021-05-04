@@ -1,15 +1,25 @@
 import { algodClient, STABLECOIN_ID } from '../utils/Utils';
-import * as algosdk from 'algosdk';
+import algosdk from 'algosdk';
+import { UserAccount } from '../../redux/reducers/user';
 
-export async function getAccountInformation(
-  address: string, 
-  setAlgoBalance: any,
-  setStablecoinBalance: any
-) {
+export async function getAccountInformation(address: string): Promise<UserAccount> {
   const account = await algodClient.accountInformation(address).do();
 
-  setAlgoBalance(algosdk.microalgosToAlgos(account.amount))
+  const algoBalance = algosdk.microalgosToAlgos(account.amount);
+
+  let optedIn = false;
+  let stablecoinBalance = 0;
   account.assets.forEach(asset => {
-    if (asset['asset-id'] === STABLECOIN_ID) setStablecoinBalance(asset.amount / 1e6);
+    if (asset['asset-id'] === STABLECOIN_ID) {
+      optedIn = true;
+      stablecoinBalance = asset.amount / 1e6;
+    }
   })
+
+  return {
+    address: address,
+    algoBalance: algoBalance,
+    optedIntoStablecoin: optedIn,
+    stablecoinBalance: stablecoinBalance,
+  }
 }

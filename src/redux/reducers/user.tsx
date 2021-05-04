@@ -1,6 +1,13 @@
+export interface UserAccount {
+  address: string;
+  algoBalance: number
+  optedIntoStablecoin: boolean;
+  stablecoinBalance: number;
+}
+
 interface InvestorState {
   addresses: string[];
-  selectedAddress?: string;
+  selectedAccount?: UserAccount;
 }
 
 const initialState: InvestorState = {
@@ -16,11 +23,11 @@ export function userReducer(state = initialState, action: any) {
         addresses: addresses
       };
     }
-    case "SET_SELECTED_ADDRESS": {
-      const { address } = action.payload;
+    case "SET_SELECTED_ACCOUNT": {
+      const { account } = action.payload;
       return {
         ...state,
-        selectedAddress: address
+        selectedAccount: account
       };
     }
     default:

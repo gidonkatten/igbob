@@ -3,9 +3,10 @@ import { connect } from 'react-redux';
 import { useAuth0 } from '@auth0/auth0-react';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
+import { UserAccount } from '../redux/reducers/user';
 
 interface IssuerPageProps {
-  selectedAddress: string
+  selectedAccount: UserAccount
 }
 
 function IssuerPage(props: IssuerPageProps) {
@@ -20,7 +21,7 @@ function IssuerPage(props: IssuerPageProps) {
   const [bondCoupon, setBondCoupon] = useState<number>(0);
   const [bondPrincipal, setBondPrincipal] = useState<number>(0);
 
-  const { selectedAddress } = props;
+  const { selectedAccount } = props;
   const { getAccessTokenSilently } = useAuth0();
 
   const handleSubmit = async (e: any) => {
@@ -40,7 +41,7 @@ function IssuerPage(props: IssuerPageProps) {
         "bondUnitName": "TB",
         "bondName": "TestBond",
         "totalIssuance": totalIssuance,
-        "issuerAddr": selectedAddress,
+        "issuerAddr": selectedAccount.address,
         "bondLength": bondLength,
         "startBuyDate": startBuyDate,
         "endBuyDate": endBuyDate,
@@ -89,7 +90,7 @@ function IssuerPage(props: IssuerPageProps) {
         <Form.Group>
           <Form.Label>Selected Address:</Form.Label>
           <Form.Text>
-            {selectedAddress !== undefined ? <>{selectedAddress}</> : <>No address selected</>}
+            {selectedAccount ? <>{selectedAccount.address}</> : <>No address selected</>}
           </Form.Text>
           <Form.Text muted>This is where the bond proceeds will go</Form.Text>
         </Form.Group>
@@ -183,7 +184,7 @@ function IssuerPage(props: IssuerPageProps) {
 
 const mapStateToProps = (state: any) => ({
   addresses: state.userReducer.addresses,
-  selectedAddress: state.userReducer.selectedAddress
+  selectedAccount: state.userReducer.selectedAccount
 });
 
 export default connect(mapStateToProps, undefined)(IssuerPage);
