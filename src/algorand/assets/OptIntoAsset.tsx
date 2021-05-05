@@ -6,10 +6,7 @@ import { myAlgoWallet } from '../wallet/myAlgo/MyAlgoWallet';
 /**
  * Opt into asset using MyAlgo
  */
-export async function optIntoAsset(
-  assetId: number,
-  addr: string,
-) {
+export async function optIntoAsset(assetId: number, addr: string) {
   let params: SuggestedParams = await algodClient.getTransactionParams().do();
 
   let optTxn: AssetTxn = {

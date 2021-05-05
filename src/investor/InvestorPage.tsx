@@ -3,27 +3,42 @@ import { connect } from 'react-redux'
 import { buyBond } from '../algorand/buy/Buy';
 import { optIntoAsset } from '../algorand/assets/OptIntoAsset';
 import { useAuth0 } from '@auth0/auth0-react';
-import { setApps } from '../redux/actions/actions';
+import { setApps, setSelectedAccount } from '../redux/actions/actions';
 import { App } from '../redux/reducers/bond';
-import { appsSelector, selectedAccountSelector } from '../redux/selectors/selectors';
+import {
+  appsSelector, getAppSelector,
+  getBondBalanceSelector,
+  getOptedIntoBondSelector,
+  selectedAccountSelector
+} from '../redux/selectors/selectors';
+import { getAccountInformation } from '../algorand/balance/Balance';
+import Button from 'react-bootstrap/Button';
+import { UserAccount } from '../redux/reducers/user';
 
 interface InvestorPageProps {
-  selectedAddress?: string;
-  apps: App[]
+  selectedAccount?: UserAccount;
+  getOptedIntoBond: (bondId: number) => boolean;
+  getBondBalance: (bondId: number) => number;
+  apps: Map<number, App>;
+  getApp: (appId: number) => App | undefined;
+  setSelectedAccount: typeof setSelectedAccount;
   setApps: typeof setApps;
 }
 
 function InvestorPage(props: InvestorPageProps) {
 
   const [inOverview, setInOverview] = useState<boolean>(true);
-  const [appId, setAppId] = useState<number>(0);
+  const [app, setApp] = useState<App>();
 
-  const [optInBondId, setOptInBondId] = useState<number>(0);
-  const [buyBondId, setBuyBondId] = useState<number>(0);
-  const [bondAmount, setBondAmount] = useState<number>(0);
-  const [algoAmount, setAlgoAmount] = useState<number>(0);
-
-  const { selectedAddress, apps, setApps } = props;
+  const {
+    selectedAccount,
+    getOptedIntoBond,
+    getBondBalance,
+    apps,
+    getApp,
+    setSelectedAccount,
+    setApps
+  } = props;
   const { getAccessTokenSilently } = useAuth0();
 
   async function fetchApps() {
@@ -33,7 +48,6 @@ function InvestorPage(props: InvestorPageProps) {
         headers: { Authorization: `Bearer ${accessToken}`},
       });
       const parseResponse = await response.json();
-      console.log(parseResponse);
       setApps(parseResponse);
     } catch (err) {
       console.error(err.message);
@@ -45,42 +59,57 @@ function InvestorPage(props: InvestorPageProps) {
     fetchApps();
   }, []);
 
-  const handleAssetOptIn = async (e: any) => {
-    e.preventDefault();
-    if (!optInBondId || !selectedAddress) return;
-    await optIntoAsset(optInBondId, selectedAddress)
+  const handleAssetOptIn = async () => {
+    if (!selectedAccount || !app) return;
+    await optIntoAsset(app.bond_id, selectedAccount.address)
+    const userAccount = await getAccountInformation(selectedAccount.address);
+    setSelectedAccount(userAccount);
   }
 
-  const handleBuy = async (e: any) => {
-    e.preventDefault();
-    if (!selectedAddress) return;
-    await buyBond(appId, selectedAddress, buyBondId, bondAmount, algoAmount);
+  const handleBuy = async () => {
+    if (!selectedAccount) return;
+    // await buyBond(appId, selectedAddress, buyBondId, bondAmount, algoAmount);
   }
 
   const enterAppView = (appId) => {
     setInOverview(false);
-    setAppId(appId);
+    setApp(getApp(appId));
+  }
+
+  const exitAppView = () => {
+    setInOverview(true);
+    setApp(undefined);
   }
 
   const appsList = (
     <div>
-      {apps && apps.map((app) => {
+      {apps && [...apps].map(([appId, app]) => {
         return (
           <div
-            onClick={() => enterAppView(app.app_id)}
-            key={app.app_id}
+            onClick={() => enterAppView(appId)}
+            key={appId}
           >
-            {app.app_id} {app.name}
+            {appId} {app.name}
           </div>
         )
       })}
     </div>
   )
 
-  const appView = (
+  const appView = app && (
     <div>
-      <div onClick={() => setInOverview(true)}>
+      <div onClick={() => exitAppView()}>
         Go Back
+      </div>
+      {getOptedIntoBond(app.bond_id) ?
+        <div>Opted into bond, balance: {getBondBalance(app.app_id)}</div> :
+        <div>
+          Not opted into bond
+          <Button variant="primary" onClick={handleAssetOptIn}>Connect</Button>
+        </div>
+      }
+      <div>
+        Name: {app.name}
       </div>
     </div>
   )
@@ -94,10 +123,14 @@ function InvestorPage(props: InvestorPageProps) {
 
 const mapStateToProps = (state: any) => ({
   selectedAccount: selectedAccountSelector(state),
-  apps: appsSelector(state)
+  getOptedIntoBond: getOptedIntoBondSelector(state),
+  getBondBalance: getBondBalanceSelector(state),
+  apps: appsSelector(state),
+  getApp: getAppSelector(state),
 });
 
 const mapDispatchToProps = {
+  setSelectedAccount,
   setApps
 };
 

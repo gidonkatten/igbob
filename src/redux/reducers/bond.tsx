@@ -11,20 +11,21 @@ export interface App {
 }
 
 interface BondState {
-  apps: App[]
+  apps: Map<number, App>,
 }
 
 const initialState: BondState = {
-  apps: []
+  apps: new Map<number, App>()
 };
 
 export function bondReducer(state = initialState, action: any) {
   switch (action.type) {
     case "SET_APPS": {
       const { apps } = action.payload;
+      const appsMap = new Map<number, App>(apps.map(app => [app.app_id, app]));
       return {
         ...state,
-        apps: apps
+        apps: appsMap
       };
     }
     default:

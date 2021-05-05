@@ -42,8 +42,7 @@ function SettingsPage(props: SettingsPageProps) {
     </select>
   )
 
-  const handleStablecoinOptIn = async (e: any) => {
-    e.preventDefault();
+  const handleStablecoinOptIn = async () => {
     if (!selectedAccount) return;
     await optIntoAsset(STABLECOIN_ID, selectedAccount.address)
   }
@@ -70,7 +69,7 @@ function SettingsPage(props: SettingsPageProps) {
         MyAlgo and reconnecting using the button below.
       </p>
 
-      <h3>Connected Accounts</h3>
+      <h3>Connected Account</h3>
       {addresses.length > 0 ?
         addressesListed :
         <p>No addresses</p>

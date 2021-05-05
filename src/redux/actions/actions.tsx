@@ -11,7 +11,7 @@ export const setSelectedAccount = (account: UserAccount) => ({
   payload: { account }
 });
 
-export const setApps = (apps: App) => ({
+export const setApps = (apps: App[]) => ({
   type: "SET_APPS",
   payload: { apps }
 });
