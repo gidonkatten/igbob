@@ -4,16 +4,22 @@ import { useAuth0 } from '@auth0/auth0-react';
 import { UserAccount } from '../redux/reducers/user';
 import { getAccountInformation } from '../algorand/balance/Balance';
 import { setSelectedAccount } from '../redux/actions/actions';
-import { selectedAccountSelector } from '../redux/selectors/selectors';
+import {
+  optedIntoStablecoinSelector,
+  selectedAccountSelector,
+  stablecoinBalanceSelector
+} from '../redux/selectors/selectors';
 
 interface DashboardPageProps {
   selectedAccount?: UserAccount,
+  optedIntoStablecoin: boolean,
+  stablecoinBalance: number,
   setSelectedAccount: typeof setSelectedAccount;
 }
 
 function DashboardPage(props: DashboardPageProps) {
 
-  const { selectedAccount, setSelectedAccount } = props;
+  const { selectedAccount, optedIntoStablecoin, stablecoinBalance, setSelectedAccount } = props;
   const { getAccessTokenSilently } = useAuth0();
 
   const updateSelectedAccount = (account?: UserAccount) => {
@@ -75,9 +81,9 @@ function DashboardPage(props: DashboardPageProps) {
 
       <div>
         <h3>Stablecoin Balance</h3>
-        {selectedAccount && selectedAccount.optedIntoStablecoin ?
+        {selectedAccount && optedIntoStablecoin ?
           <div>
-            <p>Current balance is ${selectedAccount.stablecoinBalance}</p>
+            <p>Current balance is ${stablecoinBalance}</p>
             <form onSubmit={handleSubmit}>
               <p>Can use TestNet stablecoin dispenser below to add $1000 for bond payments.</p>
               <p><button type="submit" disabled={!selectedAccount}>Fund</button></p>
@@ -93,6 +99,8 @@ function DashboardPage(props: DashboardPageProps) {
 
 const mapStateToProps = (state: any) => ({
   selectedAccount: selectedAccountSelector(state),
+  optedIntoStablecoin: optedIntoStablecoinSelector(state),
+  stablecoinBalance: stablecoinBalanceSelector(state)
 });
 
 const mapDispatchToProps = {

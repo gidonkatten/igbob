@@ -7,16 +7,17 @@ import { getAccountInformation } from '../algorand/balance/Balance';
 import Button from 'react-bootstrap/Button';
 import { optIntoAsset } from '../algorand/assets/OptIntoAsset';
 import { STABLECOIN_ID } from '../algorand/utils/Utils';
-import { addressesSelector, selectedAccountSelector } from '../redux/selectors/selectors';
+import { addressesSelector, optedIntoStablecoinSelector, selectedAccountSelector } from '../redux/selectors/selectors';
 
 interface SettingsPageProps {
   addresses: string[];
   selectedAccount?: UserAccount;
+  optedIntoStablecoin: boolean;
   setSelectedAccount: typeof setSelectedAccount,
 }
 
 function SettingsPage(props: SettingsPageProps) {
-  const { addresses, selectedAccount, setSelectedAccount } = props;
+  const { addresses, selectedAccount, optedIntoStablecoin, setSelectedAccount } = props;
 
   const addressesListed = (
     <ul>
@@ -82,7 +83,7 @@ function SettingsPage(props: SettingsPageProps) {
         <p>No addresses</p>
       }
 
-      {selectedAccount && !selectedAccount.optedIntoStablecoin && (
+      {selectedAccount && !optedIntoStablecoin && (
         <>
           <h3>Opt into stablecoin</h3>
           <Button variant="primary" onClick={handleStablecoinOptIn}>Connect</Button>
@@ -96,6 +97,7 @@ function SettingsPage(props: SettingsPageProps) {
 const mapStateToProps = (state: any) => ({
   addresses: addressesSelector(state),
   selectedAccount: selectedAccountSelector(state),
+  optedIntoStablecoin: optedIntoStablecoinSelector(state),
 });
 
 const mapDispatchToProps = {

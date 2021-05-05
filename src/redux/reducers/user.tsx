@@ -1,8 +1,12 @@
+export interface Asset {
+  assetId: number;
+  amount: number;
+}
+
 export interface UserAccount {
   address: string;
-  algoBalance: number
-  optedIntoStablecoin: boolean;
-  stablecoinBalance: number;
+  algoBalance: number;
+  assets: Asset[]
 }
 
 interface InvestorState {
