@@ -15,7 +15,7 @@ export const stablecoinBalanceSelector = state => {
   let balance = 0;
   state.userReducer.selectedAccount.assets.forEach(asset => {
     if (asset.assetId === STABLECOIN_ID) {
-      balance = asset.amount / 1e6;
+      balance = asset.amount;
     }
   })
   return balance;
@@ -30,7 +30,7 @@ export const getBondBalanceSelector = state => bondId => {
   let balance = 0;
   state.userReducer.selectedAccount.assets.forEach(asset => {
     if (asset.assetId === bondId) {
-      balance = asset.amount / 1e6;
+      balance = asset.amount;
     }
   })
   return balance;

@@ -102,14 +102,21 @@ function InvestorPage(props: InvestorPageProps) {
         Go Back
       </div>
       {getOptedIntoBond(app.bond_id) ?
-        <div>Opted into bond, balance: {getBondBalance(app.app_id)}</div> :
-        <div>
+        <p>Opted into bond, balance: {getBondBalance(app.app_id)}</p> :
+        <p>
           Not opted into bond
           <Button variant="primary" onClick={handleAssetOptIn}>Connect</Button>
-        </div>
+        </p>
       }
       <div>
-        Name: {app.name}
+        <p>Name: {app.name}</p>
+        <p>Description: {app.description}</p>
+        <p>Start buy date: {app.start_buy_date}</p>
+        <p>End buy date: {app.end_buy_date}</p>
+        <p>Maturity date: {app.maturity_date}</p>
+        <p>Bond cost: ${app.bond_cost.toFixed(6)}</p>
+        <p>Bond coupon: ${app.bond_coupon.toFixed(6)}</p>
+        <p>Bond principal: ${app.bond_principal.toFixed(6)}</p>
       </div>
     </div>
   )
