@@ -29,18 +29,7 @@ export function bondReducer(state = initialState, action: any) {
   switch (action.type) {
     case "SET_APPS": {
       const { apps } = action.payload;
-      const appsMap = new Map<number, App>(apps.map(app => {
-        const formattedBondCost = app.bond_cost / 1e6;
-        const formattedBondCoupon = app.bond_coupon / 1e6;
-        const formattedBondPrincipal = app.bond_principal / 1e6;
-        const formattedApp = {
-          ...app,
-          bond_cost: formattedBondCost,
-          bond_coupon: formattedBondCoupon,
-          bond_principal: formattedBondPrincipal,
-        }
-        return [app.app_id, formattedApp];
-      }));
+      const appsMap = new Map<number, App>(apps.map(app => [app.app_id, app]));
       return {
         ...state,
         apps: appsMap

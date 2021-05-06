@@ -9,6 +9,7 @@ import {
   selectedAccountSelector,
   stablecoinBalanceSelector
 } from '../redux/selectors/selectors';
+import { formatStablecoin } from '../utils/Utils';
 
 interface DashboardPageProps {
   selectedAccount?: UserAccount,
@@ -83,7 +84,7 @@ function DashboardPage(props: DashboardPageProps) {
         <h3>Stablecoin Balance</h3>
         {selectedAccount && optedIntoStablecoin ?
           <div>
-            <p>Current balance is ${stablecoinBalance.toFixed(6)}</p>
+            <p>Current balance is ${formatStablecoin(stablecoinBalance)}</p>
             <form onSubmit={handleSubmit}>
               <p>Can use TestNet stablecoin dispenser below to add $1000 for bond payments.</p>
               <p><button type="submit" disabled={!selectedAccount}>Fund</button></p>

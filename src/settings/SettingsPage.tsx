@@ -85,7 +85,7 @@ function SettingsPage(props: SettingsPageProps) {
       {selectedAccount && !optedIntoStablecoin && (
         <>
           <h3>Opt into stablecoin</h3>
-          <Button variant="primary" onClick={handleStablecoinOptIn}>Connect</Button>
+          <Button variant="primary" onClick={handleStablecoinOptIn}>Opt In</Button>
         </>
       )}
 

@@ -14,6 +14,8 @@ import {
 import { getAccountInformation } from '../algorand/balance/Balance';
 import Button from 'react-bootstrap/Button';
 import { UserAccount } from '../redux/reducers/user';
+import Form from 'react-bootstrap/Form';
+import { formatStablecoin } from '../utils/Utils';
 
 interface InvestorPageProps {
   selectedAccount?: UserAccount;
@@ -29,6 +31,7 @@ function InvestorPage(props: InvestorPageProps) {
 
   const [inOverview, setInOverview] = useState<boolean>(true);
   const [app, setApp] = useState<App>();
+  const [noOfBonds, setNoOfBonds] = useState<number>(0);
 
   const {
     selectedAccount,
@@ -66,14 +69,32 @@ function InvestorPage(props: InvestorPageProps) {
     setSelectedAccount(userAccount);
   }
 
-  const handleBuy = async () => {
-    if (!selectedAccount) return;
-    // await buyBond(appId, selectedAddress, buyBondId, bondAmount, algoAmount);
+  const currentTime: number = Date.now() / 1000;
+  const inBuyWindow = app && (currentTime > app!.start_buy_date) && (currentTime < app!.end_buy_date)
+
+  const handleBuy = async (e: any) => {
+    e.preventDefault();
+    if (!selectedAccount || !app) return;
+    await buyBond(
+      selectedAccount.address,
+      app.app_id,
+      app.issuer_address,
+      app.bond_id,
+      app.bond_escrow_address,
+      app.bond_escrow_program,
+      noOfBonds,
+      app.bond_cost
+    );
+    const userAccount = await getAccountInformation(selectedAccount.address);
+    setSelectedAccount(userAccount);
   }
 
   const enterAppView = (appId) => {
     setInOverview(false);
-    setApp(getApp(appId));
+    const newApp = getApp(appId);
+    setApp(newApp);
+    // const application = await algodClient.getApplicationByID(appId).do();
+    // console.log(application);
   }
 
   const exitAppView = () => {
@@ -98,26 +119,48 @@ function InvestorPage(props: InvestorPageProps) {
 
   const appView = app && (
     <div>
+
       <div onClick={() => exitAppView()}>
         Go Back
       </div>
-      {getOptedIntoBond(app.bond_id) ?
-        <p>Opted into bond, balance: {getBondBalance(app.app_id)}</p> :
-        <p>
-          Not opted into bond
-          <Button variant="primary" onClick={handleAssetOptIn}>Connect</Button>
-        </p>
-      }
+
       <div>
         <p>Name: {app.name}</p>
         <p>Description: {app.description}</p>
         <p>Start buy date: {app.start_buy_date}</p>
         <p>End buy date: {app.end_buy_date}</p>
         <p>Maturity date: {app.maturity_date}</p>
-        <p>Bond cost: ${app.bond_cost.toFixed(6)}</p>
-        <p>Bond coupon: ${app.bond_coupon.toFixed(6)}</p>
-        <p>Bond principal: ${app.bond_principal.toFixed(6)}</p>
+        <p>Bond cost: ${formatStablecoin(app.bond_cost)}</p>
+        <p>Bond coupon: ${formatStablecoin(app.bond_coupon)}</p>
+        <p>Bond principal: ${formatStablecoin(app.bond_principal)}</p>
       </div>
+
+      {getOptedIntoBond(app.bond_id) ?
+        <p>Opted into bond, balance: {getBondBalance(app.bond_id)}</p> :
+        <p>
+          Not opted into bond
+          <Button variant="primary" onClick={handleAssetOptIn}>Opt In</Button>
+        </p>
+      }
+
+      {inBuyWindow ?
+        <Form onSubmit={handleBuy}>
+          <Form.Group>
+            <Form.Label>Number of bonds to buy:</Form.Label>
+            <Form.Control
+              value={noOfBonds}
+              onChange={e => setNoOfBonds(parseInt(e.target.value))}
+              type="number"
+              name="noOfBonds"
+              required
+            />
+            <Form.Text muted>This will cost ${formatStablecoin(noOfBonds * app.bond_cost)}</Form.Text>
+            <Button variant="primary" type="submit">Buy</Button>
+          </Form.Group>
+        </Form> :
+        <p>Not in buy window</p>
+      }
+
     </div>
   )
 

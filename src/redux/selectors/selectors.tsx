@@ -7,7 +7,9 @@ export const addressesSelector = state => state.userReducer.addresses;
 export const selectedAccountSelector = state => state.userReducer.selectedAccount;
 
 export const optedIntoStablecoinSelector = state => {
-  const assets: Asset[] = state.userReducer.selectedAccount.assets;
+  const selectedAcc = state.userReducer.selectedAccount
+  if (!selectedAcc) return false;
+  const assets: Asset[] = selectedAcc.assets;
   return assets.some(asset => asset.assetId === STABLECOIN_ID);
 };
 
