@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux'
-import { buyBond } from '../algorand/buy/Buy';
+import { buyBond } from '../algorand/bond/Buy';
 import { optIntoAsset } from '../algorand/assets/OptIntoAsset';
 import { useAuth0 } from '@auth0/auth0-react';
 import { setApps, setSelectedAccount } from '../redux/actions/actions';
@@ -16,6 +16,8 @@ import Button from 'react-bootstrap/Button';
 import { UserAccount } from '../redux/reducers/user';
 import Form from 'react-bootstrap/Form';
 import { formatStablecoin } from '../utils/Utils';
+import { claimCoupon } from '../algorand/bond/Coupon';
+import { claimPrincipal } from '../algorand/bond/Principal';
 
 interface InvestorPageProps {
   selectedAccount?: UserAccount;
@@ -62,15 +64,19 @@ function InvestorPage(props: InvestorPageProps) {
     fetchApps();
   }, []);
 
+  const currentTime: number = Date.now() / 1000;
+  const inBuyWindow = app && (currentTime > app.start_buy_date) && (currentTime < app.end_buy_date);
+  const afterBuyWindow = app && (currentTime > app.end_buy_date);
+  const afterMaturity = app && (currentTime > app.maturity_date);
+
+  const bondBalance: number = app ? getBondBalance(app.bond_id) : 0;
+
   const handleAssetOptIn = async () => {
     if (!selectedAccount || !app) return;
     await optIntoAsset(app.bond_id, selectedAccount.address)
     const userAccount = await getAccountInformation(selectedAccount.address);
     setSelectedAccount(userAccount);
   }
-
-  const currentTime: number = Date.now() / 1000;
-  const inBuyWindow = app && (currentTime > app!.start_buy_date) && (currentTime < app!.end_buy_date)
 
   const handleBuy = async (e: any) => {
     e.preventDefault();
@@ -88,6 +94,39 @@ function InvestorPage(props: InvestorPageProps) {
     const userAccount = await getAccountInformation(selectedAccount.address);
     setSelectedAccount(userAccount);
   }
+
+  const handleClaimCoupon = (e: any) => {
+    e.preventDefault();
+    if (!selectedAccount || !app) return;
+    claimCoupon(
+      selectedAccount.address,
+      app.app_id,
+      app.stablecoin_escrow_address,
+      app.stablecoin_escrow_program,
+      noOfBonds,
+      app.bond_coupon
+    );
+  }
+
+  const handleClaimPrincipal = async (e: any) => {
+    e.preventDefault();
+    if (!selectedAccount || !app) return;
+    await claimPrincipal(
+      selectedAccount.address,
+      app.app_id,
+      app.issuer_address,
+      app.bond_id,
+      app.bond_escrow_address,
+      app.bond_escrow_program,
+      app.stablecoin_escrow_address,
+      app.stablecoin_escrow_program,
+      noOfBonds,
+      app.bond_principal
+    );
+    const userAccount = await getAccountInformation(selectedAccount.address);
+    setSelectedAccount(userAccount);
+  }
+
 
   const enterAppView = (appId) => {
     setInOverview(false);
@@ -136,7 +175,7 @@ function InvestorPage(props: InvestorPageProps) {
       </div>
 
       {getOptedIntoBond(app.bond_id) ?
-        <p>Opted into bond, balance: {getBondBalance(app.bond_id)}</p> :
+        <p>Opted into bond, balance: {bondBalance}</p> :
         <p>
           Not opted into bond
           <Button variant="primary" onClick={handleAssetOptIn}>Opt In</Button>
@@ -159,6 +198,30 @@ function InvestorPage(props: InvestorPageProps) {
           </Form.Group>
         </Form> :
         <p>Not in buy window</p>
+      }
+
+      {afterBuyWindow ?
+        <Form onSubmit={handleClaimCoupon}>
+          <Form.Group>
+            <Form.Label>Claim coupon</Form.Label>
+            {/* TODO: Check if eligible */}
+            <Form.Text muted>You are eligible to claim ${formatStablecoin(bondBalance * app.bond_coupon)}</Form.Text>
+            <Button variant="primary" type="submit">Claim Coupon</Button>
+          </Form.Group>
+        </Form> :
+        <p>Ineligible to claim coupon at this time</p>
+      }
+
+      {afterMaturity ?
+        <Form onSubmit={handleClaimPrincipal}>
+          <Form.Group>
+            <Form.Label>Claim principal</Form.Label>
+            {/* TODO: Check if eligible */}
+            <Form.Text muted>You are eligible to claim ${formatStablecoin(bondBalance * app.bond_principal)}</Form.Text>
+            <Button variant="primary" type="submit">Claim Principal</Button>
+          </Form.Group>
+        </Form> :
+        <p>Ineligible to claim principal at this time</p>
       }
 
     </div>

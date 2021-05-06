@@ -1,5 +1,5 @@
-import { algodClient, downloadTxns, STABLECOIN_ID, waitForConfirmation } from '../utils/Utils';
-import { AssetTxn, Base64, CallApplTxn, PaymentTxn, SignedTx, } from '@randlabs/myalgo-connect';
+import { algodClient, STABLECOIN_ID, waitForConfirmation } from '../utils/Utils';
+import { AssetTxn, CallApplTxn, PaymentTxn, SignedTx, } from '@randlabs/myalgo-connect';
 import { SuggestedParams, TxSig } from 'algosdk';
 import { myAlgoWallet } from '../wallet/myAlgo/MyAlgoWallet';
 
@@ -9,7 +9,7 @@ const algosdk = require('algosdk');
  * Create and submit a stateful smart contract
  */
 export async function buyBond(
-  buyerAddr: string,
+  investorAddr: string,
   appId: number,
   issuerAddr: string,
   bondId: number,
@@ -25,12 +25,11 @@ export async function buyBond(
   // 0. call app
   const enc = new TextEncoder();
   const buy: Uint8Array = enc.encode("buy");
-
   const appArgs: Uint8Array[] = [buy];
   const callAppTxn: CallApplTxn = {
     ...params,
     type: "appl",
-    from: buyerAddr,
+    from: investorAddr,
     appIndex: appId,
     appOnComplete: 0,
     appArgs: appArgs
@@ -44,7 +43,7 @@ export async function buyBond(
   const lsig = algosdk.makeLogicSig(programBytes);
   const bondTransferTxn = algosdk.makeAssetTransferTxnWithSuggestedParams(
     bondEscrowAddr,
-    buyerAddr,
+    investorAddr,
     undefined,
     bondEscrowAddr,
     noOfBonds,
@@ -53,11 +52,11 @@ export async function buyBond(
     params
   )
 
-  // 2. pay fee
+  // 2. pay fee for tx1
   const algoTransferTxn: PaymentTxn = {
     ...params,
     type: "pay",
-    from: buyerAddr,
+    from: investorAddr,
     to: bondEscrowAddr,
     amount: 1000,
   };
@@ -66,7 +65,7 @@ export async function buyBond(
   const stablecoinTransferTxn: AssetTxn = {
     ...params,
     type: "axfer",
-    from: buyerAddr,
+    from: investorAddr,
     assetIndex: STABLECOIN_ID,
     to: issuerAddr,
     amount: noOfBonds * bondCost,
@@ -81,12 +80,12 @@ export async function buyBond(
   ]);
 
   // Override so can sign with myAlgo
-  txns[0].from = buyerAddr;
+  txns[0].from = investorAddr;
   txns[0].genesisHash = params.genesisHash;
-  txns[2].from = buyerAddr;
+  txns[2].from = investorAddr;
   txns[2].to = bondEscrowAddr;
   txns[2].genesisHash = params.genesisHash;
-  txns[3].from = buyerAddr;
+  txns[3].from = investorAddr;
   txns[3].to = issuerAddr;
   txns[3].genesisHash = params.genesisHash;
 
