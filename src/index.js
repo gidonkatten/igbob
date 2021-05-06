@@ -6,6 +6,7 @@ import App from './App';
 import { BrowserRouter } from "react-router-dom";
 import Auth0ProviderWithHistory from "./auth/Auth0ProviderWithHistory";
 import 'bootstrap/dist/css/bootstrap.min.css';
+import './styles/page.css'
 
 ReactDOM.render(
   <React.StrictMode>

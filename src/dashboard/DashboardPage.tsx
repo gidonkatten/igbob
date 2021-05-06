@@ -55,7 +55,7 @@ function DashboardPage(props: DashboardPageProps) {
   }
 
   return (
-    <div>
+    <div className={"page-content"}>
 
       <div>
         <h3>Selected Address</h3>

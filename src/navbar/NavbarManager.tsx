@@ -40,11 +40,6 @@ function NavbarManager() {
               <Nav.Link>Settings</Nav.Link>
             </LinkContainer>
           )}
-          {isAuthenticated && (
-            <LinkContainer to="/profile">
-              <Nav.Link>Profile</Nav.Link>
-            </LinkContainer>
-          )}
           {!isAuthenticated && <SignupNav/>}
           {isAuthenticated ? <LogoutNav /> : <LoginNav />}
         </Nav>

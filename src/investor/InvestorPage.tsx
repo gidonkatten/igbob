@@ -165,7 +165,7 @@ function InvestorPage(props: InvestorPageProps) {
   )
 
   return (
-    <div>
+    <div className={"page-content"}>
       {inOverview ? appsList : appView}
     </div>
   );

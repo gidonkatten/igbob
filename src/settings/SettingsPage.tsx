@@ -48,7 +48,7 @@ function SettingsPage(props: SettingsPageProps) {
   }
 
   return (
-    <div>
+    <div className={"page-content"}>
 
       <h3>Instructions</h3>
       <p>

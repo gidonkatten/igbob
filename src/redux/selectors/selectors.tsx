@@ -9,11 +9,15 @@ export const selectedAccountSelector = state => state.userReducer.selectedAccoun
 export const optedIntoStablecoinSelector = state => {
   const selectedAcc = state.userReducer.selectedAccount
   if (!selectedAcc) return false;
+
   const assets: Asset[] = selectedAcc.assets;
   return assets.some(asset => asset.assetId === STABLECOIN_ID);
 };
 
 export const stablecoinBalanceSelector = state => {
+  const selectedAcc = state.userReducer.selectedAccount
+  if (!selectedAcc) return 0;
+
   let balance = 0;
   state.userReducer.selectedAccount.assets.forEach(asset => {
     if (asset.assetId === STABLECOIN_ID) {

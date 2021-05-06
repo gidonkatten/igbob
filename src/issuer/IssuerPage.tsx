@@ -57,7 +57,7 @@ function IssuerPage(props: IssuerPageProps) {
   }
 
   return (
-    <div>
+    <div className={"page-content"}>
       <h3>Issue Bond</h3>
 
       <Form onSubmit={handleSubmit}>
