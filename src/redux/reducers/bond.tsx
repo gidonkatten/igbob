@@ -1,5 +1,6 @@
 export interface App {
   app_id: number,
+  manage_app_id: number,
   name: string,
   description: string,
   issuer_address: string,
@@ -9,6 +10,7 @@ export interface App {
   bond_escrow_program: string,
   stablecoin_escrow_program: string,
   bond_length: number,
+  period: number,
   start_buy_date: number,
   end_buy_date: number,
   maturity_date: number,

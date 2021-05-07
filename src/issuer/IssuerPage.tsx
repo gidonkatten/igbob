@@ -16,6 +16,7 @@ function IssuerPage(props: IssuerPageProps) {
   const [des, setDes] = useState<string>('');
   const [totalIssuance, setTotalIssuance] = useState<number>(0);
   const [bondLength, setBondLength] = useState<number>(0);
+  const [period, setPeriod] = useState<number>(0);
   const [startBuyDate, setStartBuyDate] = useState<string>('');
   const [endBuyDate, setEndBuyDate] = useState<string>('');
   const [bondCost, setBondCost] = useState<number>(0);
@@ -44,6 +45,7 @@ function IssuerPage(props: IssuerPageProps) {
         "totalIssuance": totalIssuance,
         "issuerAddr": selectedAccount.address,
         "bondLength": bondLength,
+        "period": period,
         "startBuyDate": startBuyDate,
         "endBuyDate": endBuyDate,
         "bondCost": bondCost,
@@ -116,7 +118,15 @@ function IssuerPage(props: IssuerPageProps) {
             name="bondLength"
             required
           />
-          <Form.Text muted>Number of 6 month periods</Form.Text>
+          <Form.Label>Bond Period:</Form.Label>
+          <Form.Control
+            value={period}
+            onChange={e => setPeriod(parseInt(e.target.value))}
+            type="number"
+            name="period"
+            required
+          />
+          <Form.Text muted>{bondLength} coupon payments, payable every {period} seconds</Form.Text>
         </Form.Group>
 
         <Form.Group>
@@ -162,7 +172,6 @@ function IssuerPage(props: IssuerPageProps) {
             name="bondCoupon"
             required
           />
-          <Form.Text muted>Payed every 6 months for duration of bond</Form.Text>
         </Form.Group>
 
         <Form.Group>
