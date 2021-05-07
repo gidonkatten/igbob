@@ -6,7 +6,16 @@ export function convertDateToUnixTime(dateTime: string): number {
 }
 
 /**
- * Format stablcoin
+ * Convert from Unix time to DateTime
+ */
+export function convertUnixTimeToDate(unixTime: number): string {
+  return new Date(unixTime * 1000).toDateString();
+}
+
+export const SIX_MONTH_PERIOD = 15768000;
+
+/**
+ * Format stablecoin
  */
 export function formatStablecoin(amount: number): string {
   return (amount / 1e6).toFixed(6);

@@ -4,31 +4,137 @@ import TimelineItem from '@material-ui/lab/TimelineItem';
 import TimelineSeparator from '@material-ui/lab/TimelineSeparator';
 import TimelineConnector from '@material-ui/lab/TimelineConnector';
 import TimelineContent from '@material-ui/lab/TimelineContent';
+import TimelineOppositeContent from '@material-ui/lab/TimelineOppositeContent';
 import TimelineDot from '@material-ui/lab/TimelineDot';
+import Paper from '@material-ui/core/Paper';
+import Typography from '@material-ui/core/Typography';
+import PlayArrowIcon from '@material-ui/icons/PlayArrow'
+import GavelIcon from '@material-ui/icons/Gavel';
+import LocalOfferIcon from '@material-ui/icons/LocalOffer';
+import MonetizationOnIcon from '@material-ui/icons/MonetizationOn';
+import { convertUnixTimeToDate, SIX_MONTH_PERIOD } from '../utils/Utils';
 
-export default function bondTimeline() {
+interface BondTimelineProps {
+  startBuyDate: number,
+  endBuyDate: number,
+  bondLength: number,
+  maturityDate: number
+}
+
+export default function bondTimeline(props: BondTimelineProps) {
+  const {
+    startBuyDate,
+    endBuyDate,
+    bondLength,
+    maturityDate,
+  } = props;
+
+  const currentTime: number = Date.now() / 1000;
+  const nextCouponRound = (currentTime - endBuyDate) < 0 ?
+    1 :
+    Math.ceil((currentTime - endBuyDate) / SIX_MONTH_PERIOD);
+  const nextCouponDate = endBuyDate + nextCouponRound * SIX_MONTH_PERIOD;
+
   return (
-    <Timeline>
+    <Timeline align={'alternate'}>
+
+      {/*START BUY*/}
       <TimelineItem>
+
+        <TimelineOppositeContent>
+          <Typography variant="body2" color="textSecondary">
+            {convertUnixTimeToDate(startBuyDate)}
+          </Typography>
+        </TimelineOppositeContent>
+
         <TimelineSeparator>
-          <TimelineDot />
+          <TimelineDot><PlayArrowIcon/></TimelineDot>
           <TimelineConnector />
         </TimelineSeparator>
-        <TimelineContent>Eat</TimelineContent>
+
+        <TimelineContent>
+          <Paper elevation={3} className={'timeline-box'}>
+            <Typography variant="h6" component="h1">Start buy date</Typography>
+            <Typography>When you can purchase the bond</Typography>
+          </Paper>
+        </TimelineContent>
+
       </TimelineItem>
+
+      {/*END BUY*/}
       <TimelineItem>
+
+        <TimelineOppositeContent>
+          <Typography variant="body2" color="textSecondary">
+            {convertUnixTimeToDate(endBuyDate)}
+          </Typography>
+        </TimelineOppositeContent>
+
         <TimelineSeparator>
-          <TimelineDot />
+          <TimelineDot color="secondary"><GavelIcon/></TimelineDot>
           <TimelineConnector />
         </TimelineSeparator>
-        <TimelineContent>Code</TimelineContent>
+
+        <TimelineContent>
+          <Paper elevation={3} className={'timeline-box'}>
+            <Typography variant="h6" component="h1">End buy date</Typography>
+            <Typography>When you can no longer purchase the bond</Typography>
+          </Paper>
+        </TimelineContent>
+
       </TimelineItem>
+
+      {/*COUPONS*/}
       <TimelineItem>
+
+        <TimelineOppositeContent>
+          <Typography variant="body2" color="textSecondary">
+            {convertUnixTimeToDate(endBuyDate + SIX_MONTH_PERIOD)} - {convertUnixTimeToDate(endBuyDate + SIX_MONTH_PERIOD * bondLength)}
+          </Typography>
+        </TimelineOppositeContent>
+
         <TimelineSeparator>
-          <TimelineDot />
+          <TimelineDot color="primary"><LocalOfferIcon/></TimelineDot>
+          <TimelineConnector/>
         </TimelineSeparator>
-        <TimelineContent>Sleep</TimelineContent>
+
+        <TimelineContent>
+          <Paper elevation={3} className={'timeline-box'}>
+            <Typography variant="h6" component="h1">Coupon payments</Typography>
+            <Typography>
+              These are payable every 6 months <br/>
+              There are {bondLength - Math.min(bondLength, nextCouponRound - 1)} coupons payments remaining<br/>
+              {currentTime < maturityDate ?
+                <>The next coupon date is {convertUnixTimeToDate(nextCouponDate)}</> :
+                null
+              }
+            </Typography>
+          </Paper>
+        </TimelineContent>
       </TimelineItem>
+
+      {/*MATURITY*/}
+      <TimelineItem>
+
+        <TimelineOppositeContent>
+          <Typography variant="body2" color="textSecondary">
+            {convertUnixTimeToDate(maturityDate)}
+          </Typography>
+        </TimelineOppositeContent>
+
+        <TimelineSeparator>
+          <TimelineDot style={{ backgroundColor: 'green' }}><MonetizationOnIcon/></TimelineDot>
+        </TimelineSeparator>
+
+        <TimelineContent>
+          <Paper elevation={3} className={'timeline-box'}>
+            <Typography variant="h6" component="h1">Maturity date</Typography>
+            <Typography>When you can claim the coupon</Typography>
+          </Paper>
+        </TimelineContent>
+
+      </TimelineItem>
+
     </Timeline>
   );
 }

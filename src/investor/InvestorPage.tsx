@@ -18,6 +18,7 @@ import Form from 'react-bootstrap/Form';
 import { formatStablecoin } from '../utils/Utils';
 import { claimCoupon } from '../algorand/bond/Coupon';
 import { claimPrincipal } from '../algorand/bond/Principal';
+import BondTimeline from './BondTimeline';
 
 interface InvestorPageProps {
   selectedAccount?: UserAccount;
@@ -127,7 +128,6 @@ function InvestorPage(props: InvestorPageProps) {
     setSelectedAccount(userAccount);
   }
 
-
   const enterAppView = (appId) => {
     setInOverview(false);
     const newApp = getApp(appId);
@@ -162,6 +162,13 @@ function InvestorPage(props: InvestorPageProps) {
       <div onClick={() => exitAppView()}>
         Go Back
       </div>
+
+      <BondTimeline
+        startBuyDate={app.start_buy_date}
+        endBuyDate={app.end_buy_date}
+        bondLength={app.bond_length}
+        maturityDate={app.maturity_date}
+      />
 
       <div>
         <p>Name: {app.name}</p>
