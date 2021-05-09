@@ -12,7 +12,7 @@ import {
   selectedAccountSelector
 } from '../redux/selectors/selectors';
 import { getAccountInformation, getAssetBalance, getStablecoinBalance } from '../algorand/balance/Balance';
-import Button from 'react-bootstrap/Button';
+import Button from '@material-ui/core/Button';
 import { UserAccount } from '../redux/reducers/user';
 import Form from 'react-bootstrap/Form';
 import { formatStablecoin } from '../utils/Utils';
@@ -285,7 +285,7 @@ function InvestorPage(props: InvestorPageProps) {
         <p>Opted into bond, balance: {bondBalance}</p> :
         <p>
           Not opted into bond
-          <Button variant="primary" onClick={handleAssetOptIn}>Opt In</Button>
+          <Button variant="contained" color="primary" onClick={handleAssetOptIn}>Opt In</Button>
         </p>
       }
 
@@ -293,7 +293,7 @@ function InvestorPage(props: InvestorPageProps) {
         <p>Opted into app</p> :
         <p>
           Not opted into app
-          <Button variant="primary" onClick={handleAppOptIn}>Opt In</Button>
+          <Button variant="contained" color="primary" onClick={handleAppOptIn}>Opt In</Button>
         </p>
       }
 
@@ -309,7 +309,7 @@ function InvestorPage(props: InvestorPageProps) {
               required
             />
             <Form.Text muted>This will cost ${formatStablecoin(noOfBondsToBuy * app.bond_cost)}</Form.Text>
-            <Button variant="primary" type="submit">Buy</Button>
+            <Button variant="contained" color="primary" type="submit">Buy</Button>
           </Form.Group>
         </Form> :
         <p>Not in buy window</p>
@@ -322,7 +322,7 @@ function InvestorPage(props: InvestorPageProps) {
             {/* TODO: Check if eligible */}
             <Form.Text muted>You have claimed {getCouponRoundsColl(app.app_id)} / {app.bond_length} coupons</Form.Text>
             <Form.Text muted>You are eligible to claim ${formatStablecoin(bondBalance * app.bond_coupon)}</Form.Text>
-            <Button variant="primary" type="submit">Claim Coupon</Button>
+            <Button variant="contained" color="primary" type="submit">Claim Coupon</Button>
           </Form.Group>
         </Form> :
         <p>Ineligible to claim coupon at this time</p>
@@ -334,7 +334,7 @@ function InvestorPage(props: InvestorPageProps) {
             <Form.Label>Claim principal</Form.Label>
             {/* TODO: Check if eligible */}
             <Form.Text muted>You are eligible to claim ${formatStablecoin(bondBalance * app.bond_principal)}</Form.Text>
-            <Button variant="primary" type="submit">Claim Principal</Button>
+            <Button variant="contained" color="primary" type="submit">Claim Principal</Button>
           </Form.Group>
         </Form> :
         <p>Ineligible to claim principal at this time</p>
@@ -347,7 +347,7 @@ function InvestorPage(props: InvestorPageProps) {
             <Form.Text muted>
               You are eligible to claim ${formatStablecoin((bondBalance / (bondsMinted - bondEscrowBalance)) * stablecoinEscrowBalance)}
             </Form.Text>
-            <Button variant="primary" type="submit">Claim Default</Button>
+            <Button variant="contained" color="primary" type="submit">Claim Default</Button>
           </Form.Group>
         </Form> :
         <p>Ineligible to claim default as stablecoin escrow balance has enough funds</p>

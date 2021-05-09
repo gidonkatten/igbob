@@ -4,7 +4,7 @@ import MyAlgoGetAccounts from '../algorand/wallet/myAlgo/MyAlgoGetAccounts';
 import { setSelectedAccount } from '../redux/actions/actions';
 import { UserAccount } from '../redux/reducers/user';
 import { getAccountInformation } from '../algorand/balance/Balance';
-import Button from 'react-bootstrap/Button';
+import Button from '@material-ui/core/Button';
 import { optIntoAsset } from '../algorand/assets/OptIntoAsset';
 import { STABLECOIN_ID } from '../algorand/utils/Utils';
 import { addressesSelector, optedIntoStablecoinSelector, selectedAccountSelector } from '../redux/selectors/selectors';
@@ -85,7 +85,7 @@ function SettingsPage(props: SettingsPageProps) {
       {selectedAccount && !optedIntoStablecoin && (
         <>
           <h3>Opt into stablecoin</h3>
-          <Button variant="primary" onClick={handleStablecoinOptIn}>Opt In</Button>
+          <Button variant="contained" color="primary" onClick={handleStablecoinOptIn}>Opt In</Button>
         </>
       )}
 

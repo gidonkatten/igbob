@@ -10,6 +10,7 @@ import {
   stablecoinBalanceSelector
 } from '../redux/selectors/selectors';
 import { formatStablecoin } from '../utils/Utils';
+import Button from '@material-ui/core/Button';
 
 interface DashboardPageProps {
   selectedAccount?: UserAccount,
@@ -87,7 +88,7 @@ function DashboardPage(props: DashboardPageProps) {
             <p>Current balance is ${formatStablecoin(stablecoinBalance)}</p>
             <form onSubmit={handleSubmit}>
               <p>Can use TestNet stablecoin dispenser below to add $1000 for bond payments.</p>
-              <p><button type="submit" disabled={!selectedAccount}>Fund</button></p>
+              <p><Button variant="contained" color="primary" type="submit" disabled={!selectedAccount}>Fund</Button></p>
             </form>
           </div> :
           <p>Go to settings to opt in account to the stablecoin asset</p>

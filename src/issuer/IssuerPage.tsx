@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { connect } from 'react-redux';
 import { useAuth0 } from '@auth0/auth0-react';
-import Button from 'react-bootstrap/Button';
+import Button from '@material-ui/core/Button';
 import Form from 'react-bootstrap/Form';
 import { UserAccount } from '../redux/reducers/user';
 import { selectedAccountSelector } from '../redux/selectors/selectors';
@@ -187,7 +187,13 @@ function IssuerPage(props: IssuerPageProps) {
           />
         </Form.Group>
 
-        <Button variant="primary" type="submit">Create</Button>
+        <Button
+          variant="contained"
+          color="primary"
+          type="submit"
+        >
+          Create
+        </Button>
       </Form>
     </div>
   );
