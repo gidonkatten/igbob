@@ -3,10 +3,16 @@ export interface Asset {
   amount: number;
 }
 
+export interface AppLocalState {
+  appId: number;
+  couponRoundsColl: number;
+}
+
 export interface UserAccount {
   address: string;
   algoBalance: number;
-  assets: Asset[]
+  assets: Asset[];
+  apps: AppLocalState[];
 }
 
 interface InvestorState {
@@ -15,7 +21,7 @@ interface InvestorState {
 }
 
 const initialState: InvestorState = {
-  addresses: []
+  addresses: [],
 };
 
 export function userReducer(state = initialState, action: any) {

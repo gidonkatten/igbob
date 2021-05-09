@@ -6,12 +6,14 @@ import { myAlgoWallet } from '../wallet/myAlgo/MyAlgoWallet';
 const algosdk = require('algosdk');
 
 /**
- * Create and submit a stateful smart contract
+ * Claim coupon for a bond
  */
 export async function claimCoupon(
   investorAddr: string,
   mainAppId: number,
   manageAppId: number,
+  bondId: number,
+  bondEscrowAddr: string,
   stablecoinEscrowAddr: string,
   stablecoinEscrowProgram: string,
   noOfBonds: number,
@@ -42,7 +44,10 @@ export async function claimCoupon(
     from: investorAddr,
     appIndex: manageAppId,
     appOnComplete: 0,
-    appArgs: manageAppArgs
+    appArgs: manageAppArgs,
+    appAccounts: [stablecoinEscrowAddr, bondEscrowAddr],
+    appForeignApps: [mainAppId],
+    appForeignAssets: [bondId]
   }
 
   // 2. pay fee for tx3
@@ -83,6 +88,7 @@ export async function claimCoupon(
   txns[0].from = investorAddr;
   txns[0].genesisHash = params.genesisHash;
   txns[1].from = investorAddr;
+  txns[1].appAccounts = [stablecoinEscrowAddr, bondEscrowAddr];
   txns[1].genesisHash = params.genesisHash;
   txns[2].from = investorAddr;
   txns[2].to = stablecoinEscrowAddr;

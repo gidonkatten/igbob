@@ -6,7 +6,7 @@ import { myAlgoWallet } from '../wallet/myAlgo/MyAlgoWallet';
 const algosdk = require('algosdk');
 
 /**
- * Create and submit a stateful smart contract
+ * Buy a bond
  */
 export async function buyBond(
   investorAddr: string,

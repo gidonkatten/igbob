@@ -6,9 +6,9 @@ import { myAlgoWallet } from '../wallet/myAlgo/MyAlgoWallet';
 const algosdk = require('algosdk');
 
 /**
- * Claim principal for a bond
+ * Claim default for a bond
  */
-export async function claimPrincipal(
+export async function claimDefault(
   investorAddr: string,
   mainAppId: number,
   manageAppId: number,
@@ -19,7 +19,7 @@ export async function claimPrincipal(
   stablecoinEscrowAddr: string,
   stablecoinEscrowProgram: string,
   noOfBonds: number,
-  bondPrincipal: number,
+  bondDefault: number,
 ) {
   let params: SuggestedParams = await algodClient.getTransactionParams().do();
   params.fee = 1000;
@@ -28,7 +28,7 @@ export async function claimPrincipal(
   const enc = new TextEncoder();
 
   // 0. call main app
-  const mainAppArgs: Uint8Array[] = [enc.encode("sell")];
+  const mainAppArgs: Uint8Array[] = [enc.encode("default")];
   const callMainAppTxn: CallApplTxn = {
     ...params,
     type: "appl",
@@ -39,7 +39,7 @@ export async function claimPrincipal(
   }
 
   // 1. call manage app
-  const manageAppArgs: Uint8Array[] = [enc.encode("not_defaulted")];
+  const manageAppArgs: Uint8Array[] = [enc.encode("claim_default")];
   const callManageAppTxn: CallApplTxn = {
     ...params,
     type: "appl",
@@ -80,7 +80,7 @@ export async function claimPrincipal(
     investorAddr,
     undefined,
     undefined,
-    noOfBonds * bondPrincipal,
+    Math.floor(noOfBonds * bondDefault),
     undefined,
     STABLECOIN_ID,
     params

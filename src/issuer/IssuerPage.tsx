@@ -5,6 +5,7 @@ import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import { UserAccount } from '../redux/reducers/user';
 import { selectedAccountSelector } from '../redux/selectors/selectors';
+import { convertDateToUnixTime } from '../utils/Utils';
 
 interface IssuerPageProps {
   selectedAccount: UserAccount
@@ -46,8 +47,8 @@ function IssuerPage(props: IssuerPageProps) {
         "issuerAddr": selectedAccount.address,
         "bondLength": bondLength,
         "period": period,
-        "startBuyDate": startBuyDate,
-        "endBuyDate": endBuyDate,
+        "startBuyDate": convertDateToUnixTime(startBuyDate),
+        "endBuyDate": convertDateToUnixTime(endBuyDate),
         "bondCost": bondCost,
         "bondCoupon": bondCoupon,
         "bondPrincipal": bondPrincipal

@@ -12,13 +12,15 @@ import PlayArrowIcon from '@material-ui/icons/PlayArrow'
 import GavelIcon from '@material-ui/icons/Gavel';
 import LocalOfferIcon from '@material-ui/icons/LocalOffer';
 import MonetizationOnIcon from '@material-ui/icons/MonetizationOn';
-import { convertUnixTimeToDate, SIX_MONTH_PERIOD } from '../utils/Utils';
+import { convertUnixTimeToDate } from '../utils/Utils';
+import { CouponRound, getCouponRound } from './Utils';
 
 interface BondTimelineProps {
   startBuyDate: number,
   endBuyDate: number,
   bondLength: number,
   maturityDate: number
+  period: number
 }
 
 export default function bondTimeline(props: BondTimelineProps) {
@@ -27,13 +29,10 @@ export default function bondTimeline(props: BondTimelineProps) {
     endBuyDate,
     bondLength,
     maturityDate,
+    period
   } = props;
 
-  const currentTime: number = Date.now() / 1000;
-  const nextCouponRound = (currentTime - endBuyDate) < 0 ?
-    1 :
-    Math.ceil((currentTime - endBuyDate) / SIX_MONTH_PERIOD);
-  const nextCouponDate = endBuyDate + nextCouponRound * SIX_MONTH_PERIOD;
+  const couponRound: CouponRound = getCouponRound(endBuyDate, maturityDate, period, bondLength);
 
   return (
     <Timeline align={'alternate'}>
@@ -89,7 +88,7 @@ export default function bondTimeline(props: BondTimelineProps) {
 
         <TimelineOppositeContent>
           <Typography variant="body2" color="textSecondary">
-            {convertUnixTimeToDate(endBuyDate + SIX_MONTH_PERIOD)} - {convertUnixTimeToDate(endBuyDate + SIX_MONTH_PERIOD * bondLength)}
+            {convertUnixTimeToDate(endBuyDate + period)} - {convertUnixTimeToDate(endBuyDate + period * bondLength)}
           </Typography>
         </TimelineOppositeContent>
 
@@ -102,10 +101,10 @@ export default function bondTimeline(props: BondTimelineProps) {
           <Paper elevation={3} className={'timeline-box'}>
             <Typography variant="h6" component="h1">Coupon payments</Typography>
             <Typography>
-              These are payable every 6 months <br/>
-              There are {bondLength - Math.min(bondLength, nextCouponRound - 1)} coupons payments remaining<br/>
-              {currentTime < maturityDate ?
-                <>The next coupon date is {convertUnixTimeToDate(nextCouponDate)}</> :
+              These are payable every {period} seconds <br/>
+              There are {bondLength - Math.min(bondLength, couponRound.round)} coupons payments remaining<br/>
+              {couponRound.round < bondLength ?
+                <>The next coupon date is {convertUnixTimeToDate(couponRound.date + period)}</> :
                 null
               }
             </Typography>

@@ -7,11 +7,11 @@ import { setApps, setSelectedAccount } from '../redux/actions/actions';
 import { App } from '../redux/reducers/bond';
 import {
   appsSelector, getAppSelector,
-  getBondBalanceSelector,
+  getBondBalanceSelector, getCouponRoundsCollSelector, getOptedIntoAppSelector,
   getOptedIntoBondSelector,
   selectedAccountSelector
 } from '../redux/selectors/selectors';
-import { getAccountInformation } from '../algorand/balance/Balance';
+import { getAccountInformation, getAssetBalance, getStablecoinBalance } from '../algorand/balance/Balance';
 import Button from 'react-bootstrap/Button';
 import { UserAccount } from '../redux/reducers/user';
 import Form from 'react-bootstrap/Form';
@@ -19,11 +19,17 @@ import { formatStablecoin } from '../utils/Utils';
 import { claimCoupon } from '../algorand/bond/Coupon';
 import { claimPrincipal } from '../algorand/bond/Principal';
 import BondTimeline from './BondTimeline';
+import { algodClient, indexerClient } from '../algorand/utils/Utils';
+import { claimDefault } from '../algorand/bond/Default';
+import { getHasDefaulted } from './Utils';
+import { optIntoApp } from '../algorand/bond/OptIntoApp';
 
 interface InvestorPageProps {
   selectedAccount?: UserAccount;
   getOptedIntoBond: (bondId: number) => boolean;
   getBondBalance: (bondId: number) => number;
+  getOptedIntoApp: (appId: number) => boolean;
+  getCouponRoundsColl: (appId: number) => number;
   apps: Map<number, App>;
   getApp: (appId: number) => App | undefined;
   setSelectedAccount: typeof setSelectedAccount;
@@ -34,12 +40,20 @@ function InvestorPage(props: InvestorPageProps) {
 
   const [inOverview, setInOverview] = useState<boolean>(true);
   const [app, setApp] = useState<App>();
-  const [noOfBonds, setNoOfBonds] = useState<number>(0);
+  const [noOfBondsToBuy, setNoOfBondsToBuy] = useState<number>(0);
+
+  // Blockchain readings
+  const [bondsMinted, setBondsMinted] = useState<number>(0);
+  const [bondEscrowBalance, setBondEscrowBalance] = useState<number>(0);
+  const [stablecoinEscrowBalance, setStablecoinEscrowBalance] = useState<number>(0);
+  const [hasDefaulted, setHasDefaulted] = useState<boolean>(false);
 
   const {
     selectedAccount,
     getOptedIntoBond,
     getBondBalance,
+    getOptedIntoApp,
+    getCouponRoundsColl,
     apps,
     getApp,
     setSelectedAccount,
@@ -79,6 +93,13 @@ function InvestorPage(props: InvestorPageProps) {
     setSelectedAccount(userAccount);
   }
 
+  const handleAppOptIn = async () => {
+    if (!selectedAccount || !app) return;
+    await optIntoApp(app.app_id, selectedAccount.address)
+    const userAccount = await getAccountInformation(selectedAccount.address);
+    setSelectedAccount(userAccount);
+  }
+
   const handleBuy = async (e: any) => {
     e.preventDefault();
     if (!selectedAccount || !app) return;
@@ -89,11 +110,21 @@ function InvestorPage(props: InvestorPageProps) {
       app.bond_id,
       app.bond_escrow_address,
       app.bond_escrow_program,
-      noOfBonds,
+      noOfBondsToBuy,
       app.bond_cost
     );
-    const userAccount = await getAccountInformation(selectedAccount.address);
-    setSelectedAccount(userAccount);
+
+    // Update selected account (with bonds owned and reduced stablecoin balance)
+    // Update bonds in bond escrow address
+    Promise.all(
+      [
+        getAccountInformation(selectedAccount.address),
+        getAccountInformation(app.bond_escrow_address),
+      ]
+    ).then(([userAccount, bondEscrow]) => {
+      setSelectedAccount(userAccount);
+      setBondEscrowBalance(getAssetBalance(bondEscrow, app.bond_id));
+    });
   }
 
   const handleClaimCoupon = (e: any) => {
@@ -103,9 +134,11 @@ function InvestorPage(props: InvestorPageProps) {
       selectedAccount.address,
       app.app_id,
       app.manage_app_id,
+      app.bond_id,
+      app.bond_escrow_address,
       app.stablecoin_escrow_address,
       app.stablecoin_escrow_program,
-      noOfBonds,
+      bondBalance,
       app.bond_coupon
     );
   }
@@ -123,8 +156,29 @@ function InvestorPage(props: InvestorPageProps) {
       app.bond_escrow_program,
       app.stablecoin_escrow_address,
       app.stablecoin_escrow_program,
-      noOfBonds,
+      bondBalance,
       app.bond_principal
+    );
+    const userAccount = await getAccountInformation(selectedAccount.address);
+    setSelectedAccount(userAccount);
+  }
+
+  const handleClaimDefault = async (e: any) => {
+    e.preventDefault();
+    if (!selectedAccount || !app) return;
+
+    await claimDefault(
+      selectedAccount.address,
+      app.app_id,
+      app.manage_app_id,
+      app.issuer_address,
+      app.bond_id,
+      app.bond_escrow_address,
+      app.bond_escrow_program,
+      app.stablecoin_escrow_address,
+      app.stablecoin_escrow_program,
+      bondBalance,
+      (1 / (bondsMinted - bondEscrowBalance)) * stablecoinEscrowBalance
     );
     const userAccount = await getAccountInformation(selectedAccount.address);
     setSelectedAccount(userAccount);
@@ -134,9 +188,39 @@ function InvestorPage(props: InvestorPageProps) {
     setInOverview(false);
     const newApp = getApp(appId);
     setApp(newApp);
-    // const application = await algodClient.getApplicationByID(appId).do();
-    // console.log(application);
   }
+
+  useEffect(() => {
+    if (!app) return;
+
+    Promise.all(
+      [
+        indexerClient.lookupAssetByID(app.bond_id).do(),
+        getAccountInformation(app.bond_escrow_address),
+        getAccountInformation(app.stablecoin_escrow_address)
+      ]
+    ).then(([asset, bondEscrow, stablecoinEscrow]) => {
+
+      const bMinted = asset.asset.params.total;
+      const bEscrowBalance = getAssetBalance(bondEscrow, app.bond_id);
+      const sEscrowBalance = getStablecoinBalance(stablecoinEscrow);
+
+      setBondsMinted(bMinted);
+      setBondEscrowBalance(bEscrowBalance);
+      setStablecoinEscrowBalance(sEscrowBalance);
+      setHasDefaulted(getHasDefaulted(
+        app.end_buy_date,
+        app.maturity_date,
+        app.period,
+        app.bond_length,
+        getCouponRoundsColl(app.app_id),
+        app.bond_coupon,
+        app.bond_principal,
+        sEscrowBalance,
+        bMinted - bEscrowBalance
+      ));
+    });
+  }, [app])
 
   const exitAppView = () => {
     setInOverview(true);
@@ -161,7 +245,7 @@ function InvestorPage(props: InvestorPageProps) {
   const appView = app && (
     <div>
 
-      <div onClick={() => exitAppView()}>
+      <div onClick={exitAppView}>
         Go Back
       </div>
 
@@ -170,6 +254,7 @@ function InvestorPage(props: InvestorPageProps) {
         endBuyDate={app.end_buy_date}
         bondLength={app.bond_length}
         maturityDate={app.maturity_date}
+        period={app.period}
       />
 
       <div>
@@ -180,7 +265,10 @@ function InvestorPage(props: InvestorPageProps) {
         <p>Maturity date: {app.maturity_date}</p>
         <p>Bond cost: ${formatStablecoin(app.bond_cost)}</p>
         <p>Bond coupon: ${formatStablecoin(app.bond_coupon)}</p>
+        <p>Number of coupon payments: {app.bond_length}</p>
         <p>Bond principal: ${formatStablecoin(app.bond_principal)}</p>
+        <p>Bonds in circulation: {bondsMinted - bondEscrowBalance} / {bondsMinted}</p>
+        <p>Stablecoin balance of bond escrow: ${formatStablecoin(stablecoinEscrowBalance)}</p>
       </div>
 
       {getOptedIntoBond(app.bond_id) ?
@@ -191,18 +279,26 @@ function InvestorPage(props: InvestorPageProps) {
         </p>
       }
 
+      {getOptedIntoApp(app.app_id) ?
+        <p>Opted into app</p> :
+        <p>
+          Not opted into app
+          <Button variant="primary" onClick={handleAppOptIn}>Opt In</Button>
+        </p>
+      }
+
       {inBuyWindow ?
         <Form onSubmit={handleBuy}>
           <Form.Group>
             <Form.Label>Number of bonds to buy:</Form.Label>
             <Form.Control
-              value={noOfBonds}
-              onChange={e => setNoOfBonds(parseInt(e.target.value))}
+              value={noOfBondsToBuy}
+              onChange={e => setNoOfBondsToBuy(parseInt(e.target.value))}
               type="number"
-              name="noOfBonds"
+              name="noOfBondsToBuy"
               required
             />
-            <Form.Text muted>This will cost ${formatStablecoin(noOfBonds * app.bond_cost)}</Form.Text>
+            <Form.Text muted>This will cost ${formatStablecoin(noOfBondsToBuy * app.bond_cost)}</Form.Text>
             <Button variant="primary" type="submit">Buy</Button>
           </Form.Group>
         </Form> :
@@ -214,6 +310,7 @@ function InvestorPage(props: InvestorPageProps) {
           <Form.Group>
             <Form.Label>Claim coupon</Form.Label>
             {/* TODO: Check if eligible */}
+            <Form.Text muted>You have claimed {getCouponRoundsColl(app.app_id)} / {app.bond_length} coupons</Form.Text>
             <Form.Text muted>You are eligible to claim ${formatStablecoin(bondBalance * app.bond_coupon)}</Form.Text>
             <Button variant="primary" type="submit">Claim Coupon</Button>
           </Form.Group>
@@ -233,6 +330,19 @@ function InvestorPage(props: InvestorPageProps) {
         <p>Ineligible to claim principal at this time</p>
       }
 
+      {hasDefaulted ?
+        <Form onSubmit={handleClaimDefault}>
+          <Form.Group>
+            <Form.Label>Claim default</Form.Label>
+            <Form.Text muted>
+              You are eligible to claim ${formatStablecoin((bondBalance / (bondsMinted - bondEscrowBalance)) * stablecoinEscrowBalance)}
+            </Form.Text>
+            <Button variant="primary" type="submit">Claim Default</Button>
+          </Form.Group>
+        </Form> :
+        <p>Ineligible to claim default as stablecoin escrow balance has enough funds</p>
+      }
+
     </div>
   )
 
@@ -247,6 +357,8 @@ const mapStateToProps = (state: any) => ({
   selectedAccount: selectedAccountSelector(state),
   getOptedIntoBond: getOptedIntoBondSelector(state),
   getBondBalance: getBondBalanceSelector(state),
+  getOptedIntoApp: getOptedIntoAppSelector(state),
+  getCouponRoundsColl: getCouponRoundsCollSelector(state),
   apps: appsSelector(state),
   getApp: getAppSelector(state),
 });
