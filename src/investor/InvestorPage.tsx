@@ -88,16 +88,16 @@ function InvestorPage(props: InvestorPageProps) {
 
   const handleAssetOptIn = async () => {
     if (!selectedAccount || !app) return;
-    await optIntoAsset(app.bond_id, selectedAccount.address)
-    const userAccount = await getAccountInformation(selectedAccount.address);
-    setSelectedAccount(userAccount);
+    await optIntoAsset(app.bond_id, selectedAccount.address);
+
+    getAccountInformation(selectedAccount.address).then(acc => setSelectedAccount(acc));
   }
 
   const handleAppOptIn = async () => {
     if (!selectedAccount || !app) return;
-    await optIntoApp(app.app_id, selectedAccount.address)
-    const userAccount = await getAccountInformation(selectedAccount.address);
-    setSelectedAccount(userAccount);
+    await optIntoApp(app.app_id, selectedAccount.address);
+
+    getAccountInformation(selectedAccount.address).then(acc => setSelectedAccount(acc));
   }
 
   const handleBuy = async (e: any) => {
@@ -114,23 +114,16 @@ function InvestorPage(props: InvestorPageProps) {
       app.bond_cost
     );
 
-    // Update selected account (with bonds owned and reduced stablecoin balance)
-    // Update bonds in bond escrow address
-    Promise.all(
-      [
-        getAccountInformation(selectedAccount.address),
-        getAccountInformation(app.bond_escrow_address),
-      ]
-    ).then(([userAccount, bondEscrow]) => {
-      setSelectedAccount(userAccount);
-      setBondEscrowBalance(getAssetBalance(bondEscrow, app.bond_id));
-    });
+    getAccountInformation(selectedAccount.address).then(acc => setSelectedAccount(acc));
+    getAccountInformation(app.bond_escrow_address).then(acc =>
+      setBondEscrowBalance(getAssetBalance(acc, app.bond_id))
+    );
   }
 
-  const handleClaimCoupon = (e: any) => {
+  const handleClaimCoupon = async (e: any) => {
     e.preventDefault();
     if (!selectedAccount || !app) return;
-    claimCoupon(
+    await claimCoupon(
       selectedAccount.address,
       app.app_id,
       app.manage_app_id,
@@ -141,6 +134,11 @@ function InvestorPage(props: InvestorPageProps) {
       bondBalance,
       app.bond_coupon
     );
+
+    getAccountInformation(selectedAccount.address).then(acc => setSelectedAccount(acc));
+    getAccountInformation(app.stablecoin_escrow_address).then(acc =>
+      setStablecoinEscrowBalance(getStablecoinBalance(acc))
+    )
   }
 
   const handleClaimPrincipal = async (e: any) => {
@@ -159,8 +157,14 @@ function InvestorPage(props: InvestorPageProps) {
       bondBalance,
       app.bond_principal
     );
-    const userAccount = await getAccountInformation(selectedAccount.address);
-    setSelectedAccount(userAccount);
+
+    getAccountInformation(selectedAccount.address).then(acc => setSelectedAccount(acc));
+    getAccountInformation(app.stablecoin_escrow_address).then(acc =>
+      setStablecoinEscrowBalance(getStablecoinBalance(acc))
+    );
+    getAccountInformation(app.bond_escrow_address).then(acc =>
+      setBondEscrowBalance(getAssetBalance(acc, app.bond_id))
+    );
   }
 
   const handleClaimDefault = async (e: any) => {
@@ -180,8 +184,14 @@ function InvestorPage(props: InvestorPageProps) {
       bondBalance,
       (1 / (bondsMinted - bondEscrowBalance)) * stablecoinEscrowBalance
     );
-    const userAccount = await getAccountInformation(selectedAccount.address);
-    setSelectedAccount(userAccount);
+
+    getAccountInformation(selectedAccount.address).then(acc => setSelectedAccount(acc));
+    getAccountInformation(app.stablecoin_escrow_address).then(acc =>
+      setStablecoinEscrowBalance(getStablecoinBalance(acc))
+    );
+    getAccountInformation(app.bond_escrow_address).then(acc =>
+      setBondEscrowBalance(getAssetBalance(acc, app.bond_id))
+    );
   }
 
   const enterAppView = (appId) => {
