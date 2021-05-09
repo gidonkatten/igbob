@@ -10,7 +10,8 @@ const algosdk = require('algosdk');
  */
 export async function claimPrincipal(
   investorAddr: string,
-  appId: number,
+  mainAppId: number,
+  manageAppId: number,
   issuerAddr: string,
   bondId: number,
   bondEscrowAddr: string,
@@ -24,20 +25,31 @@ export async function claimPrincipal(
   params.fee = 1000;
   params.flatFee = true;
 
-  // 0. call app
   const enc = new TextEncoder();
-  const sell: Uint8Array = enc.encode("sell");
-  const appArgs: Uint8Array[] = [sell];
-  const callAppTxn: CallApplTxn = {
+
+  // 0. call main app
+  const mainAppArgs: Uint8Array[] = [enc.encode("sell")];
+  const callMainAppTxn: CallApplTxn = {
     ...params,
     type: "appl",
     from: investorAddr,
-    appIndex: appId,
+    appIndex: mainAppId,
     appOnComplete: 0,
-    appArgs: appArgs
+    appArgs: mainAppArgs
   }
 
-  // 1. bond transfer
+  // 1. call manage app
+  const manageAppArgs: Uint8Array[] = [enc.encode("not_defaulted")];
+  const callManageAppTxn: CallApplTxn = {
+    ...params,
+    type: "appl",
+    from: investorAddr,
+    appIndex: manageAppId,
+    appOnComplete: 0,
+    appArgs: manageAppArgs
+  }
+
+  // 2. bond transfer
   const bondCompiledProgram = await algodClient.compile(bondEscrowProgram).do();
   const bondProgramBytes = new Uint8Array(
     Buffer.from(bondCompiledProgram.result, 'base64')
@@ -54,7 +66,7 @@ export async function claimPrincipal(
     params
   )
 
-  // 2. stablecoin payment
+  // 3. stablecoin payment
   const stablecoinCompiledProgram = await algodClient.compile(stablecoinEscrowProgram).do();
   const stablecoinProgramBytes = new Uint8Array(
     Buffer.from(stablecoinCompiledProgram.result, 'base64')
@@ -71,7 +83,7 @@ export async function claimPrincipal(
     params
   );
 
-  // 3. pay fee for tx1
+  // 4. pay fee for tx2
   const bondFeeTransferTxn: PaymentTxn = {
     ...params,
     type: "pay",
@@ -80,7 +92,7 @@ export async function claimPrincipal(
     amount: 1000,
   };
 
-  // pay fee for tx2
+  // 5. pay fee for tx3
   const stablecoinFeeTransferTxn: PaymentTxn = {
     ...params,
     type: "pay",
@@ -91,7 +103,8 @@ export async function claimPrincipal(
 
   // Assign group id to transactions
   let txns = algosdk.assignGroupID([
-    callAppTxn,
+    callMainAppTxn,
+    callManageAppTxn,
     bondTransferTxn,
     stablecoinTransferTxn,
     bondFeeTransferTxn,
@@ -101,23 +114,27 @@ export async function claimPrincipal(
   // Override so can sign with myAlgo
   txns[0].from = investorAddr;
   txns[0].genesisHash = params.genesisHash;
-  txns[3].from = investorAddr;
-  txns[3].to = bondEscrowAddr;
-  txns[3].genesisHash = params.genesisHash;
+  txns[1].from = investorAddr;
+  txns[1].genesisHash = params.genesisHash;
   txns[4].from = investorAddr;
-  txns[4].to = stablecoinEscrowAddr;
+  txns[4].to = bondEscrowAddr;
   txns[4].genesisHash = params.genesisHash;
+  txns[5].from = investorAddr;
+  txns[5].to = stablecoinEscrowAddr;
+  txns[5].genesisHash = params.genesisHash;
 
   // Sign transactions
-  const signedCallAppTxn: SignedTx = await myAlgoWallet.signTransaction(txns[0]);
-  const signedBondTransferTxn: TxSig = algosdk.signLogicSigTransaction(txns[1], bondLsig);
-  const signedStablecoinTransferTxn: TxSig = algosdk.signLogicSigTransaction(txns[2], stablecoinLsig);
-  const signedBondFeeTransferTxn: SignedTx = await myAlgoWallet.signTransaction(txns[3]);
-  const signedStablecoinFeeTransferTxn: SignedTx = await myAlgoWallet.signTransaction(txns[4]);
+  const signedCallMainAppTxn: SignedTx = await myAlgoWallet.signTransaction(txns[0]);
+  const signedCallManageAppTxn: SignedTx = await myAlgoWallet.signTransaction(txns[1]);
+  const signedBondTransferTxn: TxSig = algosdk.signLogicSigTransaction(txns[2], bondLsig);
+  const signedStablecoinTransferTxn: TxSig = algosdk.signLogicSigTransaction(txns[3], stablecoinLsig);
+  const signedBondFeeTransferTxn: SignedTx = await myAlgoWallet.signTransaction(txns[4]);
+  const signedStablecoinFeeTransferTxn: SignedTx = await myAlgoWallet.signTransaction(txns[5]);
 
   // Group
   const signedTxs: Uint8Array[] = [
-    signedCallAppTxn.blob,
+    signedCallMainAppTxn.blob,
+    signedCallManageAppTxn.blob,
     signedBondTransferTxn.blob,
     signedStablecoinTransferTxn.blob,
     signedBondFeeTransferTxn.blob,

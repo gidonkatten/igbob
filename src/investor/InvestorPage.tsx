@@ -102,6 +102,7 @@ function InvestorPage(props: InvestorPageProps) {
     claimCoupon(
       selectedAccount.address,
       app.app_id,
+      app.manage_app_id,
       app.stablecoin_escrow_address,
       app.stablecoin_escrow_program,
       noOfBonds,
@@ -115,6 +116,7 @@ function InvestorPage(props: InvestorPageProps) {
     await claimPrincipal(
       selectedAccount.address,
       app.app_id,
+      app.manage_app_id,
       app.issuer_address,
       app.bond_id,
       app.bond_escrow_address,
