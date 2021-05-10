@@ -1,6 +1,6 @@
 import { SuggestedParams, TxSig } from "algosdk";
 import { algodClient, waitForConfirmation } from '../utils/Utils';
-import { AssetTxn, OptInApplTxn } from '@randlabs/myalgo-connect';
+import { OptInApplTxn } from '@randlabs/myalgo-connect';
 import { myAlgoWallet } from '../wallet/myAlgo/MyAlgoWallet';
 
 /**

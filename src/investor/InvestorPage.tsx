@@ -23,11 +23,12 @@ import { indexerClient } from '../algorand/utils/Utils';
 import { claimDefault } from '../algorand/bond/Default';
 import { getHasDefaulted } from './Utils';
 import { optIntoApp } from '../algorand/bond/OptIntoApp';
+import IconButton from '@material-ui/core/IconButton';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
-import ListSubheader from '@material-ui/core/ListSubheader';
 import ListItemText from '@material-ui/core/ListItemText';
+import Grid from '@material-ui/core/Grid';
 
 interface InvestorPageProps {
   selectedAccount?: UserAccount;
@@ -86,8 +87,52 @@ function InvestorPage(props: InvestorPageProps) {
 
   const currentTime: number = Date.now() / 1000;
   const inBuyWindow = app && (currentTime > app.start_buy_date) && (currentTime < app.end_buy_date);
-  const afterBuyWindow = app && (currentTime > app.end_buy_date);
+  const afterCouponRound = (round) => app && (currentTime > (app.end_buy_date + app.period * round));
   const afterMaturity = app && (currentTime > app.maturity_date);
+
+  const canClaimCoupon = () => {
+    if (!app) return false;
+
+    const couponRoundsColl = getCouponRoundsColl(app.app_id);
+    return afterCouponRound(couponRoundsColl + 1) &&
+      bondBalance > 0 &&
+      couponRoundsColl < app.bond_length &&
+      getOptedIntoApp(app.app_id)
+  }
+
+  const couponTooltip = () => {
+    if (!app) return undefined;
+
+    const couponRoundsColl = getCouponRoundsColl(app.app_id);
+
+    let err = '';
+    if (!afterCouponRound(couponRoundsColl + 1) && couponRoundsColl < app.bond_length) err = err.concat('Not after coupon date\n')
+    if (bondBalance === 0) err = err.concat('Do not own bond\n')
+    if (couponRoundsColl >= app.bond_length) err = err.concat('Have collected all coupons\n')
+    if (!getOptedIntoApp(app.app_id)) err = err.concat('Have not opted into app\n')
+    return err;
+  }
+
+  const canClaimPrincipal = () => {
+    if (!app) return undefined;
+    const couponRoundsColl = getCouponRoundsColl(app.app_id);
+
+    return afterMaturity &&
+      bondBalance > 0 &&
+      couponRoundsColl >= app.bond_length
+  }
+
+  const principalTooltip = () => {
+    if (!app) return undefined;
+
+    const couponRoundsColl = getCouponRoundsColl(app.app_id);
+
+    let err = '';
+    if (!afterMaturity) err = err.concat('Not after maturity date\n')
+    if (bondBalance === 0) err = err.concat('Do not own bond\n')
+    if (couponRoundsColl < app.bond_length) err = err.concat('Have not collected all coupons\n')
+    return err;
+  }
 
   const bondBalance: number = app ? getBondBalance(app.bond_id) : 0;
 
@@ -105,8 +150,7 @@ function InvestorPage(props: InvestorPageProps) {
     getAccountInformation(selectedAccount.address).then(acc => setSelectedAccount(acc));
   }
 
-  const handleBuy = async (e: any) => {
-    e.preventDefault();
+  const handleBuy = async () => {
     if (!selectedAccount || !app) return;
     await buyBond(
       selectedAccount.address,
@@ -265,7 +309,7 @@ function InvestorPage(props: InvestorPageProps) {
   const appView = app && (
     <div>
 
-      <ArrowBackIcon onClick={exitAppView}/>
+      <IconButton onClick={exitAppView}><ArrowBackIcon/></IconButton>
 
       <BondTimeline
         startBuyDate={app.start_buy_date}
@@ -274,6 +318,126 @@ function InvestorPage(props: InvestorPageProps) {
         maturityDate={app.maturity_date}
         period={app.period}
       />
+
+      <Grid container spacing={3}>
+
+        {/*First Row*/}
+        <Grid item xs={6}>
+          <div title={getOptedIntoBond(app.bond_id) ? 'Already opted into bond' : undefined}>
+            <Button
+              variant="outlined"
+              color="primary"
+              fullWidth
+              disabled={getOptedIntoBond(app.bond_id)}
+              onClick={handleAssetOptIn}
+            >
+              Opt into bond
+            </Button>
+          </div>
+        </Grid>
+
+        <Grid item xs={6}>
+          <div title={getOptedIntoApp(app.bond_id) ? 'Already opted into application' : undefined}>
+            <Button
+              variant="outlined"
+              color="primary"
+              fullWidth
+              disabled={getOptedIntoApp(app.app_id)}
+              onClick={handleAppOptIn}
+            >
+              Opt into application
+            </Button>
+          </div>
+        </Grid>
+
+        {/*Second Row*/}
+        <Grid item xs={5}>
+          <Form.Control
+            value={noOfBondsToBuy}
+            onChange={e => setNoOfBondsToBuy(parseInt(e.target.value))}
+            type="number"
+            name="noOfBondsToBuy"
+            required
+            disabled={!inBuyWindow}
+            title={!inBuyWindow ? 'Not in buy window' : undefined}
+          />
+        </Grid>
+
+        <Grid item xs={7}>
+          <div title={!inBuyWindow ? 'Not in buy window' : undefined}>
+            <Button
+              variant="outlined"
+              color="primary"
+              fullWidth
+              style={{ textTransform: 'none' }}
+              disabled={!inBuyWindow}
+              onClick={handleBuy}
+            >
+              You own {bondBalance} bonds <br/>
+              BUY {noOfBondsToBuy} bonds for ${formatStablecoin(noOfBondsToBuy * app.bond_cost)}
+            </Button>
+          </div>
+        </Grid>
+
+        {/*Third row*/}
+        <Grid item xs={4}>
+          <div title={couponTooltip()}>
+            <Button
+              variant="outlined"
+              color="primary"
+              fullWidth
+              style={{ textTransform: 'none' }}
+              disabled={!canClaimCoupon()}
+              onClick={handleClaimCoupon}
+            >
+              You have claimed {getCouponRoundsColl(app.app_id)} / {app.bond_length} coupons <br/>
+              Can claim ${formatStablecoin(bondBalance * app.bond_coupon)} <br/>
+              CLAIM COUPON
+            </Button>
+          </div>
+        </Grid>
+
+        <Grid item xs={4}>
+          <div title={principalTooltip()}>
+            <Button
+              variant="outlined"
+              color="primary"
+              fullWidth
+              style={{ textTransform: 'none' }}
+              disabled={!canClaimPrincipal()}
+              onClick={handleClaimPrincipal}
+            >
+              Can claim ${formatStablecoin(bondBalance * app.bond_principal)} <br/>
+              CLAIM PRINCIPAL
+            </Button>
+          </div>
+        </Grid>
+
+        <Grid item xs={4}>
+          <div title={!hasDefaulted ? 'Enough funds to cover all money owed' : undefined}>
+            <Button
+              variant="outlined"
+              color="primary"
+              fullWidth
+              style={{ textTransform: 'none' }}
+              disabled={!hasDefaulted}
+              onClick={handleClaimDefault}
+            >
+              Stablecoin balance of bond escrow: ${formatStablecoin(stablecoinEscrowBalance)} <br/>
+              Can claim ${formatStablecoin((bondBalance / (bondsMinted - bondEscrowBalance)) * stablecoinEscrowBalance)} <br/>
+              CLAIM DEFAULT
+            </Button>
+          </div>
+        </Grid>
+
+      </Grid>
+
+      <Form.Group>
+        <Form.Label>Selected Address:</Form.Label>
+        <Form.Text>
+          {selectedAccount ? <>{selectedAccount.address}</> : <>No address selected</>}
+        </Form.Text>
+      </Form.Group>
 
       <div>
         <p>Name: {app.name}</p>
@@ -287,86 +451,8 @@ function InvestorPage(props: InvestorPageProps) {
         <p>Bond principal: ${formatStablecoin(app.bond_principal)}</p>
         <p>Bonds in circulation: {bondsMinted - bondEscrowBalance} / {bondsMinted}</p>
         <p>Stablecoin balance of bond escrow: ${formatStablecoin(stablecoinEscrowBalance)}</p>
+        <p>Bond balance: {bondBalance}</p>
       </div>
-
-      <Form.Group>
-        <Form.Label>Selected Address:</Form.Label>
-        <Form.Text>
-          {selectedAccount ? <>{selectedAccount.address}</> : <>No address selected</>}
-        </Form.Text>
-      </Form.Group>
-
-      {getOptedIntoBond(app.bond_id) ?
-        <p>Opted into bond, balance: {bondBalance}</p> :
-        <p>
-          Not opted into bond &nbsp;
-          <Button variant="contained" color="primary" onClick={handleAssetOptIn}>Opt In</Button>
-        </p>
-      }
-
-      {getOptedIntoApp(app.app_id) ?
-        <p>Opted into app</p> :
-        <p>
-          Not opted into app &nbsp;
-          <Button variant="contained" color="primary" onClick={handleAppOptIn}>Opt In</Button>
-        </p>
-      }
-
-      {inBuyWindow ?
-        <Form onSubmit={handleBuy}>
-          <Form.Group>
-            <Form.Label>Number of bonds to buy:</Form.Label>
-            <Form.Control
-              value={noOfBondsToBuy}
-              onChange={e => setNoOfBondsToBuy(parseInt(e.target.value))}
-              type="number"
-              name="noOfBondsToBuy"
-              required
-            />
-            <Form.Text muted>This will cost ${formatStablecoin(noOfBondsToBuy * app.bond_cost)}</Form.Text>
-            <Button variant="contained" color="primary" type="submit">Buy</Button>
-          </Form.Group>
-        </Form> :
-        <p>Not in buy window</p>
-      }
-
-      {afterBuyWindow ?
-        <Form onSubmit={handleClaimCoupon}>
-          <Form.Group>
-            <Form.Label>Claim coupon</Form.Label>
-            {/* TODO: Check if eligible */}
-            <Form.Text muted>You have claimed {getCouponRoundsColl(app.app_id)} / {app.bond_length} coupons</Form.Text>
-            <Form.Text muted>You are eligible to claim ${formatStablecoin(bondBalance * app.bond_coupon)}</Form.Text>
-            <Button variant="contained" color="primary" type="submit">Claim Coupon</Button>
-          </Form.Group>
-        </Form> :
-        <p>Ineligible to claim coupon at this time</p>
-      }
-
-      {afterMaturity ?
-        <Form onSubmit={handleClaimPrincipal}>
-          <Form.Group>
-            <Form.Label>Claim principal</Form.Label>
-            {/* TODO: Check if eligible */}
-            <Form.Text muted>You are eligible to claim ${formatStablecoin(bondBalance * app.bond_principal)}</Form.Text>
-            <Button variant="contained" color="primary" type="submit">Claim Principal</Button>
-          </Form.Group>
-        </Form> :
-        <p>Ineligible to claim principal at this time</p>
-      }
-
-      {hasDefaulted ?
-        <Form onSubmit={handleClaimDefault}>
-          <Form.Group>
-            <Form.Label>Claim default</Form.Label>
-            <Form.Text muted>
-              You are eligible to claim ${formatStablecoin((bondBalance / (bondsMinted - bondEscrowBalance)) * stablecoinEscrowBalance)}
-            </Form.Text>
-            <Button variant="contained" color="primary" type="submit">Claim Default</Button>
-          </Form.Group>
-        </Form> :
-        <p>Ineligible to claim default as stablecoin escrow balance has enough funds</p>
-      }
 
     </div>
   )
