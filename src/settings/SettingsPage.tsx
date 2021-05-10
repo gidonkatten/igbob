@@ -8,6 +8,11 @@ import Button from '@material-ui/core/Button';
 import { optIntoAsset } from '../algorand/assets/OptIntoAsset';
 import { STABLECOIN_ID } from '../algorand/utils/Utils';
 import { addressesSelector, optedIntoStablecoinSelector, selectedAccountSelector } from '../redux/selectors/selectors';
+import FormControl from '@material-ui/core/FormControl';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import FormLabel from '@material-ui/core/FormLabel';
+import Radio from '@material-ui/core/Radio';
+import RadioGroup from '@material-ui/core/RadioGroup';
 
 interface SettingsPageProps {
   addresses: string[];
@@ -27,20 +32,13 @@ function SettingsPage(props: SettingsPageProps) {
     </ul>
   )
 
-  async function onSelectAddress(address: string) {
-    if (address) {
-      const userAccount = await getAccountInformation(address);
+  const handleChange = async (e) => {
+    const addr = e.target.value;
+    if (addr) {
+      const userAccount = await getAccountInformation(addr);
       setSelectedAccount(userAccount);
     }
   }
-
-  const selectAddress = (
-    <select value={selectedAccount?.address} onChange={e => onSelectAddress(e.target.value)}>
-      {addresses.map((addr) => {
-        return <option key={addr} value={addr}>{addr}</option>
-      })}
-    </select>
-  )
 
   const handleStablecoinOptIn = async () => {
     if (!selectedAccount) return;
@@ -68,24 +66,37 @@ function SettingsPage(props: SettingsPageProps) {
         Note that you can edit which accounts are connected by disconnecting
         from this site on MyAlgo and reconnecting using the button below.
       </p>
-
-      <h3>Connected Account</h3>
-      {addresses.length > 0 ?
-        addressesListed :
-        <p>No addresses</p>
-      }
       <p><MyAlgoGetAccounts/></p>
 
-      <h3>Selected Address</h3>
-      {addresses.length > 0 ?
-        selectAddress :
-        <p>No addresses</p>
-      }
+      <h3>Connected Account</h3>
+      <FormControl component="fieldset">
+        <FormLabel>Selected Address</FormLabel>
+        <RadioGroup value={selectedAccount?.address} onChange={handleChange}>
+          {addresses.map((addr) => {
+            return (
+              <FormControlLabel
+                key={addr}
+                value={addr}
+                control={<Radio/>}
+                label={addr}
+              />
+            )
+          })}
+        </RadioGroup>
+      </FormControl>
+
+      {/*<br/><br/>*/}
 
       {selectedAccount && !optedIntoStablecoin && (
         <>
           <h3>Opt into stablecoin</h3>
-          <Button variant="contained" color="primary" onClick={handleStablecoinOptIn}>Opt In</Button>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleStablecoinOptIn}
+          >
+            Opt In
+          </Button>
         </>
       )}
 
