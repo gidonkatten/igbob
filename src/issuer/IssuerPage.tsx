@@ -6,6 +6,11 @@ import Form from 'react-bootstrap/Form';
 import { UserAccount } from '../redux/reducers/user';
 import { selectedAccountSelector } from '../redux/selectors/selectors';
 import { convertDateToUnixTime } from '../utils/Utils';
+import FormControl from '@material-ui/core/FormControl';
+import InputLabel from '@material-ui/core/InputLabel';
+import Input from '@material-ui/core/Input';
+import TextField from '@material-ui/core/TextField';
+import { KeyboardDateTimePicker } from "@material-ui/pickers";
 
 interface IssuerPageProps {
   selectedAccount: UserAccount
@@ -15,20 +20,22 @@ function IssuerPage(props: IssuerPageProps) {
 
   const [name, setName] = useState<string>('');
   const [des, setDes] = useState<string>('');
-  const [totalIssuance, setTotalIssuance] = useState<number>(0);
-  const [bondLength, setBondLength] = useState<number>(0);
-  const [period, setPeriod] = useState<number>(0);
-  const [startBuyDate, setStartBuyDate] = useState<string>('');
-  const [endBuyDate, setEndBuyDate] = useState<string>('');
-  const [bondCost, setBondCost] = useState<number>(0);
-  const [bondCoupon, setBondCoupon] = useState<number>(0);
-  const [bondPrincipal, setBondPrincipal] = useState<number>(0);
+  const [totalIssuance, setTotalIssuance] = useState<number>();
+  const [bondLength, setBondLength] = useState<number>();
+  const [period, setPeriod] = useState<number>();
+  const [startBuyDate, setStartBuyDate] = useState(null);
+  const [endBuyDate, setEndBuyDate] = useState(null);
+  const [bondCost, setBondCost] = useState<number>();
+  const [bondCoupon, setBondCoupon] = useState<number>();
+  const [bondPrincipal, setBondPrincipal] = useState<number>();
 
   const { selectedAccount } = props;
   const { getAccessTokenSilently } = useAuth0();
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
+
+    if (!selectedAccount || !startBuyDate || !endBuyDate) return;
 
     const accessToken = await getAccessTokenSilently({ scope: "issue:bonds" });
 
@@ -47,8 +54,8 @@ function IssuerPage(props: IssuerPageProps) {
         "issuerAddr": selectedAccount.address,
         "bondLength": bondLength,
         "period": period,
-        "startBuyDate": convertDateToUnixTime(startBuyDate),
-        "endBuyDate": convertDateToUnixTime(endBuyDate),
+        "startBuyDate": convertDateToUnixTime(startBuyDate!),
+        "endBuyDate": convertDateToUnixTime(endBuyDate!),
         "bondCost": bondCost,
         "bondCoupon": bondCoupon,
         "bondPrincipal": bondPrincipal
@@ -59,139 +66,164 @@ function IssuerPage(props: IssuerPageProps) {
     console.log(parseResponse);
   }
 
+  const handleStartDateChange = (date) => setStartBuyDate(date);
+  const handleEndDateChange = (date) => setEndBuyDate(date)
+
   return (
     <div className={"page-content"}>
       <h3>Issue Bond</h3>
 
       <Form onSubmit={handleSubmit}>
 
-        <Form.Group>
-          <Form.Label>Name:</Form.Label>
-            <Form.Control
-              value={name}
-              onChange={e => setName(e.target.value)}
-              type="input"
-              name="name"
-              required
-              maxLength={63}
-            />
-          <Form.Text muted>This is what investors will see</Form.Text>
-        </Form.Group>
+        <TextField
+          label="Name:"
+          value={name}
+          onChange={e => setName(e.target.value)}
+          required
+          fullWidth
+          helperText="This is what the investor will see"
+          inputProps={{ maxLength: 63 }}
+          InputLabelProps={{ required: false }}
+          style={{ margin: '8px 0px' }}
+        />
 
-        <Form.Group>
-          <Form.Label>Description:</Form.Label>
-          <Form.Control
-            value={des}
-            onChange={e => setDes(e.target.value)}
-            as="textarea"
-            rows={3}
-            name="des"
+        <TextField
+          label="Description:"
+          value={des}
+          onChange={e => setDes(e.target.value)}
+          required
+          fullWidth
+          multiline
+          helperText="This is what the investor will see"
+          inputProps={{ maxLength: 511 }}
+          InputLabelProps={{ required: false }}
+          style={{ margin: '8px 0px' }}
+        />
+
+        {/*TODO: investigate why doesn't set when undefined -> addr*/}
+        <TextField
+          label="Selected Address:"
+          defaultValue={selectedAccount ? selectedAccount.address : undefined}
+          required
+          fullWidth
+          InputProps={{ readOnly: true }}
+          helperText="This is where the bond proceeds will go - can be changed in settings"
+          InputLabelProps={{ required: false }}
+          style={{ margin: '8px 0px' }}
+        />
+
+        <FormControl style={{ margin: '8px 0px', width: '100%' }}>
+          <InputLabel>Number Of Bonds To Mint:</InputLabel>
+          <Input
+            value={totalIssuance}
+            onChange={e => setTotalIssuance(parseInt(e.target.value))}
+            type="number"
+            name="totalIssuance"
             required
-            maxLength={511}
           />
-          <Form.Text muted>This is what investors will see</Form.Text>
-        </Form.Group>
+        </FormControl>
 
-        <Form.Group>
-          <Form.Label>Selected Address:</Form.Label>
-          <Form.Text>
-            {selectedAccount ? <>{selectedAccount.address}</> : <>No address selected</>}
-          </Form.Text>
-          <Form.Text muted>This is where the bond proceeds will go - can be changed in settings</Form.Text>
-        </Form.Group>
-
-        <Form.Group>
-          <Form.Label>Number of Bonds:</Form.Label>
-          <Form.Control
-              value={totalIssuance}
-              onChange={e => setTotalIssuance(parseInt(e.target.value))}
+        {/*Row split into halves*/}
+        <div style={{ margin: '8px 0px', width: '100%' }}>
+          <FormControl style={{ width: '50%', paddingRight: '4px' }}>
+            <InputLabel>Bond Length:</InputLabel>
+            <Input
+              value={bondLength}
+              onChange={e => setBondLength(parseInt(e.target.value))}
               type="number"
-              name="totalIssuance"
+              name="bondLength"
               required
-          />
-        </Form.Group>
+            />
+          </FormControl>
 
-        <Form.Group>
-          <Form.Label>Bond Length:</Form.Label>
-          <Form.Control
-            value={bondLength}
-            onChange={e => setBondLength(parseInt(e.target.value))}
-            type="number"
-            name="bondLength"
-            required
-          />
-          <Form.Label>Bond Period:</Form.Label>
-          <Form.Control
-            value={period}
-            onChange={e => setPeriod(parseInt(e.target.value))}
-            type="number"
-            name="period"
-            required
-          />
-          <Form.Text muted>{bondLength} coupon payments, payable every {period} seconds</Form.Text>
-        </Form.Group>
+          <FormControl style={{ width: '50%', paddingLeft: '4px' }}>
+            <InputLabel>Bond Period:</InputLabel>
+            <Input
+              value={period}
+              onChange={e => setPeriod(parseInt(e.target.value))}
+              type="number"
+              name="period"
+              required
+            />
+          </FormControl>
+        </div>
 
-        <Form.Group>
-          <Form.Label>Start buy date:</Form.Label>
-          <Form.Control
+        <Form.Text
+          muted
+          style={{ margin: '8px 0px' }}
+        >
+          {bondLength} coupon payments, payable every {period} seconds
+        </Form.Text>
+
+        {/*Row split into halves*/}
+        <div style={{ margin: '8px 0px', width: '100%' }}>
+          <KeyboardDateTimePicker
+            clearable
+            label="Start buy date:"
             value={startBuyDate}
-            onChange={e => setStartBuyDate(e.target.value)}
-            type="datetime-local"
-            name="startDate"
+            onChange={handleStartDateChange}
+            disablePast
+            format="yyyy/MM/dd HH:mm"
             required
+            style={{ width: '50%', paddingRight: '4px' }}
+            InputLabelProps={{ required: false }}
           />
-        </Form.Group>
 
-        <Form.Group>
-          <Form.Label>End buy date:</Form.Label>
-          <Form.Control
+          <KeyboardDateTimePicker
+            clearable
+            label="End buy date:"
             value={endBuyDate}
-            onChange={e => setEndBuyDate(e.target.value)}
-            type="datetime-local"
-            name="endDate"
+            onChange={handleEndDateChange}
+            disablePast
+            format="yyyy/MM/dd HH:mm"
             required
+            style={{ width: '50%', paddingLeft: '4px' }}
+            InputLabelProps={{ required: false }}
           />
-        </Form.Group>
+        </div>
 
-        <Form.Group>
-          <Form.Label>Bond Cost:</Form.Label>
-          <Form.Control
-            value={bondCost}
-            onChange={e => setBondCost(parseInt(e.target.value))}
-            type="number"
-            name="bondCost"
-            required
-            // placeholder="Micro Algos"
-          />
-        </Form.Group>
+        {/*Row split into thirds*/}
+        <div style={{ margin: '8px 0px', width: '100%' }}>
 
-        <Form.Group>
-          <Form.Label>Bond Coupon:</Form.Label>
-          <Form.Control
-            value={bondCoupon}
-            onChange={e => setBondCoupon(parseInt(e.target.value))}
-            type="number"
-            name="bondCoupon"
-            required
-          />
-        </Form.Group>
+          <FormControl style={{ width: '33.33%', paddingRight: '4px' }}>
+            <InputLabel>Bond Cost:</InputLabel>
+            <Input
+              value={bondCost}
+              onChange={e => setBondCost(parseInt(e.target.value))}
+              type="number"
+              name="bondCost"
+              required
+            />
+          </FormControl>
 
-        <Form.Group>
-          <Form.Label>Bond Principal:</Form.Label>
-          <Form.Control
-            value={bondPrincipal}
-            onChange={e => setBondPrincipal(parseInt(e.target.value))}
-            type="number"
-            name="bondPrincipal"
-            required
-            // placeholder="Micro Algos"
-          />
-        </Form.Group>
+          <FormControl style={{ width: '33.33%', paddingRight: '4px', paddingLeft: '4px' }}>
+            <InputLabel>Bond Coupon:</InputLabel>
+            <Input
+              value={bondCoupon}
+              onChange={e => setBondCoupon(parseInt(e.target.value))}
+              type="number"
+              name="bondCoupon"
+              required
+            />
+          </FormControl>
+
+          <FormControl style={{ width: '33.33%', paddingLeft: '4px' }}>
+            <InputLabel>Bond Principal:</InputLabel>
+            <Input
+              value={bondPrincipal}
+              onChange={e => setBondPrincipal(parseInt(e.target.value))}
+              type="number"
+              name="bondPrincipal"
+              required
+            />
+          </FormControl>
+        </div>
 
         <Button
           variant="contained"
           color="primary"
           type="submit"
+          style={{ margin: '8px 0px' }}
         >
           Create
         </Button>
