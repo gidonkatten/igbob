@@ -83,7 +83,8 @@ function IssuerPage(props: IssuerPageProps) {
           <Form.Control
             value={des}
             onChange={e => setDes(e.target.value)}
-            type="input"
+            as="textarea"
+            rows={3}
             name="des"
             required
             maxLength={511}
@@ -96,7 +97,7 @@ function IssuerPage(props: IssuerPageProps) {
           <Form.Text>
             {selectedAccount ? <>{selectedAccount.address}</> : <>No address selected</>}
           </Form.Text>
-          <Form.Text muted>This is where the bond proceeds will go</Form.Text>
+          <Form.Text muted>This is where the bond proceeds will go - can be changed in settings</Form.Text>
         </Form.Group>
 
         <Form.Group>

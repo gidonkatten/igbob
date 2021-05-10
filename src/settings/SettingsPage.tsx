@@ -65,8 +65,8 @@ function SettingsPage(props: SettingsPageProps) {
         the application from.
       </p>
       <p>
-        You can edit which accounts are connected by disconnecting from this site on
-        MyAlgo and reconnecting using the button below.
+        Note that you can edit which accounts are connected by disconnecting
+        from this site on MyAlgo and reconnecting using the button below.
       </p>
 
       <h3>Connected Account</h3>
@@ -74,7 +74,7 @@ function SettingsPage(props: SettingsPageProps) {
         addressesListed :
         <p>No addresses</p>
       }
-      <MyAlgoGetAccounts/>
+      <p><MyAlgoGetAccounts/></p>
 
       <h3>Selected Address</h3>
       {addresses.length > 0 ?

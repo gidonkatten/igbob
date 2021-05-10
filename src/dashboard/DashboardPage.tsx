@@ -69,15 +69,16 @@ function DashboardPage(props: DashboardPageProps) {
         <h3>Algo Balance</h3>
         <p>Current balance is {selectedAccount ? selectedAccount.algoBalance : 0} algos</p>
         <p>
-          Can use TestNet algo &nbsp;
-          <a
+          Can use TestNet algo
+          <Button
             href="https://bank.testnet.algorand.network"
             target="_blank"
             rel="noopener noreferrer"
+            color="primary"
           >
             dispenser
-          </a>
-          &nbsp; to add 10 algos for transaction and minimum balance fees.
+          </Button>
+          to add 10 algos for transaction and minimum balance fees.
         </p>
       </div>
 

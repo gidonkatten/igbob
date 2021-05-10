@@ -11,42 +11,39 @@ function NavbarManager() {
   const { isAuthenticated } = useAuth0();
 
   return (
-    <div>
-      <Navbar bg="light" variant="light">
+    <Navbar bg="dark" variant="dark" fixed="top">
 
-        {/*Left hand side of navbar*/}
-        <Nav className="mr-auto">
-          {isAuthenticated && (
-            <LinkContainer to="/dashboard">
-              <Nav.Link>Dashboard</Nav.Link>
-            </LinkContainer>
-          )}
-          {isAuthenticated && (
-            <LinkContainer to="/issuer">
-              <Nav.Link>Issuer</Nav.Link>
-            </LinkContainer>
-          )}
-          {isAuthenticated && (
-            <LinkContainer to="/investor">
-              <Nav.Link>Investor</Nav.Link>
-            </LinkContainer>
-          )}
-        </Nav>
+      {/*Left hand side of navbar*/}
+      <Nav className="mr-auto">
+        {isAuthenticated && (
+          <LinkContainer to="/dashboard">
+            <Nav.Link>Dashboard</Nav.Link>
+          </LinkContainer>
+        )}
+        {isAuthenticated && (
+          <LinkContainer to="/issuer">
+            <Nav.Link>Issuer</Nav.Link>
+          </LinkContainer>
+        )}
+        {isAuthenticated && (
+          <LinkContainer to="/investor">
+            <Nav.Link>Investor</Nav.Link>
+          </LinkContainer>
+        )}
+      </Nav>
 
-        {/*Right hand side of navbar*/}
-        <Nav>
-          {isAuthenticated && (
-            <LinkContainer to="/settings">
-              <Nav.Link>Settings</Nav.Link>
-            </LinkContainer>
-          )}
-          {!isAuthenticated && <SignupNav/>}
-          {isAuthenticated ? <LogoutNav /> : <LoginNav />}
-        </Nav>
+      {/*Right hand side of navbar*/}
+      <Nav>
+        {isAuthenticated && (
+          <LinkContainer to="/settings">
+            <Nav.Link>Settings</Nav.Link>
+          </LinkContainer>
+        )}
+        {!isAuthenticated && <SignupNav/>}
+        {isAuthenticated ? <LogoutNav /> : <LoginNav />}
+      </Nav>
 
-      </Navbar>
-
-    </div>
+    </Navbar>
   );
 }
 

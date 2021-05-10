@@ -19,10 +19,15 @@ import { formatStablecoin } from '../utils/Utils';
 import { claimCoupon } from '../algorand/bond/Coupon';
 import { claimPrincipal } from '../algorand/bond/Principal';
 import BondTimeline from './BondTimeline';
-import { algodClient, indexerClient } from '../algorand/utils/Utils';
+import { indexerClient } from '../algorand/utils/Utils';
 import { claimDefault } from '../algorand/bond/Default';
 import { getHasDefaulted } from './Utils';
 import { optIntoApp } from '../algorand/bond/OptIntoApp';
+import ArrowBackIcon from '@material-ui/icons/ArrowBack';
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
+import ListSubheader from '@material-ui/core/ListSubheader';
+import ListItemText from '@material-ui/core/ListItemText';
 
 interface InvestorPageProps {
   selectedAccount?: UserAccount;
@@ -239,25 +244,28 @@ function InvestorPage(props: InvestorPageProps) {
 
   const appsList = (
     <div>
-      {apps && [...apps].map(([appId, app]) => {
-        return (
-          <div
-            onClick={() => enterAppView(appId)}
-            key={appId}
-          >
-            {appId} {app.name}
-          </div>
-        )
-      })}
+      <h3>Listed Green Bonds</h3>
+      <List component="nav">
+        {apps && [...apps].map(([appId, app]) => {
+          return (
+            <ListItem
+              button
+              onClick={() => enterAppView(appId)}
+              key={appId}
+            >
+              <ListItemText primary={app.name} secondary={"App Id: " + app.app_id}/>
+            </ListItem>
+          )
+        })}
+      </List>
     </div>
+
   )
 
   const appView = app && (
     <div>
 
-      <div onClick={exitAppView}>
-        Go Back
-      </div>
+      <ArrowBackIcon onClick={exitAppView}/>
 
       <BondTimeline
         startBuyDate={app.start_buy_date}
@@ -281,10 +289,17 @@ function InvestorPage(props: InvestorPageProps) {
         <p>Stablecoin balance of bond escrow: ${formatStablecoin(stablecoinEscrowBalance)}</p>
       </div>
 
+      <Form.Group>
+        <Form.Label>Selected Address:</Form.Label>
+        <Form.Text>
+          {selectedAccount ? <>{selectedAccount.address}</> : <>No address selected</>}
+        </Form.Text>
+      </Form.Group>
+
       {getOptedIntoBond(app.bond_id) ?
         <p>Opted into bond, balance: {bondBalance}</p> :
         <p>
-          Not opted into bond
+          Not opted into bond &nbsp;
           <Button variant="contained" color="primary" onClick={handleAssetOptIn}>Opt In</Button>
         </p>
       }
@@ -292,7 +307,7 @@ function InvestorPage(props: InvestorPageProps) {
       {getOptedIntoApp(app.app_id) ?
         <p>Opted into app</p> :
         <p>
-          Not opted into app
+          Not opted into app &nbsp;
           <Button variant="contained" color="primary" onClick={handleAppOptIn}>Opt In</Button>
         </p>
       }
