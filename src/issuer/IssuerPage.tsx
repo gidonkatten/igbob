@@ -11,6 +11,8 @@ import InputLabel from '@material-ui/core/InputLabel';
 import Input from '@material-ui/core/Input';
 import TextField from '@material-ui/core/TextField';
 import { KeyboardDateTimePicker } from "@material-ui/pickers";
+import * as algosdk from 'algosdk';
+import { StablecoinInput } from '../utils/StablecoinInput';
 
 interface IssuerPageProps {
   selectedAccount: UserAccount
@@ -20,28 +22,37 @@ function IssuerPage(props: IssuerPageProps) {
 
   const [name, setName] = useState<string>('');
   const [des, setDes] = useState<string>('');
-  const [totalIssuance, setTotalIssuance] = useState<number>();
-  const [bondLength, setBondLength] = useState<number>();
-  const [period, setPeriod] = useState<number>();
+  const [totalIssuance, setTotalIssuance] = useState<number>(0);
+  const [numCouponPayments, setNumCouponPayments] = useState<number>(0);
   const [startBuyDate, setStartBuyDate] = useState(null);
   const [endBuyDate, setEndBuyDate] = useState(null);
-  const [bondCost, setBondCost] = useState<number>();
-  const [bondCoupon, setBondCoupon] = useState<number>();
-  const [bondPrincipal, setBondPrincipal] = useState<number>();
+  const [maturityDate, setMaturityDate] = useState(null);
+  const [bondCost, setBondCost] = useState<number>(0);
+  const [bondCoupon, setBondCoupon] = useState<number>(0);
+  const [bondPrincipal, setBondPrincipal] = useState<number>(0);
+  const [greenVerifierAddr, setGreenVerifierAddr] = useState<string>('');
 
   const { selectedAccount } = props;
   const { getAccessTokenSilently } = useAuth0();
 
+  const isValidAddr = greenVerifierAddr ? algosdk.isValidAddress(greenVerifierAddr) : true;
+
   const handleSubmit = async (e: any) => {
     e.preventDefault();
 
-    if (!selectedAccount || !startBuyDate || !endBuyDate) return;
+    if (!selectedAccount || !startBuyDate || !endBuyDate || numCouponPayments === undefined) return;
 
     const accessToken = await getAccessTokenSilently({ scope: "issue:bonds" });
 
     const headers = new Headers();
     headers.append("Content-Type", "application/json");
     headers.append("Authorization", `Bearer ${accessToken}`);
+
+    const sbd = convertDateToUnixTime(startBuyDate!);
+    const ebd = convertDateToUnixTime(endBuyDate!);
+    const md = convertDateToUnixTime(maturityDate!);
+    const period = (md - ebd) / numCouponPayments;
+
     const response = await fetch("https://igbob.herokuapp.com/apps/create-app", {
       method: "POST",
       headers: headers,
@@ -52,13 +63,14 @@ function IssuerPage(props: IssuerPageProps) {
         "bondName": "TestBond",
         "totalIssuance": totalIssuance,
         "issuerAddr": selectedAccount.address,
-        "bondLength": bondLength,
+        "greenVerifierAddr": greenVerifierAddr,
+        "bondLength": numCouponPayments,
         "period": period,
-        "startBuyDate": convertDateToUnixTime(startBuyDate!),
-        "endBuyDate": convertDateToUnixTime(endBuyDate!),
-        "bondCost": bondCost,
-        "bondCoupon": bondCoupon,
-        "bondPrincipal": bondPrincipal
+        "startBuyDate": sbd,
+        "endBuyDate": ebd,
+        "bondCost": bondCost * 1000000,
+        "bondCoupon": bondCoupon * 1000000,
+        "bondPrincipal": bondPrincipal * 1000000
       })
     });
 
@@ -68,6 +80,7 @@ function IssuerPage(props: IssuerPageProps) {
 
   const handleStartDateChange = (date) => setStartBuyDate(date);
   const handleEndDateChange = (date) => setEndBuyDate(date)
+  const handleMaturityDateChange = (date) => setMaturityDate(date)
 
   return (
     <div className={"page-content"}>
@@ -102,7 +115,7 @@ function IssuerPage(props: IssuerPageProps) {
 
         {/*TODO: investigate why doesn't set when undefined -> addr*/}
         <TextField
-          label="Selected Address:"
+          label="Issuer Address:"
           defaultValue={selectedAccount ? selectedAccount.address : undefined}
           required
           fullWidth
@@ -112,50 +125,44 @@ function IssuerPage(props: IssuerPageProps) {
           style={{ margin: '8px 0px' }}
         />
 
-        <FormControl style={{ margin: '8px 0px', width: '100%' }}>
-          <InputLabel>Number Of Bonds To Mint:</InputLabel>
-          <Input
-            value={totalIssuance}
-            onChange={e => setTotalIssuance(parseInt(e.target.value))}
-            type="number"
-            name="totalIssuance"
-            required
-          />
-        </FormControl>
+        <TextField
+          error={!isValidAddr}
+          label="Green Verifier Address:"
+          value={greenVerifierAddr}
+          onChange={e => setGreenVerifierAddr(e.target.value)}
+          required
+          fullWidth
+          helperText={!isValidAddr ? "Invalid address" : undefined}
+          InputLabelProps={{ required: false }}
+          style={{ margin: '8px 0px' }}
+        />
 
         {/*Row split into halves*/}
         <div style={{ margin: '8px 0px', width: '100%' }}>
           <FormControl style={{ width: '50%', paddingRight: '4px' }}>
-            <InputLabel>Bond Length:</InputLabel>
+            <InputLabel>No. of Bonds To Mint:</InputLabel>
             <Input
-              value={bondLength}
-              onChange={e => setBondLength(parseInt(e.target.value))}
+              value={totalIssuance}
+              onChange={e => setTotalIssuance(parseInt(e.target.value))}
               type="number"
-              name="bondLength"
+              name="totalIssuance"
               required
             />
           </FormControl>
 
           <FormControl style={{ width: '50%', paddingLeft: '4px' }}>
-            <InputLabel>Bond Period:</InputLabel>
+            <InputLabel>No. of Coupon Payments:</InputLabel>
             <Input
-              value={period}
-              onChange={e => setPeriod(parseInt(e.target.value))}
+              value={numCouponPayments}
+              onChange={e => setNumCouponPayments(parseInt(e.target.value))}
               type="number"
-              name="period"
+              name="numCouponPayments"
               required
             />
           </FormControl>
         </div>
 
-        <Form.Text
-          muted
-          style={{ margin: '8px 0px' }}
-        >
-          {bondLength} coupon payments, payable every {period} seconds
-        </Form.Text>
-
-        {/*Row split into halves*/}
+        {/*Row split into quarters*/}
         <div style={{ margin: '8px 0px', width: '100%' }}>
           <KeyboardDateTimePicker
             clearable
@@ -165,7 +172,7 @@ function IssuerPage(props: IssuerPageProps) {
             disablePast
             format="yyyy/MM/dd HH:mm"
             required
-            style={{ width: '50%', paddingRight: '4px' }}
+            style={{ width: '33.33%', paddingRight: '4px' }}
             InputLabelProps={{ required: false }}
           />
 
@@ -177,7 +184,19 @@ function IssuerPage(props: IssuerPageProps) {
             disablePast
             format="yyyy/MM/dd HH:mm"
             required
-            style={{ width: '50%', paddingLeft: '4px' }}
+            style={{ width: '33.33%', paddingLeft: '4px', paddingRight: '4px' }}
+            InputLabelProps={{ required: false }}
+          />
+
+          <KeyboardDateTimePicker
+            clearable
+            label="Maturity date:"
+            value={maturityDate}
+            onChange={handleMaturityDateChange}
+            disablePast
+            format="yyyy/MM/dd HH:mm"
+            required
+            style={{ width: '33.33%', paddingLeft: '4px' }}
             InputLabelProps={{ required: false }}
           />
         </div>
@@ -185,38 +204,36 @@ function IssuerPage(props: IssuerPageProps) {
         {/*Row split into thirds*/}
         <div style={{ margin: '8px 0px', width: '100%' }}>
 
-          <FormControl style={{ width: '33.33%', paddingRight: '4px' }}>
-            <InputLabel>Bond Cost:</InputLabel>
-            <Input
-              value={bondCost}
-              onChange={e => setBondCost(parseInt(e.target.value))}
-              type="number"
-              name="bondCost"
-              required
-            />
-          </FormControl>
+          <TextField
+            label="Bond Cost:"
+            value={bondCost.toFixed(6)}
+            onChange={e => setBondCost(Number(e.target.value))}
+            required
+            InputLabelProps={{ required: false }}
+            InputProps={{ inputComponent: StablecoinInput }}
+            style={{ width: '33.33%', paddingRight: '4px' }}
+          />
 
-          <FormControl style={{ width: '33.33%', paddingRight: '4px', paddingLeft: '4px' }}>
-            <InputLabel>Bond Coupon:</InputLabel>
-            <Input
-              value={bondCoupon}
-              onChange={e => setBondCoupon(parseInt(e.target.value))}
-              type="number"
-              name="bondCoupon"
-              required
-            />
-          </FormControl>
+          <TextField
+            label="Bond Coupon:"
+            value={bondCoupon.toFixed(6)}
+            onChange={e => setBondCoupon(Number(e.target.value))}
+            required
+            InputLabelProps={{ required: false }}
+            InputProps={{ inputComponent: StablecoinInput }}
+            style={{ width: '33.33%', paddingRight: '4px', paddingLeft: '4px' }}
+          />
 
-          <FormControl style={{ width: '33.33%', paddingLeft: '4px' }}>
-            <InputLabel>Bond Principal:</InputLabel>
-            <Input
-              value={bondPrincipal}
-              onChange={e => setBondPrincipal(parseInt(e.target.value))}
-              type="number"
-              name="bondPrincipal"
-              required
-            />
-          </FormControl>
+          <TextField
+            label="Bond Principal:"
+            value={bondPrincipal.toFixed(6)}
+            onChange={e => setBondPrincipal(Number(e.target.value))}
+            required
+            InputLabelProps={{ required: false }}
+            InputProps={{ inputComponent: StablecoinInput }}
+            style={{ width: '33.33%', paddingLeft: '4px' }}
+          />
+
         </div>
 
         <Button
