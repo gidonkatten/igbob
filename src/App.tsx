@@ -11,6 +11,7 @@ import { useAuth0 } from '@auth0/auth0-react';
 import { setAccountAddresses, setSelectedAccount } from './redux/actions/actions';
 import { connect } from 'react-redux';
 import { getAccountInformation } from './algorand/balance/Balance';
+import GreenVerifierPage from './greenVerifier/GreenVerifierPage';
 
 interface AppProps {
   setAccountAddresses: typeof setAccountAddresses;
@@ -53,6 +54,7 @@ function App(props: AppProps) {
         <ProtectedRoute exact path="/dashboard" component={DashboardPage}/>
         <ProtectedRoute exact path="/issuer" component={IssuerPage}/>
         <ProtectedRoute exact path="/investor" component={InvestorPage}/>
+        <ProtectedRoute exact path="/green-verifier" component={GreenVerifierPage}/>
         <ProtectedRoute exact path="/settings" component={SettingsPage}/>
         {/*Placed last to catch all unknown paths*/}
         <Route component={HomePage}/>

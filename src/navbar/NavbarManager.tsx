@@ -30,6 +30,11 @@ function NavbarManager() {
             <Nav.Link>Investor</Nav.Link>
           </LinkContainer>
         )}
+        {isAuthenticated && (
+          <LinkContainer to="/green-verifier">
+            <Nav.Link>Green Verifier</Nav.Link>
+          </LinkContainer>
+        )}
       </Nav>
 
       {/*Right hand side of navbar*/}

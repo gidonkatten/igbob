@@ -24,14 +24,6 @@ interface SettingsPageProps {
 function SettingsPage(props: SettingsPageProps) {
   const { addresses, selectedAccount, optedIntoStablecoin, setSelectedAccount } = props;
 
-  const addressesListed = (
-    <ul>
-      {addresses.map((addr) => {
-        return <li key={addr}>Address: {addr}</li>
-      })}
-    </ul>
-  )
-
   const handleChange = async (e) => {
     const addr = e.target.value;
     if (addr) {
