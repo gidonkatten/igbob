@@ -14,7 +14,6 @@ import {
 import { getAccountInformation, getAssetBalance, getStablecoinBalance } from '../algorand/balance/Balance';
 import Button from '@material-ui/core/Button';
 import { UserAccount } from '../redux/reducers/user';
-import Form from 'react-bootstrap/Form';
 import { formatStablecoin } from '../utils/Utils';
 import { claimCoupon } from '../algorand/bond/Coupon';
 import { claimPrincipal } from '../algorand/bond/Principal';
@@ -29,6 +28,10 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import Grid from '@material-ui/core/Grid';
+import FormControl from '@material-ui/core/FormControl';
+import InputLabel from '@material-ui/core/InputLabel';
+import Input from '@material-ui/core/Input';
+import TextField from '@material-ui/core/TextField';
 
 interface InvestorPageProps {
   selectedAccount?: UserAccount;
@@ -90,6 +93,21 @@ function InvestorPage(props: InvestorPageProps) {
   const afterCouponRound = (round) => app && (currentTime > (app.end_buy_date + app.period * round));
   const afterMaturity = app && (currentTime > app.maturity_date);
 
+  const canBuy = () => {
+    if (!app) return false;
+
+    return inBuyWindow && getOptedIntoBond(app.bond_id);
+  }
+
+  const buyTooltip = () => {
+    if (!app) return undefined;
+
+    let err = '';
+    if (!inBuyWindow) err = err.concat('Not in buy window\n')
+    if (!getOptedIntoBond(app.bond_id)) err = err.concat('Have not opted into bond\n')
+    return err;
+  }
+
   const canClaimCoupon = () => {
     if (!app) return false;
 
@@ -97,7 +115,8 @@ function InvestorPage(props: InvestorPageProps) {
     return afterCouponRound(couponRoundsColl + 1) &&
       bondBalance > 0 &&
       couponRoundsColl < app.bond_length &&
-      getOptedIntoApp(app.app_id)
+      getOptedIntoApp(app.app_id) &&
+      !hasDefaulted
   }
 
   const couponTooltip = () => {
@@ -110,6 +129,7 @@ function InvestorPage(props: InvestorPageProps) {
     if (bondBalance === 0) err = err.concat('Do not own bond\n')
     if (couponRoundsColl >= app.bond_length) err = err.concat('Have collected all coupons\n')
     if (!getOptedIntoApp(app.app_id)) err = err.concat('Have not opted into app\n')
+    if (hasDefaulted) err = err.concat('Not enough funds to pay out all money owed\n')
     return err;
   }
 
@@ -119,7 +139,9 @@ function InvestorPage(props: InvestorPageProps) {
 
     return afterMaturity &&
       bondBalance > 0 &&
-      couponRoundsColl >= app.bond_length
+      couponRoundsColl >= app.bond_length &&
+      getOptedIntoApp(app.app_id) &&
+      !hasDefaulted
   }
 
   const principalTooltip = () => {
@@ -131,6 +153,26 @@ function InvestorPage(props: InvestorPageProps) {
     if (!afterMaturity) err = err.concat('Not after maturity date\n')
     if (bondBalance === 0) err = err.concat('Do not own bond\n')
     if (couponRoundsColl < app.bond_length) err = err.concat('Have not collected all coupons\n')
+    if (!getOptedIntoApp(app.app_id)) err = err.concat('Have not opted into app\n')
+    if (hasDefaulted) err = err.concat('Not enough funds to pay out all money owed\n')
+    return err;
+  }
+
+  const canClaimDefault = () => {
+    if (!app) return undefined;
+
+    return hasDefaulted &&
+      bondBalance > 0 &&
+      getOptedIntoApp(app.app_id)
+  }
+
+  const defaultTooltip = () => {
+    if (!app) return undefined;
+
+    let err = '';
+    if (!hasDefaulted) err = err.concat('Enough funds to pay money owed\n')
+    if (bondBalance === 0) err = err.concat('Do not own bond\n')
+    if (!getOptedIntoApp(app.app_id)) err = err.concat('Have not opted into app\n')
     return err;
   }
 
@@ -319,7 +361,18 @@ function InvestorPage(props: InvestorPageProps) {
         period={app.period}
       />
 
-      <Grid container spacing={3}>
+      <TextField
+        label="Selected Address:"
+        defaultValue={selectedAccount ? selectedAccount.address : undefined}
+        required
+        fullWidth
+        InputProps={{ readOnly: true }}
+        helperText="Can be changed in settings"
+        InputLabelProps={{ required: false }}
+        style={{ margin: '8px 0px' }}
+      />
+
+      <Grid container spacing={3} style={{ marginTop: '8px' }}>
 
         {/*First Row*/}
         <Grid item xs={6}>
@@ -352,25 +405,29 @@ function InvestorPage(props: InvestorPageProps) {
 
         {/*Second Row*/}
         <Grid item xs={5}>
-          <Form.Control
-            value={noOfBondsToBuy}
-            onChange={e => setNoOfBondsToBuy(parseInt(e.target.value))}
-            type="number"
-            name="noOfBondsToBuy"
-            required
-            disabled={!inBuyWindow}
-            title={!inBuyWindow ? 'Not in buy window' : undefined}
-          />
+          <FormControl fullWidth>
+            <InputLabel>No. of Bonds To Buy:</InputLabel>
+            <Input
+              value={noOfBondsToBuy}
+              onChange={e => setNoOfBondsToBuy(parseInt(e.target.value))}
+              type="number"
+              name="noOfBondsToBuy"
+              fullWidth
+              required
+              disabled={!canBuy()}
+              title={buyTooltip()}
+            />
+          </FormControl>
         </Grid>
 
         <Grid item xs={7}>
-          <div title={!inBuyWindow ? 'Not in buy window' : undefined}>
+          <div title={buyTooltip()}>
             <Button
               variant="outlined"
               color="primary"
               fullWidth
               style={{ textTransform: 'none' }}
-              disabled={!inBuyWindow}
+              disabled={!canBuy()}
               onClick={handleBuy}
             >
               You own {bondBalance} bonds <br/>
@@ -414,13 +471,13 @@ function InvestorPage(props: InvestorPageProps) {
         </Grid>
 
         <Grid item xs={4}>
-          <div title={!hasDefaulted ? 'Enough funds to cover all money owed' : undefined}>
+          <div title={defaultTooltip()}>
             <Button
               variant="outlined"
               color="primary"
               fullWidth
               style={{ textTransform: 'none' }}
-              disabled={!hasDefaulted}
+              disabled={!canClaimDefault()}
               onClick={handleClaimDefault}
             >
               Stablecoin balance of bond escrow: ${formatStablecoin(stablecoinEscrowBalance)} <br/>
@@ -431,13 +488,6 @@ function InvestorPage(props: InvestorPageProps) {
         </Grid>
 
       </Grid>
-
-      <Form.Group>
-        <Form.Label>Selected Address:</Form.Label>
-        <Form.Text>
-          {selectedAccount ? <>{selectedAccount.address}</> : <>No address selected</>}
-        </Form.Text>
-      </Form.Group>
 
       <div>
         <p>Name: {app.name}</p>

@@ -12,6 +12,13 @@ export function convertUnixTimeToDate(unixTime: number): string {
   return new Date(unixTime * 1000).toDateString();
 }
 
+/**
+ * Convert from Unix time to DateTime
+ */
+export function convertUnixTimeToTime(unixTime: number): string {
+  return new Date(unixTime * 1000).toTimeString();
+}
+
 export const SIX_MONTH_PERIOD = 15768000;
 
 /**

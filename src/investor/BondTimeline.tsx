@@ -12,7 +12,7 @@ import PlayArrowIcon from '@material-ui/icons/PlayArrow'
 import GavelIcon from '@material-ui/icons/Gavel';
 import LocalOfferIcon from '@material-ui/icons/LocalOffer';
 import MonetizationOnIcon from '@material-ui/icons/MonetizationOn';
-import { convertUnixTimeToDate } from '../utils/Utils';
+import { convertUnixTimeToDate, convertUnixTimeToTime } from '../utils/Utils';
 import { CouponRound, getCouponRound } from './Utils';
 
 interface BondTimelineProps {
@@ -41,7 +41,11 @@ export default function bondTimeline(props: BondTimelineProps) {
       <TimelineItem>
 
         <TimelineOppositeContent>
-          <Typography variant="body2" color="textSecondary">
+          <Typography
+            variant="body2"
+            color="textSecondary"
+            title={convertUnixTimeToTime(startBuyDate)}
+          >
             {convertUnixTimeToDate(startBuyDate)}
           </Typography>
         </TimelineOppositeContent>
@@ -64,7 +68,11 @@ export default function bondTimeline(props: BondTimelineProps) {
       <TimelineItem>
 
         <TimelineOppositeContent>
-          <Typography variant="body2" color="textSecondary">
+          <Typography
+            variant="body2"
+            color="textSecondary"
+            title={convertUnixTimeToTime(endBuyDate)}
+          >
             {convertUnixTimeToDate(endBuyDate)}
           </Typography>
         </TimelineOppositeContent>
@@ -116,7 +124,11 @@ export default function bondTimeline(props: BondTimelineProps) {
       <TimelineItem>
 
         <TimelineOppositeContent>
-          <Typography variant="body2" color="textSecondary">
+          <Typography
+            variant="body2"
+            color="textSecondary"
+            title={convertUnixTimeToTime(maturityDate)}
+          >
             {convertUnixTimeToDate(maturityDate)}
           </Typography>
         </TimelineOppositeContent>
