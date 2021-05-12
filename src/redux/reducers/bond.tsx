@@ -4,6 +4,7 @@ export interface App {
   name: string,
   description: string,
   issuer_address: string,
+  green_verifier_address: string,
   bond_id: number,
   bond_escrow_address: string,
   stablecoin_escrow_address: string,

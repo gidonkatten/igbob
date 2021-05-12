@@ -1,25 +1,49 @@
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { appsSelector } from '../redux/selectors/selectors';
 import { connect } from 'react-redux';
 import { App } from '../redux/reducers/bond';
+import { useAuth0 } from '@auth0/auth0-react';
+import { setApps } from '../redux/actions/actions';
 
 interface StateProps {
   apps: Map<number, App>;
 }
 
-interface DispatchProps {}
+interface DispatchProps {
+  setApps: typeof setApps;
+}
 
 interface OwnProps {
   onClick: (appId: number) => void;
 }
 
-type AppListProps = StateProps & OwnProps;
+type AppListProps = StateProps & DispatchProps & OwnProps;
 
 function AppList(props: AppListProps) {
-  const { apps, onClick } = props;
+  const { apps, setApps, onClick } = props;
+
+  const { getAccessTokenSilently } = useAuth0();
+
+  async function fetchApps() {
+    try {
+      const accessToken = await getAccessTokenSilently();
+      const response = await fetch("https://igbob.herokuapp.com/apps/all-apps", {
+        headers: { Authorization: `Bearer ${accessToken}`},
+      });
+      const parseResponse = await response.json();
+      setApps(parseResponse);
+    } catch (err) {
+      console.error(err.message);
+    }
+  }
+
+  // fetch apps after initial render
+  useEffect( () => {
+    fetchApps();
+  }, []);
 
   return (
     <List component="nav">
@@ -42,6 +66,8 @@ const mapStateToProps = (state) => ({
   apps: appsSelector(state),
 });
 
-const mapDispatchToProps = {}
+const mapDispatchToProps = {
+  setApps
+}
 
 export default connect<StateProps, DispatchProps, OwnProps>(mapStateToProps, mapDispatchToProps)(AppList);

@@ -2,12 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux'
 import { buyBond } from '../algorand/bond/Buy';
 import { optIntoAsset } from '../algorand/assets/OptIntoAsset';
-import { useAuth0 } from '@auth0/auth0-react';
-import { setApps, setSelectedAccount } from '../redux/actions/actions';
+import { setSelectedAccount } from '../redux/actions/actions';
 import { App } from '../redux/reducers/bond';
 import {
-  appsSelector, getAppSelector,
-  getBondBalanceSelector, getCouponRoundsCollSelector, getOptedIntoAppSelector,
+  getAppSelector,
+  getBondBalanceSelector,
+  getCouponRoundsCollSelector,
+  getOptedIntoAppSelector,
   getOptedIntoBondSelector,
   selectedAccountSelector
 } from '../redux/selectors/selectors';
@@ -31,17 +32,21 @@ import Input from '@material-ui/core/Input';
 import TextField from '@material-ui/core/TextField';
 import AppList from '../common/AppList';
 
-interface InvestorPageProps {
+interface StateProps {
   selectedAccount?: UserAccount;
   getOptedIntoBond: (bondId: number) => boolean;
   getBondBalance: (bondId: number) => number;
   getOptedIntoApp: (appId: number) => boolean;
   getCouponRoundsColl: (appId: number) => number;
-  apps: Map<number, App>;
-  getApp: (appId: number) => App | undefined;
+  getApp: (appId: number) => App | undefined;}
+
+interface DispatchProps {
   setSelectedAccount: typeof setSelectedAccount;
-  setApps: typeof setApps;
 }
+
+interface OwnProps {}
+
+type InvestorPageProps = StateProps & DispatchProps & OwnProps;
 
 function InvestorPage(props: InvestorPageProps) {
 
@@ -63,27 +68,7 @@ function InvestorPage(props: InvestorPageProps) {
     getCouponRoundsColl,
     getApp,
     setSelectedAccount,
-    setApps
   } = props;
-  const { getAccessTokenSilently } = useAuth0();
-
-  async function fetchApps() {
-    try {
-      const accessToken = await getAccessTokenSilently();
-      const response = await fetch("https://igbob.herokuapp.com/apps/all-apps", {
-        headers: { Authorization: `Bearer ${accessToken}`},
-      });
-      const parseResponse = await response.json();
-      setApps(parseResponse);
-    } catch (err) {
-      console.error(err.message);
-    }
-  }
-
-  // fetch apps after initial render
-  useEffect( () => {
-    fetchApps();
-  }, []);
 
   const currentTime: number = Date.now() / 1000;
   const inBuyWindow = app && (currentTime > app.start_buy_date) && (currentTime < app.end_buy_date);
@@ -504,13 +489,11 @@ const mapStateToProps = (state: any) => ({
   getBondBalance: getBondBalanceSelector(state),
   getOptedIntoApp: getOptedIntoAppSelector(state),
   getCouponRoundsColl: getCouponRoundsCollSelector(state),
-  apps: appsSelector(state),
   getApp: getAppSelector(state),
 });
 
 const mapDispatchToProps = {
   setSelectedAccount,
-  setApps
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(InvestorPage);
+export default connect<StateProps, DispatchProps, OwnProps>(mapStateToProps, mapDispatchToProps)(InvestorPage);
