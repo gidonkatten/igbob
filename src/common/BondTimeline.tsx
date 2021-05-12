@@ -13,7 +13,7 @@ import GavelIcon from '@material-ui/icons/Gavel';
 import LocalOfferIcon from '@material-ui/icons/LocalOffer';
 import MonetizationOnIcon from '@material-ui/icons/MonetizationOn';
 import { convertUnixTimeToDate, convertUnixTimeToTime } from '../utils/Utils';
-import { CouponRound, getCouponRound } from './Utils';
+import { CouponRound, getCouponRound } from '../investor/Utils';
 
 interface BondTimelineProps {
   startBuyDate: number,

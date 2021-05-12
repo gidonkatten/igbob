@@ -12,7 +12,7 @@ import Input from '@material-ui/core/Input';
 import TextField from '@material-ui/core/TextField';
 import { KeyboardDateTimePicker } from "@material-ui/pickers";
 import * as algosdk from 'algosdk';
-import { StablecoinInput } from '../utils/StablecoinInput';
+import { StablecoinInput } from '../common/StablecoinInput';
 
 interface IssuerPageProps {
   selectedAccount: UserAccount

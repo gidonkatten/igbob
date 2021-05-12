@@ -17,21 +17,19 @@ import { UserAccount } from '../redux/reducers/user';
 import { formatStablecoin } from '../utils/Utils';
 import { claimCoupon } from '../algorand/bond/Coupon';
 import { claimPrincipal } from '../algorand/bond/Principal';
-import BondTimeline from './BondTimeline';
+import BondTimeline from '../common/BondTimeline';
 import { indexerClient } from '../algorand/utils/Utils';
 import { claimDefault } from '../algorand/bond/Default';
 import { getHasDefaulted } from './Utils';
 import { optIntoApp } from '../algorand/bond/OptIntoApp';
 import IconButton from '@material-ui/core/IconButton';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
 import Grid from '@material-ui/core/Grid';
 import FormControl from '@material-ui/core/FormControl';
 import InputLabel from '@material-ui/core/InputLabel';
 import Input from '@material-ui/core/Input';
 import TextField from '@material-ui/core/TextField';
+import AppList from '../common/AppList';
 
 interface InvestorPageProps {
   selectedAccount?: UserAccount;
@@ -63,7 +61,6 @@ function InvestorPage(props: InvestorPageProps) {
     getBondBalance,
     getOptedIntoApp,
     getCouponRoundsColl,
-    apps,
     getApp,
     setSelectedAccount,
     setApps
@@ -331,21 +328,8 @@ function InvestorPage(props: InvestorPageProps) {
   const appsList = (
     <div>
       <h3>Listed Green Bonds</h3>
-      <List component="nav">
-        {apps && [...apps].map(([appId, app]) => {
-          return (
-            <ListItem
-              button
-              onClick={() => enterAppView(appId)}
-              key={appId}
-            >
-              <ListItemText primary={app.name} secondary={"App Id: " + app.app_id}/>
-            </ListItem>
-          )
-        })}
-      </List>
+      <AppList onClick={enterAppView}/>
     </div>
-
   )
 
   const appView = app && (
