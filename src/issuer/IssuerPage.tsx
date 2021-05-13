@@ -40,7 +40,7 @@ function IssuerPage(props: IssuerPageProps) {
   const handleSubmit = async (e: any) => {
     e.preventDefault();
 
-    if (!selectedAccount || !startBuyDate || !endBuyDate || numCouponPayments === undefined) return;
+    if (!selectedAccount || !startBuyDate || !endBuyDate || numCouponPayments === undefined || !isValidAddr) return;
 
     const accessToken = await getAccessTokenSilently({ scope: "issue:bonds" });
 
@@ -51,7 +51,7 @@ function IssuerPage(props: IssuerPageProps) {
     const sbd = convertDateToUnixTime(startBuyDate!);
     const ebd = convertDateToUnixTime(endBuyDate!);
     const md = convertDateToUnixTime(maturityDate!);
-    const period = (md - ebd) / numCouponPayments;
+    const period = numCouponPayments === 0 ? (md - ebd) : ((md - ebd) / numCouponPayments);
 
     const response = await fetch("https://igbob.herokuapp.com/apps/create-app", {
       method: "POST",
@@ -147,6 +147,7 @@ function IssuerPage(props: IssuerPageProps) {
               type="number"
               name="totalIssuance"
               required
+              inputProps={{ min: 0 }}
             />
           </FormControl>
 
@@ -158,6 +159,7 @@ function IssuerPage(props: IssuerPageProps) {
               type="number"
               name="numCouponPayments"
               required
+              inputProps={{ min: 0 }}
             />
           </FormControl>
         </div>
@@ -216,8 +218,9 @@ function IssuerPage(props: IssuerPageProps) {
 
           <TextField
             label="Bond Coupon:"
-            value={bondCoupon.toFixed(6)}
+            value={numCouponPayments === 0 ? 0 : bondCoupon.toFixed(6)}
             onChange={e => setBondCoupon(Number(e.target.value))}
+            disabled={numCouponPayments === 0}
             required
             InputLabelProps={{ required: false }}
             InputProps={{ inputComponent: StablecoinInput }}

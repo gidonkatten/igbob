@@ -4,7 +4,6 @@
   "private": true,
   "homepage": "https://blockchain-bonds.herokuapp.com",
   "dependencies": {
-    "@algo-builder/types-algosdk": "^0.2.3",
     "@auth0/auth0-react": "^1.4.0",
     "@date-io/date-fns": "^1.3.13",
     "@fontsource/roboto": "^4.3.0",

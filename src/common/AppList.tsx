@@ -9,7 +9,7 @@ import { useAuth0 } from '@auth0/auth0-react';
 import { setApps } from '../redux/actions/actions';
 
 interface StateProps {
-  apps: Map<number, App>;
+  apps: Map<number, App>;  // appId -> App
 }
 
 interface DispatchProps {
@@ -18,12 +18,13 @@ interface DispatchProps {
 
 interface OwnProps {
   onClick: (appId: number) => void;
+  appFilter?: (app: App) => boolean;
 }
 
 type AppListProps = StateProps & DispatchProps & OwnProps;
 
 function AppList(props: AppListProps) {
-  const { apps, setApps, onClick } = props;
+  const { apps, setApps, onClick, appFilter } = props;
 
   const { getAccessTokenSilently } = useAuth0();
 
@@ -47,17 +48,20 @@ function AppList(props: AppListProps) {
 
   return (
     <List component="nav">
-      {apps && [...apps].map(([appId, app]) => {
-        return (
-          <ListItem
-            button
-            onClick={() => onClick(appId)}
-            key={appId}
-          >
-            <ListItemText primary={app.name} secondary={"App Id: " + app.app_id}/>
-          </ListItem>
-        )
-      })}
+      {apps && [...apps]
+        .filter(([, app]) => appFilter ? appFilter(app) : true)
+        .map(([appId, app]) => {
+          return (
+            <ListItem
+              button
+              onClick={() => onClick(appId)}
+              key={appId}
+            >
+              <ListItemText primary={app.name} secondary={"App Id: " + app.app_id}/>
+            </ListItem>
+          )
+        })
+      }
     </List>
   );
 }

@@ -2,24 +2,29 @@ import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux'
 import { buyBond } from '../algorand/bond/Buy';
 import { optIntoAsset } from '../algorand/assets/OptIntoAsset';
-import { setSelectedAccount } from '../redux/actions/actions';
+import { setMainAppGlobalState, setManageAppGlobalState, setSelectedAccount } from '../redux/actions/actions';
 import { App } from '../redux/reducers/bond';
 import {
   getAppSelector,
   getBondBalanceSelector,
-  getCouponRoundsCollSelector,
+  getCouponRoundsPaidSelector,
   getOptedIntoAppSelector,
   getOptedIntoBondSelector,
+  getTotCouponsPaidSelector,
   selectedAccountSelector
 } from '../redux/selectors/selectors';
-import { getAccountInformation, getAssetBalance, getStablecoinBalance } from '../algorand/balance/Balance';
+import {
+  getAccountInformation,
+  getAssetBalance,
+  getStablecoinBalance
+} from '../algorand/account/Account';
 import Button from '@material-ui/core/Button';
 import { UserAccount } from '../redux/reducers/user';
-import { formatStablecoin } from '../utils/Utils';
+import { extractAppState, formatStablecoin } from '../utils/Utils';
 import { claimCoupon } from '../algorand/bond/Coupon';
 import { claimPrincipal } from '../algorand/bond/Principal';
 import BondTimeline from '../common/BondTimeline';
-import { indexerClient } from '../algorand/utils/Utils';
+import { algodClient, indexerClient } from '../algorand/utils/Utils';
 import { claimDefault } from '../algorand/bond/Default';
 import { getHasDefaulted } from './Utils';
 import { optIntoApp } from '../algorand/bond/OptIntoApp';
@@ -35,13 +40,17 @@ import AppList from '../common/AppList';
 interface StateProps {
   selectedAccount?: UserAccount;
   getOptedIntoBond: (bondId: number) => boolean;
-  getBondBalance: (bondId: number) => number;
+  getBondBalance: (bondId: number) => number | bigint;
   getOptedIntoApp: (appId: number) => boolean;
-  getCouponRoundsColl: (appId: number) => number;
-  getApp: (appId: number) => App | undefined;}
+  getCouponRoundsPaid: (appId: number) => number;
+  getTotCouponsPaid: (appId: number) => number;
+  getApp: (appId: number) => App | undefined;
+}
 
 interface DispatchProps {
   setSelectedAccount: typeof setSelectedAccount;
+  setMainAppGlobalState: typeof setMainAppGlobalState,
+  setManageAppGlobalState: typeof setManageAppGlobalState;
 }
 
 interface OwnProps {}
@@ -52,12 +61,12 @@ function InvestorPage(props: InvestorPageProps) {
 
   const [inOverview, setInOverview] = useState<boolean>(true);
   const [app, setApp] = useState<App>();
-  const [noOfBondsToBuy, setNoOfBondsToBuy] = useState<number>(0);
+  const [noOfBondsToBuy, setNoOfBondsToBuy] = useState<number>(1);
 
   // Blockchain readings
   const [bondsMinted, setBondsMinted] = useState<number>(0);
-  const [bondEscrowBalance, setBondEscrowBalance] = useState<number>(0);
-  const [stablecoinEscrowBalance, setStablecoinEscrowBalance] = useState<number>(0);
+  const [bondEscrowBalance, setBondEscrowBalance] = useState<number | bigint>(0);
+  const [stablecoinEscrowBalance, setStablecoinEscrowBalance] = useState<number | bigint>(0);
   const [hasDefaulted, setHasDefaulted] = useState<boolean>(false);
 
   const {
@@ -65,9 +74,12 @@ function InvestorPage(props: InvestorPageProps) {
     getOptedIntoBond,
     getBondBalance,
     getOptedIntoApp,
-    getCouponRoundsColl,
+    getCouponRoundsPaid,
+    getTotCouponsPaid,
     getApp,
     setSelectedAccount,
+    setMainAppGlobalState,
+    setManageAppGlobalState,
   } = props;
 
   const currentTime: number = Date.now() / 1000;
@@ -93,7 +105,7 @@ function InvestorPage(props: InvestorPageProps) {
   const canClaimCoupon = () => {
     if (!app) return false;
 
-    const couponRoundsColl = getCouponRoundsColl(app.app_id);
+    const couponRoundsColl = getCouponRoundsPaid(app.app_id);
     return afterCouponRound(couponRoundsColl + 1) &&
       bondBalance > 0 &&
       couponRoundsColl < app.bond_length &&
@@ -104,7 +116,7 @@ function InvestorPage(props: InvestorPageProps) {
   const couponTooltip = () => {
     if (!app) return undefined;
 
-    const couponRoundsColl = getCouponRoundsColl(app.app_id);
+    const couponRoundsColl = getCouponRoundsPaid(app.app_id);
 
     let err = '';
     if (!afterCouponRound(couponRoundsColl + 1) && couponRoundsColl < app.bond_length) err = err.concat('Not after coupon date\n')
@@ -117,7 +129,7 @@ function InvestorPage(props: InvestorPageProps) {
 
   const canClaimPrincipal = () => {
     if (!app) return undefined;
-    const couponRoundsColl = getCouponRoundsColl(app.app_id);
+    const couponRoundsColl = getCouponRoundsPaid(app.app_id);
 
     return afterMaturity &&
       bondBalance > 0 &&
@@ -129,7 +141,7 @@ function InvestorPage(props: InvestorPageProps) {
   const principalTooltip = () => {
     if (!app) return undefined;
 
-    const couponRoundsColl = getCouponRoundsColl(app.app_id);
+    const couponRoundsColl = getCouponRoundsPaid(app.app_id);
 
     let err = '';
     if (!afterMaturity) err = err.concat('Not after maturity date\n')
@@ -158,7 +170,7 @@ function InvestorPage(props: InvestorPageProps) {
     return err;
   }
 
-  const bondBalance: number = app ? getBondBalance(app.bond_id) : 0;
+  const bondBalance: number = app ? (getBondBalance(app.bond_id) as number) : 0;
 
   const handleAssetOptIn = async () => {
     if (!selectedAccount || !app) return;
@@ -255,7 +267,7 @@ function InvestorPage(props: InvestorPageProps) {
       app.stablecoin_escrow_address,
       app.stablecoin_escrow_program,
       bondBalance,
-      (1 / (bondsMinted - bondEscrowBalance)) * stablecoinEscrowBalance
+      (1 / (bondsMinted - (bondEscrowBalance as number))) * (stablecoinEscrowBalance as number)
     );
 
     getAccountInformation(selectedAccount.address).then(acc => setSelectedAccount(acc));
@@ -273,16 +285,22 @@ function InvestorPage(props: InvestorPageProps) {
     setApp(newApp);
   }
 
+  const appId = app ? app.app_id : 0;
   useEffect(() => {
     if (!app) return;
 
     Promise.all(
       [
+        algodClient.getApplicationByID(app.app_id).do(),
+        algodClient.getApplicationByID(app.manage_app_id).do(),
         indexerClient.lookupAssetByID(app.bond_id).do(),
         getAccountInformation(app.bond_escrow_address),
         getAccountInformation(app.stablecoin_escrow_address)
       ]
-    ).then(([asset, bondEscrow, stablecoinEscrow]) => {
+    ).then(([mainApp, manageApp, asset, bondEscrow, stablecoinEscrow]) => {
+
+      setMainAppGlobalState(app.app_id, extractAppState(mainApp.params['global-state']));
+      setManageAppGlobalState(app.app_id, extractAppState(manageApp.params['global-state']));
 
       const bMinted = asset.asset.params.total;
       const bEscrowBalance = getAssetBalance(bondEscrow, app.bond_id);
@@ -296,14 +314,14 @@ function InvestorPage(props: InvestorPageProps) {
         app.maturity_date,
         app.period,
         app.bond_length,
-        getCouponRoundsColl(app.app_id),
+        getTotCouponsPaid(app.app_id),
         app.bond_coupon,
         app.bond_principal,
-        sEscrowBalance,
-        bMinted - bEscrowBalance
+        sEscrowBalance as number,
+        bMinted - (bEscrowBalance as number)
       ));
     });
-  }, [app])
+  }, [appId])
 
   const exitAppView = () => {
     setInOverview(true);
@@ -383,6 +401,7 @@ function InvestorPage(props: InvestorPageProps) {
               name="noOfBondsToBuy"
               fullWidth
               required
+              inputProps={{ min: 1 }}
               disabled={!canBuy()}
               title={buyTooltip()}
             />
@@ -416,7 +435,7 @@ function InvestorPage(props: InvestorPageProps) {
               disabled={!canClaimCoupon()}
               onClick={handleClaimCoupon}
             >
-              You have claimed {getCouponRoundsColl(app.app_id)} / {app.bond_length} coupons <br/>
+              You have claimed {getCouponRoundsPaid(app.app_id)} / {app.bond_length} coupons <br/>
               Can claim ${formatStablecoin(bondBalance * app.bond_coupon)} <br/>
               CLAIM COUPON
             </Button>
@@ -450,7 +469,7 @@ function InvestorPage(props: InvestorPageProps) {
               onClick={handleClaimDefault}
             >
               Stablecoin balance of bond escrow: ${formatStablecoin(stablecoinEscrowBalance)} <br/>
-              Can claim ${formatStablecoin((bondBalance / (bondsMinted - bondEscrowBalance)) * stablecoinEscrowBalance)} <br/>
+              Can claim ${formatStablecoin((bondBalance / (bondsMinted - (bondEscrowBalance as number))) * (stablecoinEscrowBalance as number))} <br/>
               CLAIM DEFAULT
             </Button>
           </div>
@@ -468,9 +487,11 @@ function InvestorPage(props: InvestorPageProps) {
         <p>Bond coupon: ${formatStablecoin(app.bond_coupon)}</p>
         <p>Number of coupon payments: {app.bond_length}</p>
         <p>Bond principal: ${formatStablecoin(app.bond_principal)}</p>
-        <p>Bonds in circulation: {bondsMinted - bondEscrowBalance} / {bondsMinted}</p>
+        <p>Bonds in circulation: {bondsMinted - (bondEscrowBalance as number)} / {bondsMinted}</p>
         <p>Stablecoin balance of bond escrow: ${formatStablecoin(stablecoinEscrowBalance)}</p>
         <p>Bond balance: {bondBalance}</p>
+        <p>Stablecoin Escrow Address: {app.stablecoin_escrow_address}</p>
+        <p>Green Verifier Address: {app.green_verifier_address}</p>
       </div>
 
     </div>
@@ -488,12 +509,15 @@ const mapStateToProps = (state: any) => ({
   getOptedIntoBond: getOptedIntoBondSelector(state),
   getBondBalance: getBondBalanceSelector(state),
   getOptedIntoApp: getOptedIntoAppSelector(state),
-  getCouponRoundsColl: getCouponRoundsCollSelector(state),
+  getCouponRoundsPaid: getCouponRoundsPaidSelector(state),
+  getTotCouponsPaid: getTotCouponsPaidSelector(state),
   getApp: getAppSelector(state),
 });
 
 const mapDispatchToProps = {
   setSelectedAccount,
+  setMainAppGlobalState,
+  setManageAppGlobalState,
 };
 
 export default connect<StateProps, DispatchProps, OwnProps>(mapStateToProps, mapDispatchToProps)(InvestorPage);

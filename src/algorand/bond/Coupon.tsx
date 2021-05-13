@@ -1,6 +1,6 @@
 import { algodClient, STABLECOIN_ID, waitForConfirmation } from '../utils/Utils';
 import { CallApplTxn, PaymentTxn, SignedTx, } from '@randlabs/myalgo-connect';
-import { SuggestedParams, TxSig } from 'algosdk';
+import { SuggestedParams } from 'algosdk';
 import { myAlgoWallet } from '../wallet/myAlgo/MyAlgoWallet';
 
 const algosdk = require('algosdk');
@@ -21,7 +21,6 @@ export async function claimCoupon(
 ) {
   let params: SuggestedParams = await algodClient.getTransactionParams().do();
   params.fee = 1000;
-  params.flatFee = true;
 
   const enc = new TextEncoder();
 
@@ -29,6 +28,7 @@ export async function claimCoupon(
   const mainAppArgs: Uint8Array[] = [enc.encode("coupon")];
   const callMainAppTxn: CallApplTxn = {
     ...params,
+    flatFee: true,
     type: "appl",
     from: investorAddr,
     appIndex: mainAppId,
@@ -40,6 +40,7 @@ export async function claimCoupon(
   const manageAppArgs: Uint8Array[] = [enc.encode("not_defaulted")];
   const callManageAppTxn: CallApplTxn = {
     ...params,
+    flatFee: true,
     type: "appl",
     from: investorAddr,
     appIndex: manageAppId,
@@ -53,6 +54,7 @@ export async function claimCoupon(
   // 2. pay fee for tx3
   const algoTransferTxn: PaymentTxn = {
     ...params,
+    flatFee: true,
     type: "pay",
     from: investorAddr,
     to: stablecoinEscrowAddr,
@@ -98,7 +100,7 @@ export async function claimCoupon(
   const signedCallMainAppTxn: SignedTx = await myAlgoWallet.signTransaction(txns[0]);
   const signedCallManageAppTxn: SignedTx = await myAlgoWallet.signTransaction(txns[1]);
   const signedAlgoTransferTxn: SignedTx = await myAlgoWallet.signTransaction(txns[2]);
-  const signedStablecoinTransferTxn: TxSig = algosdk.signLogicSigTransaction(txns[3], lsig);
+  const signedStablecoinTransferTxn: SignedTx = algosdk.signLogicSigTransaction(txns[3], lsig);
 
   // Group
   const signedTxs: Uint8Array[] = [

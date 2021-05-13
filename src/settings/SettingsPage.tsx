@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import MyAlgoGetAccounts from '../algorand/wallet/myAlgo/MyAlgoGetAccounts';
 import { setSelectedAccount } from '../redux/actions/actions';
 import { UserAccount } from '../redux/reducers/user';
-import { getAccountInformation } from '../algorand/balance/Balance';
+import { getAccountInformation } from '../algorand/account/Account';
 import Button from '@material-ui/core/Button';
 import { optIntoAsset } from '../algorand/assets/OptIntoAsset';
 import { STABLECOIN_ID } from '../algorand/utils/Utils';

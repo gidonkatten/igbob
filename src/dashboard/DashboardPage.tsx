@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
 import { useAuth0 } from '@auth0/auth0-react';
 import { UserAccount } from '../redux/reducers/user';
-import { getAccountInformation } from '../algorand/balance/Balance';
+import { getAccountInformation } from '../algorand/account/Account';
 import { setSelectedAccount } from '../redux/actions/actions';
 import {
   optedIntoStablecoinSelector,
@@ -15,7 +15,7 @@ import Button from '@material-ui/core/Button';
 interface DashboardPageProps {
   selectedAccount?: UserAccount,
   optedIntoStablecoin: boolean,
-  stablecoinBalance: number,
+  stablecoinBalance: number | bigint,
   setSelectedAccount: typeof setSelectedAccount;
 }
 

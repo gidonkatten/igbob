@@ -10,7 +10,7 @@ import DashboardPage from "./dashboard/DashboardPage";
 import { useAuth0 } from '@auth0/auth0-react';
 import { setAccountAddresses, setSelectedAccount } from './redux/actions/actions';
 import { connect } from 'react-redux';
-import { getAccountInformation } from './algorand/balance/Balance';
+import { getAccountInformation } from './algorand/account/Account';
 import GreenVerifierPage from './greenVerifier/GreenVerifierPage';
 
 interface AppProps {

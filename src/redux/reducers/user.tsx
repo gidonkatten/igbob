@@ -1,18 +1,8 @@
-export interface Asset {
-  assetId: number;
-  amount: number;
-}
-
-export interface AppLocalState {
-  appId: number;
-  couponRoundsColl: number;
-}
-
 export interface UserAccount {
   address: string;
-  algoBalance: number;
-  assets: Asset[];
-  apps: AppLocalState[];
+  algoBalance: number | bigint;
+  assets: Map<number, number | bigint>; // assetId -> amount
+  apps: Map<number, Map<string, number | bigint | string>>; // appId -> localStateKey -> localStateValue
 }
 
 interface InvestorState {

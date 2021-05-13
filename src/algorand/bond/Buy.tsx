@@ -1,6 +1,6 @@
 import { algodClient, STABLECOIN_ID, waitForConfirmation } from '../utils/Utils';
 import { AssetTxn, CallApplTxn, PaymentTxn, SignedTx, } from '@randlabs/myalgo-connect';
-import { SuggestedParams, TxSig } from 'algosdk';
+import { SuggestedParams } from 'algosdk';
 import { myAlgoWallet } from '../wallet/myAlgo/MyAlgoWallet';
 
 const algosdk = require('algosdk');
@@ -20,7 +20,6 @@ export async function buyBond(
 ) {
   let params: SuggestedParams = await algodClient.getTransactionParams().do();
   params.fee = 1000;
-  params.flatFee = true;
 
   // 0. call app
   const enc = new TextEncoder();
@@ -28,6 +27,7 @@ export async function buyBond(
   const appArgs: Uint8Array[] = [buy];
   const callAppTxn: CallApplTxn = {
     ...params,
+    flatFee: true,
     type: "appl",
     from: investorAddr,
     appIndex: appId,
@@ -38,6 +38,7 @@ export async function buyBond(
   // 1. pay fee for tx2
   const algoTransferTxn: PaymentTxn = {
     ...params,
+    flatFee: true,
     type: "pay",
     from: investorAddr,
     to: bondEscrowAddr,
@@ -64,6 +65,7 @@ export async function buyBond(
   // 3. stablecoin payment
   const stablecoinTransferTxn: AssetTxn = {
     ...params,
+    flatFee: true,
     type: "axfer",
     from: investorAddr,
     assetIndex: STABLECOIN_ID,
@@ -92,7 +94,7 @@ export async function buyBond(
   // Sign transactions
   const signedCallAppTxn: SignedTx = await myAlgoWallet.signTransaction(txns[0]);
   const signedAlgoTransferTxn: SignedTx = await myAlgoWallet.signTransaction(txns[1]);
-  const signedBondTransferTxn: TxSig = algosdk.signLogicSigTransaction(txns[2], lsig);
+  const signedBondTransferTxn: SignedTx = algosdk.signLogicSigTransaction(txns[2], lsig);
   const signedStablecoinTransferTxn: SignedTx = await myAlgoWallet.signTransaction(txns[3]);
 
   // Group

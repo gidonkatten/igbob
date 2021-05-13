@@ -1,6 +1,6 @@
-import { SuggestedParams, TxSig } from "algosdk";
+import { SuggestedParams } from "algosdk";
 import { algodClient, waitForConfirmation } from '../utils/Utils';
-import { OptInApplTxn } from '@randlabs/myalgo-connect';
+import { OptInApplTxn, SignedTx } from '@randlabs/myalgo-connect';
 import { myAlgoWallet } from '../wallet/myAlgo/MyAlgoWallet';
 
 /**
@@ -19,7 +19,7 @@ export async function optIntoApp(appId: number, addr: string) {
     appOnComplete: 1
   };
 
-  let rawSignedOptTxn = await myAlgoWallet.signTransaction(optTxn) as TxSig;
+  let rawSignedOptTxn: SignedTx = await myAlgoWallet.signTransaction(optTxn);
   let tx = (await algodClient.sendRawTransaction(rawSignedOptTxn.blob).do());
 
   console.log("Transaction : " + tx.txId);

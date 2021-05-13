@@ -33,6 +33,7 @@ export function getHasDefaulted(
   stablecoinEscrowBalance: number,
   bondsCirc: number
 ): boolean {
+  console.log(totalCouponsPaid);
   const couponRound = getCouponRound(endBuyDate, maturityDate, period, bondLength).round;
   const couponOwed = (couponRound * bondsCirc - totalCouponsPaid) * bondCoupon;
   const principalOwed = couponRound >= bondLength ? bondsCirc * bondPrincipal : 0;

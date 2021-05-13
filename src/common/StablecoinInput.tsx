@@ -16,6 +16,7 @@ export function StablecoinInput(props) {
         });
       }}
       thousandSeparator
+      allowNegative={false}
       prefix="$"
     />
   );

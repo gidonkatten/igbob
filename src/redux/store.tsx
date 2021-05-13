@@ -4,7 +4,9 @@ import rootReducer from './reducers/index'
 
 const store = createStore(
   rootReducer,
-  devToolsEnhancer({})
+  devToolsEnhancer({
+    serialize: true
+  })
 );
 
 export default store

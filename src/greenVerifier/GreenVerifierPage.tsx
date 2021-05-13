@@ -41,7 +41,10 @@ function GreenVerifierPage(props: GreenVerifierPageProps) {
   const appsList = (
     <div>
       <h3>Listed Green Bonds</h3>
-      <AppList onClick={enterAppView}/>
+      <AppList
+        onClick={enterAppView}
+        appFilter={(app: App) => app.green_verifier_address === (selectedAccount ? selectedAccount.address : undefined)}
+      />
     </div>
   )
 
