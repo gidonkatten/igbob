@@ -1,5 +1,5 @@
-import { App } from '../reducers/bond';
 import { UserAccount } from '../reducers/user';
+import { App, AppState } from '../types';
 
 export const setAccountAddresses = (addresses: string[]) => ({
   type: "SET_ACCOUNT_ADDRESSES",
@@ -16,12 +16,12 @@ export const setApps = (apps: App[]) => ({
   payload: { apps }
 });
 
-export const setMainAppGlobalState = (appId: number | bigint, state: Map<string, number | bigint | string>) => ({
+export const setMainAppGlobalState = (appId: number | bigint, state: AppState) => ({
   type: "SET_MAIN_APP_GLOBAL_STATE",
   payload: { appId, appState: state }
 });
 
-export const setManageAppGlobalState = (appId: number | bigint, state: Map<string, number | bigint | string>) => ({
+export const setManageAppGlobalState = (appId: number | bigint, state: AppState) => ({
   type: "SET_MANAGE_APP_GLOBAL_STATE",
   payload: { appId, appState: state }
 });

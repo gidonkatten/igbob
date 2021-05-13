@@ -3,6 +3,7 @@ import algosdk, { modelsv2 } from 'algosdk';
 import { UserAccount } from '../../redux/reducers/user';
 import { ApplicationLocalState, TealKeyValue } from 'algosdk/dist/types/src/client/v2/algod/models/types';
 import { extractAppState } from '../../utils/Utils';
+import { AppState } from '../../redux/types';
 
 export async function getAccountInformation(address: string): Promise<UserAccount> {
   const account: modelsv2.Account = await algodClient.accountInformation(address).do();
@@ -16,7 +17,7 @@ export async function getAccountInformation(address: string): Promise<UserAccoun
     })
   }
 
-  const apps: Map<number, Map<string, number | bigint | string>> = new Map();
+  const apps: Map<number, AppState> = new Map();
 
   const appLocalStates: ApplicationLocalState[] | undefined = account['apps-local-state'];
   if (appLocalStates) {

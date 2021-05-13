@@ -4,9 +4,9 @@ import ListItemText from '@material-ui/core/ListItemText';
 import React, { useEffect } from 'react';
 import { appsSelector } from '../redux/selectors/selectors';
 import { connect } from 'react-redux';
-import { App } from '../redux/reducers/bond';
 import { useAuth0 } from '@auth0/auth0-react';
 import { setApps } from '../redux/actions/actions';
+import { App } from '../redux/types';
 
 interface StateProps {
   apps: Map<number, App>;  // appId -> App

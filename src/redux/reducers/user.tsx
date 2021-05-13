@@ -1,8 +1,10 @@
+import { AppState } from '../types';
+
 export interface UserAccount {
   address: string;
   algoBalance: number | bigint;
   assets: Map<number, number | bigint>; // assetId -> amount
-  apps: Map<number, Map<string, number | bigint | string>>; // appId -> localStateKey -> localStateValue
+  apps: Map<number, AppState>; // appId -> localStateKey -> localStateValue
 }
 
 interface InvestorState {

@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { connect } from 'react-redux';
 import { getAppSelector, selectedAccountSelector } from '../redux/selectors/selectors';
-import { App } from '../redux/reducers/bond';
 import AppList from '../common/AppList';
 import IconButton from '@material-ui/core/IconButton';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import { UserAccount } from '../redux/reducers/user';
 import TextField from '@material-ui/core/TextField';
+import { App } from '../redux/types';
 
 interface StateProps {
   selectedAccount?: UserAccount;

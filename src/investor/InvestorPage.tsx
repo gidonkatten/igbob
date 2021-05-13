@@ -3,7 +3,6 @@ import { connect } from 'react-redux'
 import { buyBond } from '../algorand/bond/Buy';
 import { optIntoAsset } from '../algorand/assets/OptIntoAsset';
 import { setMainAppGlobalState, setManageAppGlobalState, setSelectedAccount } from '../redux/actions/actions';
-import { App } from '../redux/reducers/bond';
 import {
   getAppSelector,
   getBondBalanceSelector,
@@ -36,6 +35,7 @@ import InputLabel from '@material-ui/core/InputLabel';
 import Input from '@material-ui/core/Input';
 import TextField from '@material-ui/core/TextField';
 import AppList from '../common/AppList';
+import { App } from '../redux/types';
 
 interface StateProps {
   selectedAccount?: UserAccount;

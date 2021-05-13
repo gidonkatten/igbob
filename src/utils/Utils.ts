@@ -1,4 +1,5 @@
 import { TealKeyValue } from 'algosdk/dist/types/src/client/v2/algod/models/types';
+import { AppState } from '../redux/types';
 
 /**
  * Convert from DateTime to Unix time
@@ -31,8 +32,8 @@ export function formatStablecoin(amount: number | bigint): string {
 /**
  * Extract app state given TealKeyValue[]
  */
-export function extractAppState(state?: TealKeyValue[] | undefined): Map<string, number | bigint | string> {
-  const map: Map<string, number | bigint | string> = new Map();
+export function extractAppState(state?: TealKeyValue[] | undefined): AppState {
+  const map: AppState = new Map();
 
   if (state) {
     // Check if has a state
