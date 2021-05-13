@@ -1,14 +1,14 @@
 import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
 import { useAuth0 } from '@auth0/auth0-react';
-import { UserAccount } from '../redux/reducers/user';
+import { UserAccount } from '../redux/reducers/userReducer';
 import { getAccountInformation } from '../algorand/account/Account';
 import { setSelectedAccount } from '../redux/actions/actions';
 import {
   optedIntoStablecoinSelector,
   selectedAccountSelector,
   stablecoinBalanceSelector
-} from '../redux/selectors/selectors';
+} from '../redux/selectors/userSelector';
 import { formatStablecoin } from '../utils/Utils';
 import Button from '@material-ui/core/Button';
 

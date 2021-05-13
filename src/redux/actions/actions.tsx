@@ -1,4 +1,4 @@
-import { UserAccount } from '../reducers/user';
+import { UserAccount } from '../reducers/userReducer';
 import { App, AppState } from '../types';
 
 export const setAccountAddresses = (addresses: string[]) => ({

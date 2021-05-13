@@ -2,7 +2,7 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import React, { useEffect } from 'react';
-import { appsSelector } from '../redux/selectors/selectors';
+import { appsSelector } from '../redux/selectors/bondSelector';
 import { connect } from 'react-redux';
 import { useAuth0 } from '@auth0/auth0-react';
 import { setApps } from '../redux/actions/actions';

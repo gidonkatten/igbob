@@ -1,6 +1,6 @@
 import { algodClient, STABLECOIN_ID } from '../utils/Utils';
 import algosdk, { modelsv2 } from 'algosdk';
-import { UserAccount } from '../../redux/reducers/user';
+import { UserAccount } from '../../redux/reducers/userReducer';
 import { ApplicationLocalState, TealKeyValue } from 'algosdk/dist/types/src/client/v2/algod/models/types';
 import { extractAppState } from '../../utils/Utils';
 import { AppState } from '../../redux/types';

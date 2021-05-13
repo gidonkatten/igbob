@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { connect } from 'react-redux';
-import { getAppSelector, selectedAccountSelector } from '../redux/selectors/selectors';
+import { selectedAccountSelector } from '../redux/selectors/userSelector';
+import { getAppSelector } from '../redux/selectors/bondSelector';
 import AppList from '../common/AppList';
 import IconButton from '@material-ui/core/IconButton';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
-import { UserAccount } from '../redux/reducers/user';
+import { UserAccount } from '../redux/reducers/userReducer';
 import TextField from '@material-ui/core/TextField';
 import { App } from '../redux/types';
 

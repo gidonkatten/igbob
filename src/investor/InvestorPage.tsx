@@ -4,21 +4,20 @@ import { buyBond } from '../algorand/bond/Buy';
 import { optIntoAsset } from '../algorand/assets/OptIntoAsset';
 import { setMainAppGlobalState, setManageAppGlobalState, setSelectedAccount } from '../redux/actions/actions';
 import {
-  getAppSelector,
   getBondBalanceSelector,
   getCouponRoundsPaidSelector,
   getOptedIntoAppSelector,
   getOptedIntoBondSelector,
-  getTotCouponsPaidSelector,
   selectedAccountSelector
-} from '../redux/selectors/selectors';
+} from '../redux/selectors/userSelector';
+import { getAppSelector, getTotCouponsPaidSelector } from '../redux/selectors/bondSelector';
 import {
   getAccountInformation,
   getAssetBalance,
   getStablecoinBalance
 } from '../algorand/account/Account';
 import Button from '@material-ui/core/Button';
-import { UserAccount } from '../redux/reducers/user';
+import { UserAccount } from '../redux/reducers/userReducer';
 import { extractAppState, formatStablecoin } from '../utils/Utils';
 import { claimCoupon } from '../algorand/bond/Coupon';
 import { claimPrincipal } from '../algorand/bond/Principal';
