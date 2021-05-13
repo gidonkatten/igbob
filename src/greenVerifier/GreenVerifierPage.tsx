@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { selectedAccountSelector } from '../redux/selectors/userSelector';
 import { getAppSelector } from '../redux/selectors/bondSelector';
@@ -8,13 +8,18 @@ import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import { UserAccount } from '../redux/reducers/userReducer';
 import TextField from '@material-ui/core/TextField';
 import { App } from '../redux/types';
+import { algodClient } from '../algorand/utils/Utils';
+import { extractAppState } from '../utils/Utils';
+import { setManageAppGlobalState } from '../redux/actions/actions';
 
 interface StateProps {
   selectedAccount?: UserAccount;
   getApp: (appId: number) => App | undefined;
 }
 
-interface DispatchProps {}
+interface DispatchProps {
+  setManageAppGlobalState,
+}
 
 interface OwnProps {}
 
@@ -26,7 +31,11 @@ function GreenVerifierPage(props: GreenVerifierPageProps) {
   const [inOverview, setInOverview] = useState<boolean>(true);
   const [app, setApp] = useState<App>();
 
-  const { selectedAccount, getApp } = props;
+  const {
+    selectedAccount,
+    getApp,
+    setManageAppGlobalState,
+  } = props;
 
   const enterAppView = (appId) => {
     setInOverview(false);
@@ -38,6 +47,15 @@ function GreenVerifierPage(props: GreenVerifierPageProps) {
     setInOverview(true);
     setApp(undefined);
   }
+
+  const appId = app ? app.app_id : 0;
+  useEffect(() => {
+    if (!app) return;
+
+    algodClient.getApplicationByID(app.manage_app_id).do().then(manageApp => {
+      setManageAppGlobalState(app.app_id, extractAppState(manageApp.params['global-state']));
+    })
+  }, [appId])
 
   const appsList = (
     <div>
@@ -84,6 +102,8 @@ const mapStateToProps = (state: any) => ({
   getApp: getAppSelector(state),
 });
 
-const mapDispatchToProps = {};
+const mapDispatchToProps = {
+  setManageAppGlobalState
+};
 
 export default connect<StateProps, DispatchProps, OwnProps>(mapStateToProps, mapDispatchToProps)(GreenVerifierPage);

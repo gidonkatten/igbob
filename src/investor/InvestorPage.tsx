@@ -86,6 +86,23 @@ function InvestorPage(props: InvestorPageProps) {
   const afterCouponRound = (round) => app && (currentTime > (app.end_buy_date + app.period * round));
   const afterMaturity = app && (currentTime > app.maturity_date);
 
+  // BOND OPT IN
+  const handleAssetOptIn = async () => {
+    if (!selectedAccount || !app) return;
+    await optIntoAsset(app.bond_id, selectedAccount.address);
+
+    getAccountInformation(selectedAccount.address).then(acc => setSelectedAccount(acc));
+  }
+
+  // APP OPT IN
+  const handleAppOptIn = async () => {
+    if (!selectedAccount || !app) return;
+    await optIntoApp(app.app_id, selectedAccount.address);
+
+    getAccountInformation(selectedAccount.address).then(acc => setSelectedAccount(acc));
+  }
+
+  // BUY
   const canBuy = () => {
     if (!app) return false;
 
@@ -101,6 +118,26 @@ function InvestorPage(props: InvestorPageProps) {
     return err;
   }
 
+  const handleBuy = async () => {
+    if (!selectedAccount || !app) return;
+    await buyBond(
+      selectedAccount.address,
+      app.app_id,
+      app.issuer_address,
+      app.bond_id,
+      app.bond_escrow_address,
+      app.bond_escrow_program,
+      noOfBondsToBuy,
+      app.bond_cost
+    );
+
+    getAccountInformation(selectedAccount.address).then(acc => setSelectedAccount(acc));
+    getAccountInformation(app.bond_escrow_address).then(acc =>
+      setBondEscrowBalance(getAssetBalance(acc, app.bond_id))
+    );
+  }
+
+  // COUPON
   const canClaimCoupon = () => {
     if (!app) return false;
 
@@ -126,6 +163,28 @@ function InvestorPage(props: InvestorPageProps) {
     return err;
   }
 
+  const handleClaimCoupon = async (e: any) => {
+    e.preventDefault();
+    if (!selectedAccount || !app) return;
+    await claimCoupon(
+      selectedAccount.address,
+      app.app_id,
+      app.manage_app_id,
+      app.bond_id,
+      app.bond_escrow_address,
+      app.stablecoin_escrow_address,
+      app.stablecoin_escrow_program,
+      bondBalance,
+      app.bond_coupon
+    );
+
+    getAccountInformation(selectedAccount.address).then(acc => setSelectedAccount(acc));
+    getAccountInformation(app.stablecoin_escrow_address).then(acc =>
+      setStablecoinEscrowBalance(getStablecoinBalance(acc))
+    )
+  }
+
+  // PRINCIPAL
   const canClaimPrincipal = () => {
     if (!app) return undefined;
     const couponRoundsColl = getCouponRoundsPaid(app.app_id);
@@ -149,80 +208,6 @@ function InvestorPage(props: InvestorPageProps) {
     if (!getOptedIntoApp(app.app_id)) err = err.concat('Have not opted into app\n')
     if (hasDefaulted) err = err.concat('Not enough funds to pay out all money owed\n')
     return err;
-  }
-
-  const canClaimDefault = () => {
-    if (!app) return undefined;
-
-    return hasDefaulted &&
-      bondBalance > 0 &&
-      getOptedIntoApp(app.app_id)
-  }
-
-  const defaultTooltip = () => {
-    if (!app) return undefined;
-
-    let err = '';
-    if (!hasDefaulted) err = err.concat('Enough funds to pay money owed\n')
-    if (bondBalance === 0) err = err.concat('Do not own bond\n')
-    if (!getOptedIntoApp(app.app_id)) err = err.concat('Have not opted into app\n')
-    return err;
-  }
-
-  const bondBalance: number = app ? (getBondBalance(app.bond_id) as number) : 0;
-
-  const handleAssetOptIn = async () => {
-    if (!selectedAccount || !app) return;
-    await optIntoAsset(app.bond_id, selectedAccount.address);
-
-    getAccountInformation(selectedAccount.address).then(acc => setSelectedAccount(acc));
-  }
-
-  const handleAppOptIn = async () => {
-    if (!selectedAccount || !app) return;
-    await optIntoApp(app.app_id, selectedAccount.address);
-
-    getAccountInformation(selectedAccount.address).then(acc => setSelectedAccount(acc));
-  }
-
-  const handleBuy = async () => {
-    if (!selectedAccount || !app) return;
-    await buyBond(
-      selectedAccount.address,
-      app.app_id,
-      app.issuer_address,
-      app.bond_id,
-      app.bond_escrow_address,
-      app.bond_escrow_program,
-      noOfBondsToBuy,
-      app.bond_cost
-    );
-
-    getAccountInformation(selectedAccount.address).then(acc => setSelectedAccount(acc));
-    getAccountInformation(app.bond_escrow_address).then(acc =>
-      setBondEscrowBalance(getAssetBalance(acc, app.bond_id))
-    );
-  }
-
-  const handleClaimCoupon = async (e: any) => {
-    e.preventDefault();
-    if (!selectedAccount || !app) return;
-    await claimCoupon(
-      selectedAccount.address,
-      app.app_id,
-      app.manage_app_id,
-      app.bond_id,
-      app.bond_escrow_address,
-      app.stablecoin_escrow_address,
-      app.stablecoin_escrow_program,
-      bondBalance,
-      app.bond_coupon
-    );
-
-    getAccountInformation(selectedAccount.address).then(acc => setSelectedAccount(acc));
-    getAccountInformation(app.stablecoin_escrow_address).then(acc =>
-      setStablecoinEscrowBalance(getStablecoinBalance(acc))
-    )
   }
 
   const handleClaimPrincipal = async (e: any) => {
@@ -250,6 +235,27 @@ function InvestorPage(props: InvestorPageProps) {
       setBondEscrowBalance(getAssetBalance(acc, app.bond_id))
     );
   }
+
+  // DEFAULT
+  const canClaimDefault = () => {
+    if (!app) return undefined;
+
+    return hasDefaulted &&
+      bondBalance > 0 &&
+      getOptedIntoApp(app.app_id)
+  }
+
+  const defaultTooltip = () => {
+    if (!app) return undefined;
+
+    let err = '';
+    if (!hasDefaulted) err = err.concat('Enough funds to pay money owed\n')
+    if (bondBalance === 0) err = err.concat('Do not own bond\n')
+    if (!getOptedIntoApp(app.app_id)) err = err.concat('Have not opted into app\n')
+    return err;
+  }
+
+  const bondBalance: number = app ? (getBondBalance(app.bond_id) as number) : 0;
 
   const handleClaimDefault = async (e: any) => {
     e.preventDefault();
@@ -282,6 +288,11 @@ function InvestorPage(props: InvestorPageProps) {
     setInOverview(false);
     const newApp = getApp(appId);
     setApp(newApp);
+  }
+
+  const exitAppView = () => {
+    setInOverview(true);
+    setApp(undefined);
   }
 
   const appId = app ? app.app_id : 0;
@@ -321,11 +332,6 @@ function InvestorPage(props: InvestorPageProps) {
       ));
     });
   }, [appId])
-
-  const exitAppView = () => {
-    setInOverview(true);
-    setApp(undefined);
-  }
 
   const appsList = (
     <div>
