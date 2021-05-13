@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { selectedAccountSelector } from '../redux/selectors/userSelector';
-import { getAppSelector } from '../redux/selectors/bondSelector';
+import { getAppSelector, getManageAppGlobalStateSelector } from '../redux/selectors/bondSelector';
 import AppList from '../common/AppList';
 import IconButton from '@material-ui/core/IconButton';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import { UserAccount } from '../redux/reducers/userReducer';
 import TextField from '@material-ui/core/TextField';
-import { App } from '../redux/types';
+import { App, ManageAppState } from '../redux/types';
 import { algodClient } from '../algorand/utils/Utils';
 import { extractManageAppState } from '../utils/Utils';
 import { setManageAppGlobalState } from '../redux/actions/actions';
@@ -17,10 +17,12 @@ import InputLabel from '@material-ui/core/InputLabel';
 import Input from '@material-ui/core/Input';
 import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
+import { CouponRound, getCouponRound } from '../investor/Utils';
 
 interface StateProps {
   selectedAccount?: UserAccount;
   getApp: (appId: number) => App | undefined;
+  getManageAppGlobalState: (appId: number) => ManageAppState | undefined;
 }
 
 interface DispatchProps {
@@ -41,13 +43,18 @@ function GreenVerifierPage(props: GreenVerifierPageProps) {
   const {
     selectedAccount,
     getApp,
+    getManageAppGlobalState,
     setManageAppGlobalState,
   } = props;
+
+  const couponRound: CouponRound | undefined = app ?
+    getCouponRound(app.end_buy_date, app.maturity_date, app.period, app.bond_length) :
+    undefined
 
   // RATE
   const handleRate = async () => {
     if (!selectedAccount || !app) return;
-    await rate(app.manage_app_id, selectedAccount.address, 4, rating);
+    await rate(app.manage_app_id, selectedAccount.address, couponRound!.round, rating);
 
     algodClient.getApplicationByID(app.manage_app_id).do().then(manageApp => {
       setManageAppGlobalState(app.app_id, extractManageAppState(manageApp.params['global-state']));
@@ -83,6 +90,8 @@ function GreenVerifierPage(props: GreenVerifierPageProps) {
       />
     </div>
   )
+
+  const manageAppState: ManageAppState | undefined = app ? getManageAppGlobalState(app.app_id) : undefined;
 
   const appView = app && (
     <div>
@@ -130,7 +139,20 @@ function GreenVerifierPage(props: GreenVerifierPageProps) {
             RATE
           </Button>
         </Grid>
+
       </Grid>
+
+      {manageAppState && [...Array(app.bond_length + 1)].map((e, i) => {
+        const key = Math.floor(i / 8);
+        const slot = i % 8;
+        const array: Uint8Array =  manageAppState.has(key) ? manageAppState.get(key)! : new Uint8Array(8);
+        const rating = array[slot];
+        return (
+          <ul key={i}>
+            Rating: {rating === 0 ? 'Not rated' : rating}
+          </ul>
+        )
+      })}
 
     </div>
   )
@@ -145,6 +167,7 @@ function GreenVerifierPage(props: GreenVerifierPageProps) {
 const mapStateToProps = (state: any) => ({
   selectedAccount: selectedAccountSelector(state),
   getApp: getAppSelector(state),
+  getManageAppGlobalState: getManageAppGlobalStateSelector(state)
 });
 
 const mapDispatchToProps = {
