@@ -9,8 +9,14 @@ import { UserAccount } from '../redux/reducers/userReducer';
 import TextField from '@material-ui/core/TextField';
 import { App } from '../redux/types';
 import { algodClient } from '../algorand/utils/Utils';
-import { extractAppState } from '../utils/Utils';
+import { extractManageAppState } from '../utils/Utils';
 import { setManageAppGlobalState } from '../redux/actions/actions';
+import { rate } from '../algorand/bond/Rate';
+import FormControl from '@material-ui/core/FormControl';
+import InputLabel from '@material-ui/core/InputLabel';
+import Input from '@material-ui/core/Input';
+import Grid from '@material-ui/core/Grid';
+import Button from '@material-ui/core/Button';
 
 interface StateProps {
   selectedAccount?: UserAccount;
@@ -30,12 +36,23 @@ function GreenVerifierPage(props: GreenVerifierPageProps) {
 
   const [inOverview, setInOverview] = useState<boolean>(true);
   const [app, setApp] = useState<App>();
+  const [rating, setRating] = useState<number>(5);
 
   const {
     selectedAccount,
     getApp,
     setManageAppGlobalState,
   } = props;
+
+  // RATE
+  const handleRate = async () => {
+    if (!selectedAccount || !app) return;
+    await rate(app.manage_app_id, selectedAccount.address, 4, rating);
+
+    algodClient.getApplicationByID(app.manage_app_id).do().then(manageApp => {
+      setManageAppGlobalState(app.app_id, extractManageAppState(manageApp.params['global-state']));
+    })
+  }
 
   const enterAppView = (appId) => {
     setInOverview(false);
@@ -53,7 +70,7 @@ function GreenVerifierPage(props: GreenVerifierPageProps) {
     if (!app) return;
 
     algodClient.getApplicationByID(app.manage_app_id).do().then(manageApp => {
-      setManageAppGlobalState(app.app_id, extractAppState(manageApp.params['global-state']));
+      setManageAppGlobalState(app.app_id, extractManageAppState(manageApp.params['global-state']));
     })
   }, [appId])
 
@@ -72,20 +89,48 @@ function GreenVerifierPage(props: GreenVerifierPageProps) {
 
       <IconButton onClick={exitAppView}><ArrowBackIcon/></IconButton>
 
-      <TextField
-        label="Selected Address:"
-        defaultValue={selectedAccount ? selectedAccount.address : undefined}
-        required
-        fullWidth
-        InputProps={{ readOnly: true }}
-        helperText="Can be changed in settings"
-        InputLabelProps={{ required: false }}
-        style={{ margin: '8px 0px' }}
-      />
+      <Grid container spacing={3} style={{ marginTop: '8px' }}>
 
-      <div>
-        <p>Green verifier address: {app.green_verifier_address}</p>
-      </div>
+        <TextField
+          label="Selected Address:"
+          defaultValue={selectedAccount ? selectedAccount.address : undefined}
+          required
+          fullWidth
+          InputProps={{ readOnly: true }}
+          helperText="Can be changed in settings"
+          InputLabelProps={{ required: false }}
+          style={{ margin: '8px 0px' }}
+        />
+
+
+        {/*Second Row*/}
+        <Grid item xs={5}>
+          <FormControl fullWidth>
+            <InputLabel>Rating:</InputLabel>
+            <Input
+              value={rating}
+              onChange={e => setRating(parseInt(e.target.value))}
+              type="number"
+              name="rating"
+              fullWidth
+              required
+              inputProps={{ min: 1, max: 5 }}
+            />
+          </FormControl>
+        </Grid>
+
+        <Grid item xs={7}>
+          <Button
+            variant="outlined"
+            color="primary"
+            fullWidth
+            style={{ textTransform: 'none' }}
+            onClick={handleRate}
+          >
+            RATE
+          </Button>
+        </Grid>
+      </Grid>
 
     </div>
   )

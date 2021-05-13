@@ -1,6 +1,6 @@
 import { algodClient, STABLECOIN_ID, waitForConfirmation } from '../utils/Utils';
 import { AssetTxn, CallApplTxn, PaymentTxn, SignedTx, } from '@randlabs/myalgo-connect';
-import { SuggestedParams } from 'algosdk';
+import { OnApplicationComplete, SuggestedParams } from 'algosdk';
 import { myAlgoWallet } from '../wallet/myAlgo/MyAlgoWallet';
 
 const algosdk = require('algosdk');
@@ -31,7 +31,7 @@ export async function buyBond(
     type: "appl",
     from: investorAddr,
     appIndex: appId,
-    appOnComplete: 0,
+    appOnComplete: OnApplicationComplete.NoOpOC,
     appArgs: appArgs
   }
 

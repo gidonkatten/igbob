@@ -7,9 +7,9 @@ import { myAlgoWallet } from '../wallet/myAlgo/MyAlgoWallet';
  * Opt into asset using MyAlgo
  */
 export async function optIntoAsset(assetId: number, addr: string) {
-  let params: SuggestedParams = await algodClient.getTransactionParams().do();
+  const params: SuggestedParams = await algodClient.getTransactionParams().do();
 
-  let optTxn: AssetTxn = {
+  const optTxn: AssetTxn = {
     ...params,
     fee: 1000,
     flatFee: true,
@@ -20,8 +20,8 @@ export async function optIntoAsset(assetId: number, addr: string) {
     assetIndex: assetId
   };
 
-  let rawSignedOptTxn: SignedTx = await myAlgoWallet.signTransaction(optTxn);
-  let tx = (await algodClient.sendRawTransaction(rawSignedOptTxn.blob).do());
+  const rawSignedOptTxn: SignedTx = await myAlgoWallet.signTransaction(optTxn);
+  const tx = await algodClient.sendRawTransaction(rawSignedOptTxn.blob).do();
 
   console.log("Transaction : " + tx.txId);
 

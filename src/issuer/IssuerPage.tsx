@@ -159,7 +159,7 @@ function IssuerPage(props: IssuerPageProps) {
               type="number"
               name="numCouponPayments"
               required
-              inputProps={{ min: 0 }}
+              inputProps={{ min: 0, max: 63 }}
             />
           </FormControl>
         </div>

@@ -1,6 +1,6 @@
 import { algodClient, STABLECOIN_ID, waitForConfirmation } from '../utils/Utils';
 import { CallApplTxn, PaymentTxn, SignedTx, } from '@randlabs/myalgo-connect';
-import { SuggestedParams } from 'algosdk';
+import { OnApplicationComplete, SuggestedParams } from 'algosdk';
 import { myAlgoWallet } from '../wallet/myAlgo/MyAlgoWallet';
 
 const algosdk = require('algosdk');
@@ -32,7 +32,7 @@ export async function claimCoupon(
     type: "appl",
     from: investorAddr,
     appIndex: mainAppId,
-    appOnComplete: 0,
+    appOnComplete: OnApplicationComplete.NoOpOC,
     appArgs: mainAppArgs
   }
 
@@ -44,7 +44,7 @@ export async function claimCoupon(
     type: "appl",
     from: investorAddr,
     appIndex: manageAppId,
-    appOnComplete: 0,
+    appOnComplete: OnApplicationComplete.NoOpOC,
     appArgs: manageAppArgs,
     appAccounts: [stablecoinEscrowAddr, bondEscrowAddr],
     appForeignApps: [mainAppId],

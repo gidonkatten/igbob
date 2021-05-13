@@ -18,7 +18,7 @@ import {
 } from '../algorand/account/Account';
 import Button from '@material-ui/core/Button';
 import { UserAccount } from '../redux/reducers/userReducer';
-import { extractAppState, formatStablecoin } from '../utils/Utils';
+import { extractAppState, extractManageAppState, formatStablecoin } from '../utils/Utils';
 import { claimCoupon } from '../algorand/bond/Coupon';
 import { claimPrincipal } from '../algorand/bond/Principal';
 import BondTimeline from '../common/BondTimeline';
@@ -310,7 +310,7 @@ function InvestorPage(props: InvestorPageProps) {
     ).then(([mainApp, manageApp, asset, bondEscrow, stablecoinEscrow]) => {
 
       setMainAppGlobalState(app.app_id, extractAppState(mainApp.params['global-state']));
-      setManageAppGlobalState(app.app_id, extractAppState(manageApp.params['global-state']));
+      setManageAppGlobalState(app.app_id, extractManageAppState(manageApp.params['global-state']));
 
       const bMinted = asset.asset.params.total;
       const bEscrowBalance = getAssetBalance(bondEscrow, app.bond_id);

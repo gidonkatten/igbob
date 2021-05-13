@@ -73,3 +73,24 @@ function concatTypedArrays(a, b) { // a, b TypedArray of same type
   c.set(b, a.length);
   return c;
 }
+
+/**
+ * Converts number to Uint8Array
+ */
+export function numberToUint8Array(number: number): Uint8Array {
+  let hex = BigInt(number).toString(16);
+  if (hex.length % 2) { hex = '0' + hex; }
+
+  let len = hex.length / 2;
+  let u8 = new Uint8Array(len);
+
+  let i = 0;
+  let j = 0;
+  while (i < len) {
+    u8[i] = parseInt(hex.slice(j, j+2), 16);
+    i += 1;
+    j += 2;
+  }
+
+  return u8;
+}
