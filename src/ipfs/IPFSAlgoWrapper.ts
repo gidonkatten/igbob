@@ -1,3 +1,8 @@
+import { PaymentTxn, SignedTx } from '@randlabs/myalgo-connect';
+import { SuggestedParams } from 'algosdk';
+import { algodClient, indexerClient, waitForConfirmation } from '../algorand/utils/Utils';
+import { myAlgoWallet } from '../algorand/wallet/myAlgo/MyAlgoWallet';
+
 const IPFS = require('ipfs');
 
 export class IPFSAlgoWrapper {
@@ -10,25 +15,66 @@ export class IPFSAlgoWrapper {
     console.log('IPFS version:', version.version)
   }
 
-  public async addData(data: File) {
+  public async addData(
+    data: File,
+    issuerAddr: string,
+    manageAppId: number,
+    couponRound: number
+  ) {
     const result = await IPFSAlgoWrapper.node.add(data);
-    console.log(result.cid.toString());
+    const cid: string = result.cid.toString();
+    console.log("Content Identifier: " + cid);
+
+    // send tx with cid in note field
+    const params: SuggestedParams = await algodClient.getTransactionParams().do();
+
+    const txn: PaymentTxn = {
+      ...params,
+      flatFee: true,
+      type: "pay",
+      from: issuerAddr,
+      to: issuerAddr,
+      amount: 0,
+      note: manageAppId + "+" + couponRound + "+" + cid
+    };
+
+    const rawSignedTxn: SignedTx = await myAlgoWallet.signTransaction(txn);
+    const tx = await algodClient.sendRawTransaction(rawSignedTxn.blob).do();
+
+    console.log("Transaction : " + tx.txId);
+
+    // Wait for confirmation
+    await waitForConfirmation(tx.txId);
   }
 
-  public async getData(cid) {
-    const stream = IPFSAlgoWrapper.node.cat(cid);
+  public async getData(
+    issuerAddr: string,
+    manageAppId: number,
+    couponRound: number
+  ): Promise<string[][]> {
+    const prefix: Uint8Array = new Uint8Array(
+      Buffer.from(manageAppId + '+', 'base64')
+    );
 
-    const decoder = new TextDecoder();
+    const res = await indexerClient.lookupAccountTransactions(issuerAddr)
+      .notePrefix(prefix).do()
 
-    let data = '';
+    // could have more than one CID for given round
+    const cids: string[][] = new Array<string[]>(couponRound + 1);
+    for (let i = 0; i < cids.length; i++) cids[i] = [];
 
-    for await (const chunk of stream) {
-      // chunks of data are returned as a UInt8Array, convert it back to a string
-      data += decoder.decode(chunk)
-    }
+    res.transactions.forEach(txn => {
+      // note format: "<MANAGE_APP_ID>+<COUPON_ROUND>+<CID>"
+      const note: string | undefined = txn.note;
+      if (note) {
+        const split = note.split('+')
+        const round = parseInt(split[1]);
+        const cid = split[2];
+        cids[round].push(cid);
+      }
+    });
 
-    console.log(data)
+    return cids;
   }
 
 }
-

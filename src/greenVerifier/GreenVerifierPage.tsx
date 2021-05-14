@@ -63,12 +63,19 @@ function GreenVerifierPage(props: GreenVerifierPageProps) {
   }
 
   const onFileChange = (event: any) => {
+    if (!selectedAccount || !app || !couponRound) return;
+
     const target = event.target as HTMLInputElement;
     const file: File = (target.files as FileList)[0];
 
     // Check file is defined and upload
     if (!file) return;
-    new IPFSAlgoWrapper().addData(file);
+    new IPFSAlgoWrapper().addData(
+      file,
+      selectedAccount.address,
+      app.manage_app_id,
+      couponRound.round
+    );
   };
 
   const enterAppView = (appId) => {
@@ -86,9 +93,18 @@ function GreenVerifierPage(props: GreenVerifierPageProps) {
   useEffect(() => {
     if (!app) return;
 
+    // Get global state of current manage application
     algodClient.getApplicationByID(app.manage_app_id).do().then(manageApp => {
       setManageAppGlobalState(app.app_id, extractManageAppState(manageApp.params['global-state']));
     })
+
+    if (!couponRound) return;
+
+    // Get IPFS docs associated with current application
+    const ipfs = new IPFSAlgoWrapper();
+    ipfs.getData(app.issuer_address, app.manage_app_id, couponRound.round).then(res => {
+      console.log(res);
+    });
   }, [appId])
 
   const appsList = (

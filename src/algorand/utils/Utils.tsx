@@ -1,11 +1,11 @@
 const algosdk = require('algosdk');
 
 const algodServer = 'https://testnet-algorand.api.purestake.io/ps2'
-const indexerServer = 'https://testnet-algorand.api.purestake.io/idx2'
-const port = '';
+const indexerServer = 'https://testnet.algoexplorerapi.io/idx2'
+
 const token = { 'X-API-Key': process.env.REACT_APP_PURESTAKE_API_KEY }
-export const algodClient = new algosdk.Algodv2(token, algodServer, port);
-export const indexerClient = new algosdk.Indexer(token, indexerServer, port);
+export const algodClient = new algosdk.Algodv2(token, algodServer, '');
+export const indexerClient = new algosdk.Indexer('', indexerServer, 443);
 
 export const STABLECOIN_ID = 15435388;
 
