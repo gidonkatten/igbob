@@ -35,6 +35,7 @@ import Input from '@material-ui/core/Input';
 import TextField from '@material-ui/core/TextField';
 import AppList from '../common/AppList';
 import { App } from '../redux/types';
+import { BackButton } from '../common/BackButton';
 
 interface StateProps {
   selectedAccount?: UserAccount;
@@ -343,7 +344,7 @@ function InvestorPage(props: InvestorPageProps) {
   const appView = app && (
     <div>
 
-      <IconButton onClick={exitAppView}><ArrowBackIcon/></IconButton>
+      <BackButton onClick={exitAppView}/>
 
       <BondTimeline
         startBuyDate={app.start_buy_date}

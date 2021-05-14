@@ -19,6 +19,7 @@ import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
 import { CouponRound, getCouponRound } from '../investor/Utils';
 import { IPFSAlgoWrapper } from '../ipfs/IPFSAlgoWrapper';
+import { BackButton } from '../common/BackButton';
 
 interface StateProps {
   selectedAccount?: UserAccount;
@@ -109,7 +110,7 @@ function GreenVerifierPage(props: GreenVerifierPageProps) {
 
   const appsList = (
     <div>
-      <h3>Listed Green Bonds</h3>
+      <h3>Green Verifier For These Green Bonds</h3>
       <AppList
         onClick={enterAppView}
         appFilter={(app: App) => app.green_verifier_address === (selectedAccount ? selectedAccount.address : undefined)}
@@ -122,7 +123,7 @@ function GreenVerifierPage(props: GreenVerifierPageProps) {
   const appView = app && (
     <div>
 
-      <IconButton onClick={exitAppView}><ArrowBackIcon/></IconButton>
+      <BackButton onClick={exitAppView}/>
 
       <TextField
         label="Selected Address:"
