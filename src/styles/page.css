@@ -2,6 +2,12 @@
     font-family: Roboto, sans-serif;
 }
 
+.back-button {
+    position: absolute;
+    top: 71px;
+    left: 15px;
+}
+
 .page-content {
     padding-top: 56px;
     margin: 30px 90px;

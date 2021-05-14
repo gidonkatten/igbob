@@ -28,6 +28,10 @@ export class IPFSAlgoWrapper {
     // send tx with cid in note field
     const params: SuggestedParams = await algodClient.getTransactionParams().do();
 
+    const note: Uint8Array = new Uint8Array(
+      Buffer.from(manageAppId + "+" + couponRound + "+" + cid)
+    );
+
     const txn: PaymentTxn = {
       ...params,
       flatFee: true,
@@ -35,7 +39,7 @@ export class IPFSAlgoWrapper {
       from: issuerAddr,
       to: issuerAddr,
       amount: 0,
-      note: manageAppId + "+" + couponRound + "+" + cid
+      note
     };
 
     const rawSignedTxn: SignedTx = await myAlgoWallet.signTransaction(txn);
@@ -52,9 +56,7 @@ export class IPFSAlgoWrapper {
     manageAppId: number,
     couponRound: number
   ): Promise<string[][]> {
-    const prefix: Uint8Array = new Uint8Array(
-      Buffer.from(manageAppId + '+', 'base64')
-    );
+    const prefix: Uint8Array = new Uint8Array(Buffer.from(manageAppId + '+'));
 
     const res = await indexerClient.lookupAccountTransactions(issuerAddr)
       .notePrefix(prefix).do()
@@ -64,13 +66,16 @@ export class IPFSAlgoWrapper {
     for (let i = 0; i < cids.length; i++) cids[i] = [];
 
     res.transactions.forEach(txn => {
-      // note format: "<MANAGE_APP_ID>+<COUPON_ROUND>+<CID>"
-      const note: string | undefined = txn.note;
+      const note: string | undefined = txn.note ? atob(txn.note) : undefined;
+
       if (note) {
+        // note format: "<MANAGE_APP_ID>+<COUPON_ROUND>+<CID>"
         const split = note.split('+')
-        const round = parseInt(split[1]);
-        const cid = split[2];
-        cids[round].push(cid);
+        if (split.length === 3) {
+          const round = parseInt(split[1]);
+          const cid = split[2];
+          cids[round].push(cid);
+        }
       }
     });
 

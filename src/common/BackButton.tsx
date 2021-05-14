@@ -10,6 +10,8 @@ export function BackButton(props: BackButtonProps) {
   const { onClick } = props;
 
   return (
-    <IconButton onClick={onClick}><ArrowBackIcon/></IconButton>
+    <div className={"back-button"}>
+      <IconButton onClick={onClick}><ArrowBackIcon/></IconButton>
+    </div>
   )
 }
