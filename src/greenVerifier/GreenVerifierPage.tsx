@@ -18,6 +18,7 @@ import Input from '@material-ui/core/Input';
 import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
 import { CouponRound, getCouponRound } from '../investor/Utils';
+import { IPFSAlgoWrapper } from '../ipfs/IPFSAlgoWrapper';
 
 interface StateProps {
   selectedAccount?: UserAccount;
@@ -61,6 +62,15 @@ function GreenVerifierPage(props: GreenVerifierPageProps) {
     })
   }
 
+  const onFileChange = (event: any) => {
+    const target = event.target as HTMLInputElement;
+    const file: File = (target.files as FileList)[0];
+
+    // Check file is defined and upload
+    if (!file) return;
+    new IPFSAlgoWrapper().addData(file);
+  };
+
   const enterAppView = (appId) => {
     setInOverview(false);
     const newApp = getApp(appId);
@@ -98,19 +108,18 @@ function GreenVerifierPage(props: GreenVerifierPageProps) {
 
       <IconButton onClick={exitAppView}><ArrowBackIcon/></IconButton>
 
+      <TextField
+        label="Selected Address:"
+        defaultValue={selectedAccount ? selectedAccount.address : undefined}
+        required
+        fullWidth
+        InputProps={{ readOnly: true }}
+        helperText="Can be changed in settings"
+        InputLabelProps={{ required: false }}
+        style={{ margin: '8px 0px' }}
+      />
+
       <Grid container spacing={3} style={{ marginTop: '8px' }}>
-
-        <TextField
-          label="Selected Address:"
-          defaultValue={selectedAccount ? selectedAccount.address : undefined}
-          required
-          fullWidth
-          InputProps={{ readOnly: true }}
-          helperText="Can be changed in settings"
-          InputLabelProps={{ required: false }}
-          style={{ margin: '8px 0px' }}
-        />
-
 
         {/*Second Row*/}
         <Grid item xs={5}>
@@ -141,6 +150,18 @@ function GreenVerifierPage(props: GreenVerifierPageProps) {
         </Grid>
 
       </Grid>
+
+      <Button
+        variant="outlined"
+        color="primary"
+        component="label"
+        fullWidth
+        style={{ textTransform: 'none' }}
+        onChange={onFileChange}
+      >
+        Upload PDF
+        <input type="file" accept="application/pdf" hidden/>
+      </Button>
 
       {manageAppState && [...Array(app.bond_length + 1)].map((e, i) => {
         const key = Math.floor(i / 8);

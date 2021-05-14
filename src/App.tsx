@@ -12,6 +12,7 @@ import { setAccountAddresses, setSelectedAccount } from './redux/actions/actions
 import { connect } from 'react-redux';
 import { getAccountInformation } from './algorand/account/Account';
 import GreenVerifierPage from './greenVerifier/GreenVerifierPage';
+import { IPFSAlgoWrapper } from './ipfs/IPFSAlgoWrapper';
 
 interface AppProps {
   setAccountAddresses: typeof setAccountAddresses;
@@ -41,6 +42,11 @@ function App(props: AppProps) {
       console.error(err.message);
     }
   }
+
+  // initialise IPFS
+  useEffect( () => {
+    new IPFSAlgoWrapper().init();
+  }, []);
 
   // fetch initial user state when switched from logged out to logged in
   useEffect( () => {
