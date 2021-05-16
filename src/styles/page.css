@@ -13,6 +13,15 @@
     margin: 30px 90px;
 }
 
+.home-text {
+    margin: 0;
+    position: absolute;
+    top: 50%;
+    left: 30%;
+    -ms-transform: translate(-30%, -50%);
+    transform: translate(-30%, -50%);
+}
+
 .timeline-box {
     padding: 6px 16px
 }
