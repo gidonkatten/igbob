@@ -26,8 +26,6 @@ import { algodClient, indexerClient } from '../algorand/utils/Utils';
 import { claimDefault } from '../algorand/bond/Default';
 import { getHasDefaulted } from './Utils';
 import { optIntoApp } from '../algorand/bond/OptIntoApp';
-import IconButton from '@material-ui/core/IconButton';
-import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import Grid from '@material-ui/core/Grid';
 import FormControl from '@material-ui/core/FormControl';
 import InputLabel from '@material-ui/core/InputLabel';

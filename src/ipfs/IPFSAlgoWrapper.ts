@@ -54,18 +54,20 @@ export class IPFSAlgoWrapper {
   public async getData(
     issuerAddr: string,
     manageAppId: number,
-    couponRound: number
-  ): Promise<string[][]> {
+    rounds: number,
+  ): Promise<{ cid: string, time: number }[][]> {
     const prefix: Uint8Array = new Uint8Array(Buffer.from(manageAppId + '+'));
 
+    // TODO: Use afterTime() beforeTime() to verify upload time within bounds
     const res = await indexerClient.lookupAccountTransactions(issuerAddr)
       .notePrefix(prefix).do()
 
     // could have more than one CID for given round
-    const cids: string[][] = new Array<string[]>(couponRound + 1);
+    const cids: { cid: string, time: number }[][] = new Array(rounds + 1);
     for (let i = 0; i < cids.length; i++) cids[i] = [];
 
     res.transactions.forEach(txn => {
+      const time: number = txn['round-time']
       const note: string | undefined = txn.note ? atob(txn.note) : undefined;
 
       if (note) {
@@ -74,7 +76,7 @@ export class IPFSAlgoWrapper {
         if (split.length === 3) {
           const round = parseInt(split[1]);
           const cid = split[2];
-          cids[round].push(cid);
+          cids[round].push({ cid, time });
         }
       }
     });

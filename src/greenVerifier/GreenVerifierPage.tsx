@@ -3,8 +3,6 @@ import { connect } from 'react-redux';
 import { selectedAccountSelector } from '../redux/selectors/userSelector';
 import { getAppSelector, getManageAppGlobalStateSelector } from '../redux/selectors/bondSelector';
 import AppList from '../common/AppList';
-import IconButton from '@material-ui/core/IconButton';
-import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import { UserAccount } from '../redux/reducers/userReducer';
 import TextField from '@material-ui/core/TextField';
 import { App, ManageAppState } from '../redux/types';

@@ -9,7 +9,6 @@ import { BackButton } from '../common/BackButton';
 import IssueBondForm from './IssueBondForm';
 import Button from '@material-ui/core/Button';
 import { IPFSAlgoWrapper } from '../ipfs/IPFSAlgoWrapper';
-import { CouponRound, getCouponRound } from '../investor/Utils';
 import { IPFSFileList } from '../common/IPFSFileList';
 
 enum IssuerPageNav {
@@ -33,13 +32,9 @@ function IssuerPage(props: IssuerPageProps) {
 
   const [issuerPageNav, setIssuerPageNav] = useState<IssuerPageNav>(IssuerPageNav.OVERVIEW);
   const [app, setApp] = useState<App>();
-  const [cids, setCids] = useState<string[][]>([]);
+  const [cids, setCids] = useState<{ cid: string, time: number }[][]>([]);
 
   const { selectedAccount, getApp } = props;
-
-  const couponRound: CouponRound | undefined = app ?
-    getCouponRound(app.end_buy_date, app.maturity_date, app.period, app.bond_length) :
-    undefined
 
   const enterAppView = (appId) => {
     setIssuerPageNav(IssuerPageNav.MANAGE);
@@ -58,11 +53,11 @@ function IssuerPage(props: IssuerPageProps) {
 
   const appId = app ? app.app_id : 0;
   useEffect(() => {
-    if (!app || !couponRound) return;
+    if (!app) return;
 
     // Get IPFS docs associated with current application
     const ipfs = new IPFSAlgoWrapper();
-    ipfs.getData(app.issuer_address, app.manage_app_id, couponRound.round).then(res => {
+    ipfs.getData(app.issuer_address, app.manage_app_id, app.bond_length).then(res => {
       setCids(res);
     });
   }, [appId])
@@ -96,10 +91,17 @@ function IssuerPage(props: IssuerPageProps) {
     </div>
   );
 
-  const manageView = (
+  const manageView = app && (
     <div>
       <BackButton onClick={exitAppView}/>
-      <IPFSFileList cids={cids}/>
+      <IPFSFileList
+        cids={cids}
+        startBuyDate={app.start_buy_date}
+        endBuyDate={app.end_buy_date}
+        bondLength={app.bond_length}
+        maturityDate={app.maturity_date}
+        period={app.period}
+      />
     </div>
   );
 
