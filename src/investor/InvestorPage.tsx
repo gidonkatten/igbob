@@ -34,6 +34,7 @@ import TextField from '@material-ui/core/TextField';
 import AppList from '../common/AppList';
 import { App } from '../redux/types';
 import { BackButton } from '../common/BackButton';
+import Typography from '@material-ui/core/Typography';
 
 interface StateProps {
   selectedAccount?: UserAccount;
@@ -334,7 +335,7 @@ function InvestorPage(props: InvestorPageProps) {
 
   const appsList = (
     <div>
-      <h3>Listed Green Bonds</h3>
+      <Typography variant="h3">Listed Green Bonds</Typography>
       <AppList onClick={enterAppView}/>
     </div>
   )
@@ -343,6 +344,10 @@ function InvestorPage(props: InvestorPageProps) {
     <div>
 
       <BackButton onClick={exitAppView}/>
+
+      <Typography variant="h3" gutterBottom>{app.name}</Typography>
+
+      <Typography variant="body1" gutterBottom>{app.description}</Typography>
 
       <BondTimeline
         startBuyDate={app.start_buy_date}
@@ -482,11 +487,6 @@ function InvestorPage(props: InvestorPageProps) {
       </Grid>
 
       <div>
-        <p>Name: {app.name}</p>
-        <p>Description: {app.description}</p>
-        <p>Start buy date: {app.start_buy_date}</p>
-        <p>End buy date: {app.end_buy_date}</p>
-        <p>Maturity date: {app.maturity_date}</p>
         <p>Bond cost: ${formatStablecoin(app.bond_cost)}</p>
         <p>Bond coupon: ${formatStablecoin(app.bond_coupon)}</p>
         <p>Number of coupon payments: {app.bond_length}</p>

@@ -11,6 +11,7 @@ import Button from '@material-ui/core/Button';
 import { IPFSAlgoWrapper } from '../ipfs/IPFSAlgoWrapper';
 import { CouponRound, getCouponRound } from '../investor/Utils';
 import IPFSFileListContainer from '../common/IPFSFileListContainer';
+import Typography from '@material-ui/core/Typography';
 
 enum IssuerPageNav {
   OVERVIEW,
@@ -31,7 +32,7 @@ type IssuerPageProps = StateProps & DispatchProps & OwnProps;
 
 function IssuerPage(props: IssuerPageProps) {
 
-  const [issuerPageNav, setIssuerPageNav] = useState<IssuerPageNav>(IssuerPageNav.OVERVIEW);
+  const [issuerPageNav, setIssuerPageNav] = useState<IssuerPageNav>(IssuerPageNav.ISSUANCE);
   const [app, setApp] = useState<App>();
 
   const { selectedAccount, getApp } = props;
@@ -64,7 +65,8 @@ function IssuerPage(props: IssuerPageProps) {
   const overviewView = (
     <div>
 
-      <h3>Issuer For These Green Bonds</h3>
+      <Typography variant="h3">Issuer For These Green Bonds</Typography>
+
       <AppList
         onClick={enterAppView}
         appFilter={(app: App) => app.issuer_address === (selectedAccount ? selectedAccount.address : undefined)}
@@ -85,7 +87,7 @@ function IssuerPage(props: IssuerPageProps) {
   const issuanceView = (
     <div>
       <BackButton onClick={exitIssuanceView}/>
-      <h3>Issue Bond</h3>
+      <Typography variant="h3">Issue Bond</Typography>
       <IssueBondForm/>
     </div>
   );

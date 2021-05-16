@@ -11,6 +11,7 @@ import {
 } from '../redux/selectors/userSelector';
 import { formatStablecoin } from '../utils/Utils';
 import Button from '@material-ui/core/Button';
+import Typography from '@material-ui/core/Typography';
 
 interface DashboardPageProps {
   selectedAccount?: UserAccount,
@@ -59,40 +60,55 @@ function DashboardPage(props: DashboardPageProps) {
     <div className={"page-content"}>
 
       <div>
-        <h3>Selected Address</h3>
-        <p>
-          {selectedAccount ? <>{selectedAccount.address}</> : <>No address selected</>}
-        </p>
+        <Typography variant="h4" gutterBottom>Selected Address</Typography>
+        <Typography variant="body1" gutterBottom>
+          {selectedAccount ? selectedAccount.address : 'No address selected'}
+        </Typography>
       </div>
 
       <div>
-        <h3>Algo Balance</h3>
-        <p>Current balance is {selectedAccount ? selectedAccount.algoBalance : 0} algos</p>
-        <p>
-          Can use TestNet algo
-          <Button
+        <Typography variant="h4" gutterBottom>Algo Balance</Typography>
+        <Typography variant="body1" gutterBottom>
+          Current balance is {selectedAccount ? selectedAccount.algoBalance : 0} algos
+        </Typography>
+        <Typography variant="body1" gutterBottom>
+          Can use TestNet algo&nbsp;
+          <a
             href="https://bank.testnet.algorand.network"
             target="_blank"
             rel="noopener noreferrer"
             color="primary"
           >
-            dispenser
-          </Button>
-          to add 10 algos for transaction and minimum balance fees.
-        </p>
+           dispenser
+          </a>
+          &nbsp;to add 10 algos for transaction and minimum balance fees.
+        </Typography>
       </div>
 
       <div>
-        <h3>Stablecoin Balance</h3>
+        <Typography variant="h4" gutterBottom>Stablecoin Balance</Typography>
         {selectedAccount && optedIntoStablecoin ?
           <div>
-            <p>Current balance is ${formatStablecoin(stablecoinBalance)}</p>
+            <Typography variant="body1" gutterBottom>
+              Current balance is ${formatStablecoin(stablecoinBalance)}
+            </Typography>
             <form onSubmit={handleSubmit}>
-              <p>Can use TestNet stablecoin dispenser below to add $1000 for bond payments.</p>
-              <p><Button variant="contained" color="primary" type="submit" disabled={!selectedAccount}>Fund</Button></p>
+              <Typography variant="body1" gutterBottom>
+                Can use TestNet stablecoin dispenser below to add $1000 for bond payments.
+              </Typography>
+            <Button
+                variant="contained"
+                color="primary"
+                type="submit"
+                disabled={!selectedAccount}
+              >
+                Fund
+              </Button>
             </form>
           </div> :
-          <p>Go to settings to opt in account to the stablecoin asset</p>
+          <Typography variant="body1" gutterBottom>
+            Go to settings to opt in account to the stablecoin asset
+          </Typography>
         }
       </div>
 

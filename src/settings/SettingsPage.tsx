@@ -13,6 +13,7 @@ import FormControlLabel from '@material-ui/core/FormControlLabel';
 import FormLabel from '@material-ui/core/FormLabel';
 import Radio from '@material-ui/core/Radio';
 import RadioGroup from '@material-ui/core/RadioGroup';
+import Typography from '@material-ui/core/Typography';
 
 interface SettingsPageProps {
   addresses: string[];
@@ -40,8 +41,8 @@ function SettingsPage(props: SettingsPageProps) {
   return (
     <div className={"page-content"}>
 
-      <h3>Instructions</h3>
-      <p>
+      <Typography variant="h4" gutterBottom>Instructions</Typography>
+      <Typography variant="body1" gutterBottom>
         Connect accounts by creating a &nbsp;
         <a
           href="https://wallet.myalgo.com/home"
@@ -53,14 +54,15 @@ function SettingsPage(props: SettingsPageProps) {
         &nbsp; and adding TestNet Wallets. When you are done, use the button
         below and choose which addresses you want to be able to interact with
         the application from.
-      </p>
-      <p>
+      </Typography>
+      <Typography variant="body1" gutterBottom>
         Note that you can edit which accounts are connected by disconnecting
         from this site on MyAlgo and reconnecting using the button below.
-      </p>
-      <p><MyAlgoGetAccounts/></p>
+      </Typography>
 
-      <h3>Connected Account</h3>
+      <div style={{ margin: '8px 0px'}}><MyAlgoGetAccounts/></div>
+
+      <Typography variant="h4" gutterBottom>Connected Account</Typography>
       <FormControl component="fieldset">
         <FormLabel>Selected Address</FormLabel>
         <RadioGroup value={selectedAccount ? selectedAccount.address : ''} onChange={handleChange}>
@@ -81,7 +83,7 @@ function SettingsPage(props: SettingsPageProps) {
 
       {selectedAccount && !optedIntoStablecoin && (
         <>
-          <h3>Opt into stablecoin</h3>
+          <Typography variant="h4" gutterBottom>Opt into stablecoin</Typography>
           <Button
             variant="contained"
             color="primary"

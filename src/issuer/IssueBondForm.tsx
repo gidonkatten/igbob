@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { connect } from 'react-redux';
 import { useAuth0 } from '@auth0/auth0-react';
 import Button from '@material-ui/core/Button';
-import Form from 'react-bootstrap/Form';
 import { UserAccount } from '../redux/reducers/userReducer';
 import { selectedAccountSelector } from '../redux/selectors/userSelector';
 import { convertDateToUnixTime } from '../utils/Utils';
@@ -89,7 +88,7 @@ function IssueBondForm(props: IssueBondFormProps) {
   const handleMaturityDateChange = (date) => setMaturityDate(date)
 
   return (
-    <Form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit}>
 
       <TextField
         label="Name:"
@@ -116,10 +115,9 @@ function IssueBondForm(props: IssueBondFormProps) {
         style={{ margin: '8px 0px' }}
       />
 
-      {/*TODO: investigate why doesn't set when undefined -> addr*/}
       <TextField
         label="Issuer Address:"
-        defaultValue={selectedAccount ? selectedAccount.address : undefined}
+        value={selectedAccount ? selectedAccount.address : ''}
         required
         fullWidth
         InputProps={{ readOnly: true }}
@@ -250,7 +248,7 @@ function IssueBondForm(props: IssueBondFormProps) {
       >
         Create
       </Button>
-    </Form>
+    </form>
   )
 }
 

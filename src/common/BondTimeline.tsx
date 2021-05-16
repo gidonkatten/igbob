@@ -110,7 +110,7 @@ export default function bondTimeline(props: BondTimelineProps) {
             <Typography variant="h6" component="h1">Coupon payments</Typography>
             <Typography>
               These are payable every {period} seconds <br/>
-              There are {bondLength - Math.min(bondLength, couponRound.round)} coupons payments remaining<br/>
+              There are {bondLength - Math.min(bondLength, couponRound.round)} upcoming coupon payments<br/>
               {couponRound.round < bondLength ?
                 <>The next coupon date is {convertUnixTimeToDate(couponRound.date + period)}</> :
                 null

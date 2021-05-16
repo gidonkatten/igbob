@@ -14,6 +14,7 @@ import Button from '@material-ui/core/Button';
 import { CouponRound, getCouponRound } from '../investor/Utils';
 import { BackButton } from '../common/BackButton';
 import IPFSFileListContainer from '../common/IPFSFileListContainer';
+import Typography from '@material-ui/core/Typography';
 
 interface StateProps {
   selectedAccount?: UserAccount;
@@ -74,7 +75,7 @@ function GreenVerifierPage(props: GreenVerifierPageProps) {
 
   const appsList = (
     <div>
-      <h3>Green Verifier For These Green Bonds</h3>
+      <Typography variant="h3">Green Verifier For These Green Bonds</Typography>
       <AppList
         onClick={enterAppView}
         appFilter={(app: App) => app.green_verifier_address === (selectedAccount ? selectedAccount.address : undefined)}
