@@ -63,7 +63,7 @@ function SettingsPage(props: SettingsPageProps) {
       <h3>Connected Account</h3>
       <FormControl component="fieldset">
         <FormLabel>Selected Address</FormLabel>
-        <RadioGroup value={selectedAccount?.address} onChange={handleChange}>
+        <RadioGroup value={selectedAccount ? selectedAccount.address : ''} onChange={handleChange}>
           {addresses.map((addr) => {
             return (
               <FormControlLabel

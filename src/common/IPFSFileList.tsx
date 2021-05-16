@@ -1,5 +1,4 @@
 import React from 'react';
-import ListSubheader from '@material-ui/core/ListSubheader';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
@@ -10,9 +9,11 @@ import Collapse from '@material-ui/core/Collapse';
 import DescriptionIcon from '@material-ui/icons/Description';
 import ListIcon from '@material-ui/icons/List';
 import { convertUnixTimeToDate, convertUnixTimeToTime } from '../utils/Utils';
+import Rating from '@material-ui/lab/Rating';
 
 interface IPFSFileListProps {
   cids: { cid: string, time: number }[][],
+  ratings: number[],
   startBuyDate: number,
   endBuyDate: number,
   bondLength: number,
@@ -24,10 +25,9 @@ export function IPFSFileList(props: IPFSFileListProps) {
 
   const {
     cids,
+    ratings,
     startBuyDate,
     endBuyDate,
-    bondLength,
-    maturityDate,
     period
   } = props;
 
@@ -44,25 +44,33 @@ export function IPFSFileList(props: IPFSFileListProps) {
       <List
         component="nav"
         aria-labelledby="nested-list-subheader"
-        subheader={
-          <ListSubheader component="div" id="nested-list-subheader">
-            List Subheader
-          </ListSubheader>
-        }
       >
 
         {cids.map((roundCids: { cid: string, time: number }[], round: number) => {
           return (
-            <div key={round}>
+            <div
+              key={round}
+              title={ratings[round] === 0 ? 'No rating yet' : ('Rated ' + ratings[round] + ' stars')}
+            >
 
               <ListItem button onClick={() => handleClick(round)}>
                 <ListItemIcon><ListIcon/></ListItemIcon>
                 <ListItemText
                   primary={round === 0 ?
                     "Use of proceeds: " + convertUnixTimeToDate(startBuyDate) + " - " + convertUnixTimeToDate(endBuyDate) :
-                    "Report: " + convertUnixTimeToDate(endBuyDate + (round - 1) * period) + " - " + convertUnixTimeToDate(endBuyDate + round * period)
+                    "Report " + round + ": " + convertUnixTimeToDate(endBuyDate + (round - 1) * period) + " - " + convertUnixTimeToDate(endBuyDate + round * period)
                   }
                 />
+
+                <Rating
+                  name="read-only"
+                  size="large"
+                  value={ratings.length === 0 ? 0 : ratings[round]}
+                  style={{ paddingRight: '16px' }}
+                  disabled={ratings[round] === 0}
+                  readOnly
+                />
+
                 {open[round] ? <ExpandLess /> : <ExpandMore />}
               </ListItem>
 
@@ -110,24 +118,3 @@ export function IPFSFileList(props: IPFSFileListProps) {
     </div>
   )
 }
-
-// <div key={round}>
-//
-//   <h4>Round {round}</h4>
-//
-//   {roundCids.map((cid: string, index: number) => {
-//     return (
-//       <Button
-//         href={"https://ipfs.io/ipfs/" + cid}
-//         target="_blank"
-//         rel="noopener noreferrer"
-//         color="primary"
-//         style={{ textTransform: 'none' }}
-//         key={index}
-//       >
-//         {"https://ipfs.io/ipfs/" + cid}
-//       </Button>
-//     )
-//   })}
-//
-// </div>

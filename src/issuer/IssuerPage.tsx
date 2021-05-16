@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { connect } from 'react-redux';
 import { UserAccount } from '../redux/reducers/userReducer';
 import { selectedAccountSelector } from '../redux/selectors/userSelector';
@@ -9,7 +9,8 @@ import { BackButton } from '../common/BackButton';
 import IssueBondForm from './IssueBondForm';
 import Button from '@material-ui/core/Button';
 import { IPFSAlgoWrapper } from '../ipfs/IPFSAlgoWrapper';
-import { IPFSFileList } from '../common/IPFSFileList';
+import { CouponRound, getCouponRound } from '../investor/Utils';
+import IPFSFileListContainer from '../common/IPFSFileListContainer';
 
 enum IssuerPageNav {
   OVERVIEW,
@@ -32,7 +33,6 @@ function IssuerPage(props: IssuerPageProps) {
 
   const [issuerPageNav, setIssuerPageNav] = useState<IssuerPageNav>(IssuerPageNav.OVERVIEW);
   const [app, setApp] = useState<App>();
-  const [cids, setCids] = useState<{ cid: string, time: number }[][]>([]);
 
   const { selectedAccount, getApp } = props;
 
@@ -51,16 +51,15 @@ function IssuerPage(props: IssuerPageProps) {
 
   const exitIssuanceView = () => setIssuerPageNav(IssuerPageNav.OVERVIEW);
 
-  const appId = app ? app.app_id : 0;
-  useEffect(() => {
-    if (!app) return;
+  const couponRound: CouponRound | undefined = app ?
+    getCouponRound(app.end_buy_date, app.maturity_date, app.period, app.bond_length) :
+    undefined
 
-    // Get IPFS docs associated with current application
-    const ipfs = new IPFSAlgoWrapper();
-    ipfs.getData(app.issuer_address, app.manage_app_id, app.bond_length).then(res => {
-      setCids(res);
-    });
-  }, [appId])
+  const uploadText = (): string => {
+    if (!couponRound) return '';
+    if (couponRound.round === 0) return 'Use of Proceeds'
+    return 'Report ' + couponRound.round;
+  }
 
   const overviewView = (
     <div>
@@ -91,17 +90,41 @@ function IssuerPage(props: IssuerPageProps) {
     </div>
   );
 
+  const uploadToIPFS = (event: any) => {
+    if (!selectedAccount || !app || !couponRound) return;
+
+    const target = event.target as HTMLInputElement;
+    const file: File = (target.files as FileList)[0];
+
+    // Check file is defined and upload
+    if (!file) return;
+    new IPFSAlgoWrapper().addData(
+      file,
+      selectedAccount.address,
+      app.manage_app_id,
+      couponRound.round
+    );
+  };
+
   const manageView = app && (
     <div>
+
       <BackButton onClick={exitAppView}/>
-      <IPFSFileList
-        cids={cids}
-        startBuyDate={app.start_buy_date}
-        endBuyDate={app.end_buy_date}
-        bondLength={app.bond_length}
-        maturityDate={app.maturity_date}
-        period={app.period}
-      />
+
+      <Button
+        variant="outlined"
+        color="primary"
+        component="label"
+        fullWidth
+        style={{ textTransform: 'none' }}
+        onChange={uploadToIPFS}
+      >
+        Upload PDF For {uploadText()}
+        <input type="file" accept="application/pdf" hidden/>
+      </Button>
+
+      <IPFSFileListContainer app={app}/>
+
     </div>
   );
 
