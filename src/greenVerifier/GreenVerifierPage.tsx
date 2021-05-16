@@ -102,6 +102,7 @@ function GreenVerifierPage(props: GreenVerifierPageProps) {
           fullWidth
           style={{ textTransform: 'none' }}
           onClick={handleRate}
+          disabled={rating === 0}
         >
           Add Rating For {rateText()}
         </Button>
