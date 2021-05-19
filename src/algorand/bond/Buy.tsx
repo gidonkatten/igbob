@@ -19,6 +19,7 @@ export async function buyBond(
   bondCost: number,
 ) {
   let params: SuggestedParams = await algodClient.getTransactionParams().do();
+  params.flatFee = true;
   params.fee = 1000;
 
   // 0. call app

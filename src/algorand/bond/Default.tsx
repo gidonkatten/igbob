@@ -22,6 +22,7 @@ export async function claimDefault(
   bondDefault: number,
 ) {
   let params: SuggestedParams = await algodClient.getTransactionParams().do();
+  params.flatFee = true;
   params.fee = 1000;
 
   const enc = new TextEncoder();

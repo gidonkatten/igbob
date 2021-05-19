@@ -20,6 +20,7 @@ export async function claimCoupon(
   bondCoupon: number,
 ) {
   let params: SuggestedParams = await algodClient.getTransactionParams().do();
+  params.flatFee = true;
   params.fee = 1000;
 
   const enc = new TextEncoder();
