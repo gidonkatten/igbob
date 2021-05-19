@@ -35,6 +35,7 @@ import AppList from '../common/AppList';
 import { App } from '../redux/types';
 import { BackButton } from '../common/BackButton';
 import Typography from '@material-ui/core/Typography';
+import IPFSFileListContainer from '../common/IPFSFileListContainer';
 
 interface StateProps {
   selectedAccount?: UserAccount;
@@ -349,6 +350,8 @@ function InvestorPage(props: InvestorPageProps) {
 
       <Typography variant="body1" gutterBottom>{app.description}</Typography>
 
+      <Typography variant="h4" gutterBottom>Bond Timeline</Typography>
+
       <BondTimeline
         startBuyDate={app.start_buy_date}
         endBuyDate={app.end_buy_date}
@@ -356,6 +359,12 @@ function InvestorPage(props: InvestorPageProps) {
         maturityDate={app.maturity_date}
         period={app.period}
       />
+
+      <Typography variant="h4" gutterBottom>Bond Rating</Typography>
+
+      <IPFSFileListContainer app={app}/>
+
+      <Typography variant="h4" gutterBottom>Buy / Claim Money</Typography>
 
       <TextField
         label="Selected Address:"
@@ -486,17 +495,17 @@ function InvestorPage(props: InvestorPageProps) {
 
       </Grid>
 
-      <div>
-        <p>Bond cost: ${formatStablecoin(app.bond_cost)}</p>
-        <p>Bond coupon: ${formatStablecoin(app.bond_coupon)}</p>
-        <p>Number of coupon payments: {app.bond_length}</p>
-        <p>Bond principal: ${formatStablecoin(app.bond_principal)}</p>
-        <p>Bonds in circulation: {bondsMinted - (bondEscrowBalance as number)} / {bondsMinted}</p>
-        <p>Stablecoin balance of bond escrow: ${formatStablecoin(stablecoinEscrowBalance)}</p>
-        <p>Bond balance: {bondBalance}</p>
-        <p>Stablecoin Escrow Address: {app.stablecoin_escrow_address}</p>
-        <p>Green Verifier Address: {app.green_verifier_address}</p>
-      </div>
+      {/*<div>*/}
+      {/*  <p>Bond cost: ${formatStablecoin(app.bond_cost)}</p>*/}
+      {/*  <p>Bond coupon: ${formatStablecoin(app.bond_coupon)}</p>*/}
+      {/*  <p>Number of coupon payments: {app.bond_length}</p>*/}
+      {/*  <p>Bond principal: ${formatStablecoin(app.bond_principal)}</p>*/}
+      {/*  <p>Bonds in circulation: {bondsMinted - (bondEscrowBalance as number)} / {bondsMinted}</p>*/}
+      {/*  <p>Stablecoin balance of bond escrow: ${formatStablecoin(stablecoinEscrowBalance)}</p>*/}
+      {/*  <p>Bond balance: {bondBalance}</p>*/}
+      {/*  <p>Stablecoin Escrow Address: {app.stablecoin_escrow_address}</p>*/}
+      {/*  <p>Green Verifier Address: {app.green_verifier_address}</p>*/}
+      {/*</div>*/}
 
     </div>
   )

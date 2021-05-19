@@ -32,7 +32,7 @@ type IssuerPageProps = StateProps & DispatchProps & OwnProps;
 
 function IssuerPage(props: IssuerPageProps) {
 
-  const [issuerPageNav, setIssuerPageNav] = useState<IssuerPageNav>(IssuerPageNav.ISSUANCE);
+  const [issuerPageNav, setIssuerPageNav] = useState<IssuerPageNav>(IssuerPageNav.OVERVIEW);
   const [app, setApp] = useState<App>();
 
   const { selectedAccount, getApp } = props;
