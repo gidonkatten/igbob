@@ -9,7 +9,7 @@ import { BackButton } from '../common/BackButton';
 import IssueBondForm from './IssueBondForm';
 import Button from '@material-ui/core/Button';
 import { IPFSAlgoWrapper } from '../ipfs/IPFSAlgoWrapper';
-import { CouponRound, getCouponRound } from '../investor/Utils';
+import { CouponRound, getUpcomingCouponRound } from '../investor/Utils';
 import IPFSFileListContainer from '../common/IPFSFileListContainer';
 import Typography from '@material-ui/core/Typography';
 
@@ -53,7 +53,7 @@ function IssuerPage(props: IssuerPageProps) {
   const exitIssuanceView = () => setIssuerPageNav(IssuerPageNav.OVERVIEW);
 
   const couponRound: CouponRound | undefined = app ?
-    getCouponRound(app.end_buy_date, app.maturity_date, app.period, app.bond_length) :
+    getUpcomingCouponRound(app.end_buy_date, app.maturity_date, app.period) :
     undefined
 
   const uploadText = (): string => {
@@ -120,6 +120,7 @@ function IssuerPage(props: IssuerPageProps) {
         fullWidth
         style={{ textTransform: 'none' }}
         onChange={uploadToIPFS}
+        disabled={!couponRound}
       >
         Upload PDF For {uploadText()}
         <input type="file" accept="application/pdf" hidden/>

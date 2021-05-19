@@ -4,6 +4,7 @@ export interface CouponRound {
 }
 
 // Returns 0 if none, and bondLength if finished
+// Else returns round rounded down
 export function getCouponRound(
   endBuyDate: number,
   maturityDate: number,
@@ -16,6 +17,25 @@ export function getCouponRound(
   if (currentTime < endBuyDate) round = 0;
   else if (currentTime > maturityDate) round = bondLength;
   else round = Math.floor((currentTime - endBuyDate) / period);
+
+  const date = endBuyDate + round * period;
+
+  return { round, date };
+}
+
+// Returns 0 if none, and bondLength if finished
+// Else returns round rounded up
+export function getUpcomingCouponRound(
+  endBuyDate: number,
+  maturityDate: number,
+  period: number,
+): CouponRound | undefined {
+  const currentTime: number = Date.now() / 1000;
+
+  let round: number;
+  if (currentTime < endBuyDate) round = 0;
+  else if (currentTime > maturityDate) return undefined;
+  else round = Math.ceil((currentTime - endBuyDate) / period);
 
   const date = endBuyDate + round * period;
 
