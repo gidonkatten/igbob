@@ -3,14 +3,13 @@ import { extractManageAppState } from '../utils/Utils';
 import { getManageAppGlobalStateSelector } from '../redux/selectors/bondSelector';
 import { setManageAppGlobalState } from '../redux/actions/actions';
 import { connect } from 'react-redux';
-import { App, ManageAppState } from '../redux/types';
+import { App, AppState } from '../redux/types';
 import { IPFSAlgoWrapper } from '../ipfs/IPFSAlgoWrapper';
 import { algodClient } from '../algorand/utils/Utils';
 import { IPFSFileList } from './IPFSFileList';
+import { getStateValue } from '../investor/Utils';
 
-interface StateProps {
-  getManageAppGlobalState: (appId: number) => ManageAppState | undefined;
-}
+interface StateProps {}
 
 interface DispatchProps {
   setManageAppGlobalState: typeof setManageAppGlobalState,
@@ -28,11 +27,7 @@ function IPFSFileListContainer(props: IPFSFileListContainerProps) {
   const [cids, setCids] = useState<{ cid: string, time: number }[][]>([]);
   const [ratings, setRatings] = useState<number[]>([]);
 
-  const {
-    app,
-    getManageAppGlobalState,
-    setManageAppGlobalState,
-  } = props;
+  const { app, setManageAppGlobalState } = props;
 
   const appId = app ? app.app_id : 0;
   useEffect(() => {
@@ -49,14 +44,19 @@ function IPFSFileListContainer(props: IPFSFileListContainerProps) {
       setManageAppGlobalState(app.app_id, extractManageAppState(manageApp.params['global-state']));
 
       // Update ratings
-      const manageAppState: ManageAppState | undefined =  getManageAppGlobalState(app.app_id);
+      const manageAppState: AppState | undefined =  app.manage_app_global_state
       if (!manageAppState) return;
       const newRatings: number[] = [];
       for (let i = 0; i <= app.bond_length; i++) {
-        const key = Math.floor(i / 8);
+        const key: string = Math.floor(i / 8) + '';
         const slot = i % 8;
-        const array: Uint8Array =  manageAppState.has(key) ? manageAppState.get(key)! : new Uint8Array(8);
-        newRatings.push(array[slot]);
+        const array: Uint8Array | number = getStateValue(manageAppState, key);
+        if (array === 0) {
+          // Uninitialised array
+          newRatings.push(0)
+        } else {
+          newRatings.push(array[slot]);
+        }
       }
       setRatings(newRatings);
     });

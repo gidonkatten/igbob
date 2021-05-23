@@ -1,5 +1,5 @@
 import { TealKeyValue } from 'algosdk/dist/types/src/client/v2/algod/models/types';
-import { AppState, ManageAppState } from '../redux/types';
+import { AppState } from '../redux/types';
 
 /**
  * Convert from DateTime to Unix time
@@ -54,8 +54,8 @@ export function extractAppState(state?: TealKeyValue[] | undefined): AppState {
 /**
  * Extract app state given TealKeyValue[]
  */
-export function extractManageAppState(state?: TealKeyValue[] | undefined): ManageAppState {
-  const map: ManageAppState = new Map();
+export function extractManageAppState(state?: TealKeyValue[] | undefined): AppState {
+  const map: AppState = new Map();
 
   if (state) {
     // Check if has a state
@@ -63,7 +63,7 @@ export function extractManageAppState(state?: TealKeyValue[] | undefined): Manag
       state.forEach(pair => {
         const key: Uint8Array = Uint8Array.from(atob(pair.key), c => c.charCodeAt(0));
         const value: Uint8Array = Uint8Array.from(atob(pair.value.bytes), c => c.charCodeAt(0));
-        map.set(key[0], value);
+        map.set(key[0] + '', value);
       })
     }
   }

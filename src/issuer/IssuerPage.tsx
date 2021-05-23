@@ -9,7 +9,7 @@ import { BackButton } from '../common/BackButton';
 import IssueBondForm from './IssueBondForm';
 import Button from '@material-ui/core/Button';
 import { IPFSAlgoWrapper } from '../ipfs/IPFSAlgoWrapper';
-import { CouponRound, getUpcomingCouponRound } from '../investor/Utils';
+import { getReportRatingRound } from '../investor/Utils';
 import IPFSFileListContainer from '../common/IPFSFileListContainer';
 import Typography from '@material-ui/core/Typography';
 
@@ -52,14 +52,17 @@ function IssuerPage(props: IssuerPageProps) {
 
   const exitIssuanceView = () => setIssuerPageNav(IssuerPageNav.OVERVIEW);
 
-  const couponRound: CouponRound | undefined = app ?
-    getUpcomingCouponRound(app.end_buy_date, app.maturity_date, app.period) :
-    undefined
+  const reportRatingRound: number | undefined = app ? getReportRatingRound(
+    app.start_buy_date,
+    app.end_buy_date,
+    app.maturity_date,
+    app.period
+  ) : undefined;
 
   const uploadText = (): string => {
-    if (!couponRound) return '';
-    if (couponRound.round === 0) return 'Use of Proceeds'
-    return 'Report ' + couponRound.round;
+    if (reportRatingRound === undefined) return '';
+    if (reportRatingRound === 0) return 'Use of Proceeds'
+    return 'Report ' + reportRatingRound;
   }
 
   const overviewView = (
@@ -93,7 +96,7 @@ function IssuerPage(props: IssuerPageProps) {
   );
 
   const uploadToIPFS = (event: any) => {
-    if (!selectedAccount || !app || !couponRound) return;
+    if (!selectedAccount || !app || reportRatingRound === undefined) return;
 
     const target = event.target as HTMLInputElement;
     const file: File = (target.files as FileList)[0];
@@ -104,7 +107,7 @@ function IssuerPage(props: IssuerPageProps) {
       file,
       selectedAccount.address,
       app.manage_app_id,
-      couponRound.round
+      reportRatingRound
     );
   };
 
@@ -120,7 +123,7 @@ function IssuerPage(props: IssuerPageProps) {
         fullWidth
         style={{ textTransform: 'none' }}
         onChange={uploadToIPFS}
-        disabled={!couponRound}
+        disabled={reportRatingRound === undefined}
       >
         Upload PDF For {uploadText()}
         <input type="file" accept="application/pdf" hidden/>

@@ -1,6 +1,7 @@
 import { STABLECOIN_ID } from '../../algorand/utils/Utils';
 import { getAssetBalance, getStablecoinBalance } from '../../algorand/account/Account';
 import { AppState } from '../types';
+import { getStateValue } from '../../investor/Utils';
 
 export const addressesSelector = state => state.userReducer.addresses;
 
@@ -37,21 +38,21 @@ export const getBondBalanceSelector = state => bondId => {
 }
 
 export const getOptedIntoAppSelector = state => appId => {
-  const apps: Map<number, AppState> = state.userReducer.selectedAccount.apps;
-  return apps.has(appId);
+  const appsLocalState: Map<number, AppState> = state.userReducer.selectedAccount.appsLocalState;
+  return appsLocalState.has(appId);
 }
 
 export const getAppLocalStateSelector = state => appId => {
-  const apps: Map<number, AppState> = state.userReducer.selectedAccount.apps;
-  return apps.get(appId);
+  const appsLocalState: Map<number, AppState> = state.userReducer.selectedAccount.appsLocalState;
+  return appsLocalState.has(appId) ? appsLocalState.get(appId)! : undefined;
 }
 
-export const getCouponRoundsPaidSelector = state => appId => {
-  const apps: Map<number, AppState> = state.userReducer.selectedAccount.apps;
+export const getAppLocalCouponRoundsPaidSelector = state => appId => {
+  const appsLocalState: Map<number, AppState> = state.userReducer.selectedAccount.appsLocalState;
 
-  if (!apps.has(appId)) return 0;
+  if (!appsLocalState.has(appId)) return 0;
 
-  const localState: AppState = apps.get(appId)!;
-  return localState.has("CouponsPayed") ? (localState.get("CouponsPayed") as number) : 0;
+  const localState: AppState = appsLocalState.get(appId)!;
+  return getStateValue(localState, "CouponsPaid");
 }
 

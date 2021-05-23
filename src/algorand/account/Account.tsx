@@ -17,14 +17,14 @@ export async function getAccountInformation(address: string): Promise<UserAccoun
     })
   }
 
-  const apps: Map<number, AppState> = new Map();
+  const appsLocalState: Map<number, AppState> = new Map();
 
   const appLocalStates: ApplicationLocalState[] | undefined = account['apps-local-state'];
   if (appLocalStates) {
     // For each opted into app of account
     appLocalStates.forEach(appLocalState => {
       const statePairs: TealKeyValue[] | undefined = appLocalState['key-value']
-      apps.set(appLocalState.id as number, extractAppState(statePairs));
+      appsLocalState.set(appLocalState.id as number, extractAppState(statePairs));
     })
   }
 
@@ -32,7 +32,7 @@ export async function getAccountInformation(address: string): Promise<UserAccoun
     address,
     algoBalance,
     assets,
-    apps
+    appsLocalState
   }
 }
 

@@ -2,6 +2,7 @@ import { algodClient, STABLECOIN_ID, waitForConfirmation } from '../utils/Utils'
 import { CallApplTxn, PaymentTxn, SignedTx, } from '@randlabs/myalgo-connect';
 import { OnApplicationComplete, SuggestedParams } from 'algosdk';
 import { myAlgoWallet } from '../wallet/myAlgo/MyAlgoWallet';
+import { getMultiplier } from '../../investor/Utils';
 
 const algosdk = require('algosdk');
 
@@ -18,6 +19,7 @@ export async function claimCoupon(
   stablecoinEscrowProgram: string,
   noOfBonds: number,
   bondCoupon: number,
+  rating: number,
 ) {
   let params: SuggestedParams = await algodClient.getTransactionParams().do();
   params.flatFee = true;
@@ -34,7 +36,8 @@ export async function claimCoupon(
     from: investorAddr,
     appIndex: mainAppId,
     appOnComplete: OnApplicationComplete.NoOpOC,
-    appArgs: mainAppArgs
+    appArgs: mainAppArgs,
+    appForeignApps: [manageAppId]
   }
 
   // 1. call manage app
@@ -73,7 +76,7 @@ export async function claimCoupon(
     investorAddr,
     undefined,
     undefined,
-    noOfBonds * bondCoupon,
+    Math.floor( bondCoupon * getMultiplier(rating)) * noOfBonds,
     undefined,
     STABLECOIN_ID,
     params

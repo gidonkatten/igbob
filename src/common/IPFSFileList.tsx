@@ -57,7 +57,7 @@ export function IPFSFileList(props: IPFSFileListProps) {
                 <ListItemIcon><ListIcon/></ListItemIcon>
                 <ListItemText
                   primary={round === 0 ?
-                    "Use of proceeds: " + convertUnixTimeToDate(startBuyDate) + " - " + convertUnixTimeToDate(endBuyDate) :
+                    "Use of proceeds: - " + convertUnixTimeToDate(startBuyDate):
                     "Report " + round + ": " + convertUnixTimeToDate(endBuyDate + (round - 1) * period) + " - " + convertUnixTimeToDate(endBuyDate + round * period)
                   }
                 />

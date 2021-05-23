@@ -11,7 +11,7 @@ import { extractManageAppState } from '../utils/Utils';
 import { setManageAppGlobalState } from '../redux/actions/actions';
 import { rate } from '../algorand/bond/Rate';
 import Button from '@material-ui/core/Button';
-import { CouponRound, getCouponRound } from '../investor/Utils';
+import { getReportRatingRound } from '../investor/Utils';
 import { BackButton } from '../common/BackButton';
 import IPFSFileListContainer from '../common/IPFSFileListContainer';
 import Typography from '@material-ui/core/Typography';
@@ -42,14 +42,17 @@ function GreenVerifierPage(props: GreenVerifierPageProps) {
     setManageAppGlobalState,
   } = props;
 
-  const couponRound: CouponRound | undefined = app ?
-    getCouponRound(app.end_buy_date, app.maturity_date, app.period, app.bond_length) :
-    undefined
+  const reportRatingRound: number | undefined = app ? getReportRatingRound(
+    app.start_buy_date,
+    app.end_buy_date,
+    app.maturity_date,
+    app.period
+  ) : undefined;
 
   // RATE
   const handleRate = async () => {
-    if (!selectedAccount || !app || !rating) return;
-    await rate(app.manage_app_id, selectedAccount.address, couponRound!.round, rating);
+    if (!selectedAccount || !app || !rating || reportRatingRound === undefined) return;
+    await rate(app.manage_app_id, selectedAccount.address, reportRatingRound, rating);
 
     algodClient.getApplicationByID(app.manage_app_id).do().then(manageApp => {
       setManageAppGlobalState(app.app_id, extractManageAppState(manageApp.params['global-state']));
@@ -57,9 +60,9 @@ function GreenVerifierPage(props: GreenVerifierPageProps) {
   }
 
   const rateText = (): string => {
-    if (!couponRound) return '';
-    if (couponRound.round === 0) return 'Use of Proceeds'
-    return 'Report ' + couponRound.round;
+    if (reportRatingRound === undefined) return 'Not Available At This Time';
+    if (reportRatingRound === 0) return 'For Use of Proceeds'
+    return 'For Report ' + reportRatingRound;
   }
 
   const enterAppView = (appId) => {
@@ -103,9 +106,9 @@ function GreenVerifierPage(props: GreenVerifierPageProps) {
           fullWidth
           style={{ textTransform: 'none' }}
           onClick={handleRate}
-          disabled={rating === 0}
+          disabled={rating === 0 || reportRatingRound === undefined}
         >
-          Add Rating For {rateText()}
+          Add Rating {rateText()}
         </Button>
       </div>
 
