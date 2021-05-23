@@ -37,7 +37,9 @@ export async function claimCoupon(
     appIndex: mainAppId,
     appOnComplete: OnApplicationComplete.NoOpOC,
     appArgs: mainAppArgs,
-    appForeignApps: [manageAppId]
+    appAccounts: [bondEscrowAddr],
+    appForeignApps: [manageAppId],
+    appForeignAssets: [bondId]
   }
 
   // 1. call manage app
@@ -93,6 +95,7 @@ export async function claimCoupon(
   // Override so can sign with myAlgo
   txns[0].from = investorAddr;
   txns[0].genesisHash = params.genesisHash;
+  txns[0].appAccounts = [bondEscrowAddr];
   txns[1].from = investorAddr;
   txns[1].appAccounts = [stablecoinEscrowAddr, bondEscrowAddr];
   txns[1].genesisHash = params.genesisHash;

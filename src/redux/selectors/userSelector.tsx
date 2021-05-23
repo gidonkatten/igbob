@@ -53,6 +53,6 @@ export const getAppLocalCouponRoundsPaidSelector = state => appId => {
   if (!appsLocalState.has(appId)) return 0;
 
   const localState: AppState = appsLocalState.get(appId)!;
-  return getStateValue(localState, "CouponsPaid");
+  return getStateValue("CouponsPaid", localState);
 }
 

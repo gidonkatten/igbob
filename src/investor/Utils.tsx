@@ -56,7 +56,9 @@ export function getReportRatingRound(
 }
 
 // Returns app state value - 0 if key doesn't exist
-export function getStateValue(state: Map<string, any>, key: string) {
+export function getStateValue(key: string, state?: Map<string, any>) {
+  if (!state) return 0;
+
   if (state.has(key)) {
     return state.get(key);
   } else {
@@ -70,7 +72,7 @@ export function getRatingFromState(round: number, state?: Map<string, any>): num
 
   const key: string = Math.floor(round / 8) + '';
   const slot = round % 8;
-  const array: Uint8Array | number = getStateValue(state, key);
+  const array: Uint8Array | number = getStateValue( key, state);
   if (array === 0) {
     // Uninitialised array
     return 0;

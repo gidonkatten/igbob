@@ -149,22 +149,25 @@ function InvestorPage(props: InvestorPageProps) {
     if (!app || !couponRound) return false;
 
     const couponRoundsPaid = getAppLocalCouponRoundsPaid(app.app_id);
+    const hasNotDefaulted = !defaulted || (defaulted && (couponRoundsPaid + 1 < defaulted.round));
+
     return couponRound.round > couponRoundsPaid &&
       bondBalance > 0 &&
       getOptedIntoApp(app.app_id) &&
-      !defaulted
+      hasNotDefaulted
   }
 
   const couponTooltip = () => {
     if (!app || !couponRound) return undefined;
 
-    const couponRoundsPaid = getAppLocalCouponRoundsPaid(app.app_id);
+    const localCouponRoundsPaid = getAppLocalCouponRoundsPaid(app.app_id);
+    const hasDefaulted = defaulted && (localCouponRoundsPaid + 1 === defaulted.round);
 
     let err = '';
-    if (couponRoundsPaid >= couponRound.round) err = err.concat('Have collected all available coupons\n')
+    if (localCouponRoundsPaid >= couponRound.round) err = err.concat('Have collected all available coupons\n')
     if (bondBalance === 0) err = err.concat('Do not own bond\n')
     if (!getOptedIntoApp(app.app_id)) err = err.concat('Have not opted into app\n')
-    if (defaulted) err = err.concat('Not enough funds to pay out all money owed\n')
+    if (hasDefaulted) err = err.concat('Not enough funds to pay out money owed at this round\n')
     return err;
   }
 
@@ -197,11 +200,11 @@ function InvestorPage(props: InvestorPageProps) {
   // PRINCIPAL
   const canClaimPrincipal = () => {
     if (!app) return undefined;
-    const couponRoundsColl = getAppLocalCouponRoundsPaid(app.app_id);
+    const localCouponRoundsPaid = getAppLocalCouponRoundsPaid(app.app_id);
 
     return afterMaturity &&
       bondBalance > 0 &&
-      couponRoundsColl >= app.bond_length &&
+      localCouponRoundsPaid >= app.bond_length &&
       getOptedIntoApp(app.app_id) &&
       !defaulted
   }
@@ -209,12 +212,12 @@ function InvestorPage(props: InvestorPageProps) {
   const principalTooltip = () => {
     if (!app) return undefined;
 
-    const couponRoundsColl = getAppLocalCouponRoundsPaid(app.app_id);
+    const localCouponRoundsPaid = getAppLocalCouponRoundsPaid(app.app_id);
 
     let err = '';
     if (!afterMaturity) err = err.concat('Not after maturity date\n')
     if (bondBalance === 0) err = err.concat('Do not own bond\n')
-    if (couponRoundsColl < app.bond_length) err = err.concat('Have not collected all coupons\n')
+    if (localCouponRoundsPaid < app.bond_length) err = err.concat('Have not collected all coupons\n')
     if (!getOptedIntoApp(app.app_id)) err = err.concat('Have not opted into app\n')
     if (defaulted) err = err.concat('Not enough funds to pay out all money owed\n')
     return err;
@@ -250,7 +253,10 @@ function InvestorPage(props: InvestorPageProps) {
   const canClaimDefault = () => {
     if (!app) return undefined;
 
-    return !defaulted &&
+    const localCouponRoundsPaid = getAppLocalCouponRoundsPaid(app.app_id);
+    const hasDefaulted = defaulted && (localCouponRoundsPaid + 1 === defaulted.round);
+
+    return hasDefaulted &&
       bondBalance > 0 &&
       getOptedIntoApp(app.app_id)
   }
@@ -258,8 +264,11 @@ function InvestorPage(props: InvestorPageProps) {
   const defaultTooltip = () => {
     if (!app) return undefined;
 
+    const localCouponRoundsPaid = getAppLocalCouponRoundsPaid(app.app_id);
+
     let err = '';
-    if (defaulted) err = err.concat('Enough funds to pay money owed\n')
+    if (!defaulted) err = err.concat('Enough funds to pay money owed\n')
+    if (defaulted && (localCouponRoundsPaid + 1 < defaulted.round)) err = err.concat('Have not collected all available coupons\n')
     if (bondBalance === 0) err = err.concat('Do not own bond\n')
     if (!getOptedIntoApp(app.app_id)) err = err.concat('Have not opted into app\n')
     return err;
@@ -270,6 +279,8 @@ function InvestorPage(props: InvestorPageProps) {
   const handleClaimDefault = async (e: any) => {
     e.preventDefault();
     if (!selectedAccount || !app) return;
+
+    const reserve: number = getStateValue( "Reserve", app.app_global_state);
 
     await claimDefault(
       selectedAccount.address,
@@ -282,7 +293,7 @@ function InvestorPage(props: InvestorPageProps) {
       app.stablecoin_escrow_address,
       app.stablecoin_escrow_program,
       bondBalance,
-      (1 / (bondsMinted - (bondEscrowBalance as number))) * (stablecoinEscrowBalance as number)
+      (1 / (bondsMinted - (bondEscrowBalance as number))) * ((stablecoinEscrowBalance as number) - reserve)
     );
 
     getAccountInformation(selectedAccount.address).then(acc => setSelectedAccount(acc));
@@ -333,8 +344,8 @@ function InvestorPage(props: InvestorPageProps) {
       const bEscrowBalance = getAssetBalance(bondEscrow, app.bond_id);
       const sEscrowBalance = getStablecoinBalance(stablecoinEscrow);
 
-      const globalCouponRoundsPaid: number = getStateValue(mainAppGlobalState, "CouponsPaid");
-      const reserve: number = getStateValue(mainAppGlobalState, "Reserve");
+      const globalCouponRoundsPaid: number = getStateValue("CouponsPaid", mainAppGlobalState);
+      const reserve: number = getStateValue( "Reserve", mainAppGlobalState);
 
       setMainAppGlobalState(app.app_id, mainAppGlobalState);
       setManageAppGlobalState(app.app_id, manageAppGlobalState);
@@ -474,8 +485,8 @@ function InvestorPage(props: InvestorPageProps) {
               onClick={handleClaimCoupon}
             >
               You have claimed {getAppLocalCouponRoundsPaid(app.app_id)} / {app.bond_length} coupons <br/>
-              Multiplier based on most recent green rating is {getMultiplier(getAppLocalCouponRoundsPaid(app.app_id) + 1).toFixed(4)} <br/>
-              Can claim ${formatStablecoin(Math.floor(app.bond_coupon * getMultiplier(getAppLocalCouponRoundsPaid(app.app_id) + 1)) * bondBalance)} <br/>
+              Multiplier for this coupon round is {getMultiplier(getRatingFromState(getAppLocalCouponRoundsPaid(app.app_id) + 1, app.manage_app_global_state)).toFixed(4)} <br/>
+              Can claim ${formatStablecoin(Math.floor(app.bond_coupon * getMultiplier(getRatingFromState(getAppLocalCouponRoundsPaid(app.app_id) + 1, app.manage_app_global_state))) * bondBalance)} <br/>
               CLAIM COUPON
             </Button>
           </div>

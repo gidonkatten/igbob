@@ -50,7 +50,7 @@ function IPFSFileListContainer(props: IPFSFileListContainerProps) {
       for (let i = 0; i <= app.bond_length; i++) {
         const key: string = Math.floor(i / 8) + '';
         const slot = i % 8;
-        const array: Uint8Array | number = getStateValue(manageAppState, key);
+        const array: Uint8Array | number = getStateValue(key, manageAppState);
         if (array === 0) {
           // Uninitialised array
           newRatings.push(0)
