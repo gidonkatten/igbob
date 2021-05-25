@@ -9,7 +9,6 @@ import { myAlgoWallet } from '../wallet/myAlgo/MyAlgoWallet';
 export async function rate(
   manageAppId: number,
   greenVerifierAddr: string,
-  round: number,
   rating: number,
 ) {
   let params: SuggestedParams = await algodClient.getTransactionParams().do();
@@ -17,10 +16,9 @@ export async function rate(
   const enc = new TextEncoder();
   const rate: Uint8Array = enc.encode("rate");
 
-  const roundPassed: Uint8Array = numberToUint8Array(round);
   const ratingPassed: Uint8Array = numberToUint8Array(rating);
 
-  const manageAppArgs: Uint8Array[] = [rate, roundPassed, ratingPassed];
+  const manageAppArgs: Uint8Array[] = [rate, ratingPassed];
   const callManageAppTxn: CallApplTxn = {
     ...params,
     flatFee: true,

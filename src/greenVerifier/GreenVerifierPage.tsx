@@ -51,8 +51,8 @@ function GreenVerifierPage(props: GreenVerifierPageProps) {
 
   // RATE
   const handleRate = async () => {
-    if (!selectedAccount || !app || !rating || reportRatingRound === undefined) return;
-    await rate(app.manage_app_id, selectedAccount.address, reportRatingRound, rating);
+    if (!selectedAccount || !app || !rating) return;
+    await rate(app.manage_app_id, selectedAccount.address, rating);
 
     algodClient.getApplicationByID(app.manage_app_id).do().then(manageApp => {
       setManageAppGlobalState(app.app_id, extractManageAppState(manageApp.params['global-state']));
