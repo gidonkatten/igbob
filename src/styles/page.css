@@ -16,10 +16,17 @@
 .home-text {
     margin: 0;
     position: absolute;
-    top: 50%;
+    top: 40%;
     left: 30%;
-    -ms-transform: translate(-30%, -50%);
-    transform: translate(-30%, -50%);
+    -ms-transform: translate(-30%, -40%);
+    transform: translate(-30%, -40%);
+}
+
+.home-image {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 80%;
 }
 
 .timeline-box {
