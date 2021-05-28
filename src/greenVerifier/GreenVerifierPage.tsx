@@ -1,80 +1,40 @@
-import React, { useState } from 'react';
-import { connect } from 'react-redux';
-import { selectedAccountSelector } from '../redux/selectors/userSelector';
-import { getAppSelector } from '../redux/selectors/bondSelector';
+import React from 'react';
 import AppList from '../common/AppList';
 import { UserAccount } from '../redux/reducers/userReducer';
 import Rating from '@material-ui/lab/Rating';
 import { App } from '../redux/types';
-import { algodClient } from '../algorand/utils/Utils';
-import { extractManageAppState } from '../utils/Utils';
-import { setManageAppGlobalState } from '../redux/actions/actions';
-import { rate } from '../algorand/bond/Rate';
 import Button from '@material-ui/core/Button';
-import { getReportRatingRound } from '../investor/Utils';
 import { BackButton } from '../common/BackButton';
 import IPFSFileListContainer from '../common/IPFSFileListContainer';
 import Typography from '@material-ui/core/Typography';
 
-interface StateProps {
+interface GreenVerifierPageProps {
   selectedAccount?: UserAccount;
-  getApp: (appId: number) => App | undefined;
+  inOverview: boolean;
+  enterAppView: (appId: number) => void;
+  exitAppView: () => void;
+  app?: App;
+  rating: number | null;
+  setRating: (rating: number | null) => void;
+  reportRatingRound?: number;
+  handleRate: () => void;
+  rateText: string;
 }
 
-interface DispatchProps {
-  setManageAppGlobalState: typeof setManageAppGlobalState,
-}
-
-interface OwnProps {}
-
-
-type GreenVerifierPageProps = StateProps & DispatchProps & OwnProps;
-
-function GreenVerifierPage(props: GreenVerifierPageProps) {
-
-  const [inOverview, setInOverview] = useState<boolean>(true);
-  const [app, setApp] = useState<App>();
-  const [rating, setRating] = useState<number | null>(0);
+export function GreenVerifierPage(props: GreenVerifierPageProps) {
 
   const {
     selectedAccount,
-    getApp,
-    setManageAppGlobalState,
+    inOverview,
+    enterAppView,
+    exitAppView,
+    app,
+    rating,
+    setRating,
+    reportRatingRound,
+    handleRate,
+    rateText,
   } = props;
-
-  const reportRatingRound: number | undefined = app ? getReportRatingRound(
-    app.start_buy_date,
-    app.end_buy_date,
-    app.maturity_date,
-    app.period
-  ) : undefined;
-
-  // RATE
-  const handleRate = async () => {
-    if (!selectedAccount || !app || !rating) return;
-    await rate(app.manage_app_id, selectedAccount.address, rating);
-
-    algodClient.getApplicationByID(app.manage_app_id).do().then(manageApp => {
-      setManageAppGlobalState(app.app_id, extractManageAppState(manageApp.params['global-state']));
-    })
-  }
-
-  const rateText = (): string => {
-    if (reportRatingRound === undefined) return 'Not Available At This Time';
-    if (reportRatingRound === 0) return 'For Use of Proceeds'
-    return 'For Report ' + reportRatingRound;
-  }
-
-  const enterAppView = (appId) => {
-    setInOverview(false);
-    const newApp = getApp(appId);
-    setApp(newApp);
-  }
-
-  const exitAppView = () => {
-    setInOverview(true);
-    setApp(undefined);
-  }
 
   const appsList = (
     <div>
@@ -108,7 +68,7 @@ function GreenVerifierPage(props: GreenVerifierPageProps) {
           onClick={handleRate}
           disabled={rating === 0 || reportRatingRound === undefined}
         >
-          Add Rating {rateText()}
+          Add Rating {rateText}
         </Button>
       </div>
 
@@ -123,14 +83,3 @@ function GreenVerifierPage(props: GreenVerifierPageProps) {
     </div>
   );
 }
-
-const mapStateToProps = (state: any) => ({
-  selectedAccount: selectedAccountSelector(state),
-  getApp: getAppSelector(state),
-});
-
-const mapDispatchToProps = {
-  setManageAppGlobalState
-};
-
-export default connect<StateProps, DispatchProps, OwnProps>(mapStateToProps, mapDispatchToProps)(GreenVerifierPage);

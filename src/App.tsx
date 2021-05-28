@@ -1,7 +1,8 @@
 import React, { useEffect } from "react";
 import { Route, Switch } from 'react-router-dom';
-import IssuerPage from "./issuer/IssuerPage";
-import InvestorPage from "./investor/InvestorPage";
+import IssuerPageContainer from "./issuer/IssuerPageContainer";
+import InvestorPageContainer from './investor/InvestorPageContainer';
+import GreenVerifierPageContainer from './greenVerifier/GreenVerifierPageContainer';
 import HomePage from "./home/HomePage";
 import ProtectedRoute from "./auth/ProtectedRoute";
 import SettingsPage from "./settings/SettingsPage";
@@ -11,7 +12,6 @@ import { useAuth0 } from '@auth0/auth0-react';
 import { setAccountAddresses, setSelectedAccount } from './redux/actions/actions';
 import { connect } from 'react-redux';
 import { getAccountInformation } from './algorand/account/Account';
-import GreenVerifierPage from './greenVerifier/GreenVerifierPage';
 import { IPFSAlgoWrapper } from './ipfs/IPFSAlgoWrapper';
 
 interface AppProps {
@@ -58,9 +58,9 @@ function App(props: AppProps) {
       <NavbarManager/>
       <Switch>
         <ProtectedRoute exact path="/dashboard" component={DashboardPage}/>
-        <ProtectedRoute exact path="/issuer" component={IssuerPage}/>
-        <ProtectedRoute exact path="/investor" component={InvestorPage}/>
-        <ProtectedRoute exact path="/green-verifier" component={GreenVerifierPage}/>
+        <ProtectedRoute exact path="/issuer" component={IssuerPageContainer}/>
+        <ProtectedRoute exact path="/investor" component={InvestorPageContainer}/>
+        <ProtectedRoute exact path="/green-verifier" component={GreenVerifierPageContainer}/>
         <ProtectedRoute exact path="/settings" component={SettingsPage}/>
         {/*Placed last to catch all unknown paths*/}
         <Route component={HomePage}/>

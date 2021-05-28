@@ -1,69 +1,41 @@
-import React, { useState } from 'react';
-import { connect } from 'react-redux';
+import React from 'react';
 import { UserAccount } from '../redux/reducers/userReducer';
-import { selectedAccountSelector } from '../redux/selectors/userSelector';
 import AppList from '../common/AppList';
 import { App } from '../redux/types';
-import { getAppSelector } from '../redux/selectors/bondSelector';
 import { BackButton } from '../common/BackButton';
 import IssueBondForm from './IssueBondForm';
 import Button from '@material-ui/core/Button';
-import { IPFSAlgoWrapper } from '../ipfs/IPFSAlgoWrapper';
-import { getReportRatingRound } from '../investor/Utils';
 import IPFSFileListContainer from '../common/IPFSFileListContainer';
 import Typography from '@material-ui/core/Typography';
+import { IssuerPageNav } from './IssuerPageContainer';
 
-enum IssuerPageNav {
-  OVERVIEW,
-  ISSUANCE,
-  MANAGE
-}
-
-interface StateProps {
+interface IssuerPageProps {
   selectedAccount?: UserAccount;
-  getApp: (appId: number) => App | undefined;
+  issuerPageNav: IssuerPageNav;
+  enterAppView: (appId) => void;
+  exitAppView: () => void;
+  enterIssuanceView: () => void;
+  exitIssuanceView: () => void;
+  app?: App;
+  reportRatingRound?: number;
+  uploadToIPFS: (event: any) => void;
+  uploadText: string;
 }
 
-interface DispatchProps {}
+export function IssuerPage(props: IssuerPageProps) {
 
-interface OwnProps {}
-
-type IssuerPageProps = StateProps & DispatchProps & OwnProps;
-
-function IssuerPage(props: IssuerPageProps) {
-
-  const [issuerPageNav, setIssuerPageNav] = useState<IssuerPageNav>(IssuerPageNav.OVERVIEW);
-  const [app, setApp] = useState<App>();
-
-  const { selectedAccount, getApp } = props;
-
-  const enterAppView = (appId) => {
-    setIssuerPageNav(IssuerPageNav.MANAGE);
-    const newApp = getApp(appId);
-    setApp(newApp);
-  }
-
-  const exitAppView = () => {
-    setIssuerPageNav(IssuerPageNav.OVERVIEW);
-    setApp(undefined);
-  }
-
-  const enterIssuanceView = () => setIssuerPageNav(IssuerPageNav.ISSUANCE);
-
-  const exitIssuanceView = () => setIssuerPageNav(IssuerPageNav.OVERVIEW);
-
-  const reportRatingRound: number | undefined = app ? getReportRatingRound(
-    app.start_buy_date,
-    app.end_buy_date,
-    app.maturity_date,
-    app.period
-  ) : undefined;
-
-  const uploadText = (): string => {
-    if (reportRatingRound === undefined) return '';
-    if (reportRatingRound === 0) return 'Use of Proceeds'
-    return 'Report ' + reportRatingRound;
-  }
+  const {
+    selectedAccount,
+    issuerPageNav,
+    enterAppView,
+    exitAppView,
+    enterIssuanceView,
+    exitIssuanceView,
+    app,
+    reportRatingRound,
+    uploadToIPFS,
+    uploadText,
+  } = props;
 
   const overviewView = (
     <div>
@@ -95,22 +67,6 @@ function IssuerPage(props: IssuerPageProps) {
     </div>
   );
 
-  const uploadToIPFS = (event: any) => {
-    if (!selectedAccount || !app || reportRatingRound === undefined) return;
-
-    const target = event.target as HTMLInputElement;
-    const file: File = (target.files as FileList)[0];
-
-    // Check file is defined and upload
-    if (!file) return;
-    new IPFSAlgoWrapper().addData(
-      file,
-      selectedAccount.address,
-      app.manage_app_id,
-      reportRatingRound
-    );
-  };
-
   const manageView = app && (
     <div>
 
@@ -125,7 +81,7 @@ function IssuerPage(props: IssuerPageProps) {
         onChange={uploadToIPFS}
         disabled={reportRatingRound === undefined}
       >
-        Upload PDF For {uploadText()}
+        Upload PDF For {uploadText}
         <input type="file" accept="application/pdf" hidden/>
       </Button>
 
@@ -142,12 +98,3 @@ function IssuerPage(props: IssuerPageProps) {
     </div>
   );
 }
-
-const mapStateToProps = (state: any) => ({
-  selectedAccount: selectedAccountSelector(state),
-  getApp: getAppSelector(state),
-});
-
-const mapDispatchToProps = {}
-
-export default connect<StateProps, DispatchProps, OwnProps>(mapStateToProps, mapDispatchToProps)(IssuerPage);
