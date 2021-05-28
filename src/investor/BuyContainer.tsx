@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import Grid from '@material-ui/core/Grid';
 import FormControl from '@material-ui/core/FormControl';
-import InputLabel from '@material-ui/core/InputLabel';
-import Input from '@material-ui/core/Input';
 import Button from '@material-ui/core/Button';
 import { formatStablecoin } from '../utils/Utils';
 import { buyBond } from '../algorand/bond/Buy';
@@ -16,6 +14,8 @@ import {
   getOptedIntoBondSelector,
   selectedAccountSelector
 } from '../redux/selectors/userSelector';
+import TextField from '@material-ui/core/TextField';
+import { AlgoNumberInput } from '../common/AlgoNumberInput';
 
 interface StateProps {
   selectedAccount?: UserAccount;
@@ -36,7 +36,7 @@ type BuyProps = StateProps & DispatchProps & OwnProps;
 
 function BuyContainer(props: BuyProps) {
 
-  const [noOfBondsToBuy, setNoOfBondsToBuy] = useState<number>(1);
+  const [noOfBondsToBuy, setNoOfBondsToBuy] = useState<number>(0);
 
   const {
     app,
@@ -89,15 +89,14 @@ function BuyContainer(props: BuyProps) {
     <>
       <Grid item xs={5}>
         <FormControl fullWidth>
-          <InputLabel>No. of Bonds To Buy:</InputLabel>
-          <Input
+          <TextField
+            label="No. of Bonds To Buy:"
             value={noOfBondsToBuy}
-            onChange={e => setNoOfBondsToBuy(parseInt(e.target.value))}
-            type="number"
-            name="noOfBondsToBuy"
-            fullWidth
+            onChange={e => setNoOfBondsToBuy(Number(e.target.value))}
             required
-            inputProps={{ min: 1 }}
+            fullWidth
+            InputLabelProps={{ required: false }}
+            InputProps={{ inputComponent: AlgoNumberInput }}
             disabled={!canBuy()}
             title={buyTooltip()}
           />
@@ -111,7 +110,7 @@ function BuyContainer(props: BuyProps) {
             color="primary"
             fullWidth
             style={{ textTransform: 'none' }}
-            disabled={!canBuy()}
+            disabled={!canBuy() || noOfBondsToBuy === 0}
             onClick={handleBuy}
           >
             You own {bondBalance} bonds <br/>

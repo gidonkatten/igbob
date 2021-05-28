@@ -209,7 +209,7 @@ function IssueBondForm(props: IssueBondFormProps) {
 
         <TextField
           label="Bond Cost:"
-          value={bondCost.toFixed(6)}
+          value={bondCost}
           onChange={e => setBondCost(Number(e.target.value))}
           required
           InputLabelProps={{ required: false }}
@@ -219,7 +219,7 @@ function IssueBondForm(props: IssueBondFormProps) {
 
         <TextField
           label="Bond Coupon:"
-          value={numCouponPayments === 0 ? 0 : bondCoupon.toFixed(6)}
+          value={numCouponPayments === 0 ? 0 : bondCoupon}
           onChange={e => setBondCoupon(Number(e.target.value))}
           disabled={numCouponPayments === 0}
           required
@@ -230,7 +230,7 @@ function IssueBondForm(props: IssueBondFormProps) {
 
         <TextField
           label="Bond Principal:"
-          value={bondPrincipal.toFixed(6)}
+          value={bondPrincipal}
           onChange={e => setBondPrincipal(Number(e.target.value))}
           required
           InputLabelProps={{ required: false }}

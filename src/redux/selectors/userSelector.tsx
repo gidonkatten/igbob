@@ -56,3 +56,12 @@ export const getAppLocalCouponRoundsPaidSelector = state => appId => {
   return getStateValue("CouponsPaid", localState);
 }
 
+export const getAppLocalTradeSelector = state => appId => {
+  const appsLocalState: Map<number, AppState> = state.userReducer.selectedAccount.appsLocalState;
+
+  if (!appsLocalState.has(appId)) return 0;
+
+  const localState: AppState = appsLocalState.get(appId)!;
+  return getStateValue("Trade", localState);
+}
+

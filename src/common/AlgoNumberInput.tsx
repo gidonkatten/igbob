@@ -1,6 +1,6 @@
 import NumberFormat from "react-number-format";
 
-export function StablecoinInput(props) {
+export function AlgoNumberInput(props) {
   const { inputRef, onChange, ...other } = props;
 
   return (
@@ -19,7 +19,6 @@ export function StablecoinInput(props) {
       fixedDecimalScale
       thousandSeparator
       allowNegative={false}
-      prefix="$"
     />
   );
 }

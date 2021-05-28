@@ -9,7 +9,8 @@ import { connect } from 'react-redux';
 import { setSelectedAccount } from '../redux/actions/actions';
 import {
   getAppLocalCouponRoundsPaidSelector,
-  getBondBalanceSelector, getOptedIntoAppSelector,
+  getBondBalanceSelector,
+  getOptedIntoAppSelector,
   selectedAccountSelector
 } from '../redux/selectors/userSelector';
 import { CouponRound, Defaulted, getMultiplier, getRatingFromState, getStateValue } from './Utils';
