@@ -85,6 +85,7 @@ function IssuerPageContainer(props: IssuerPageContainerProps) {
       enterIssuanceView={enterIssuanceView}
       exitIssuanceView={exitIssuanceView}
       app={app}
+      getApp={getApp}
       reportRatingRound={reportRatingRound}
       uploadToIPFS={uploadToIPFS}
       uploadText={uploadText()}

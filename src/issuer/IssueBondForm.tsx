@@ -245,6 +245,7 @@ function IssueBondForm(props: IssueBondFormProps) {
         color="primary"
         type="submit"
         style={{ margin: '8px 0px' }}
+        fullWidth
       >
         Create
       </Button>

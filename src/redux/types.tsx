@@ -23,3 +23,18 @@ export interface App {
   bond_coupon: number,
   bond_principal: number,
 }
+
+export interface AppsTableElem {
+  id: number,
+  name: string,
+  bond_id: number,
+  bond_length: number,
+  start_buy_date: Date,
+  end_buy_date: Date,
+  maturity_date: Date,
+  bond_cost: number,
+  bond_coupon: number,
+  bond_principal: number,
+}
+
+export type AppsTable = AppsTableElem[];

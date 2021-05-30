@@ -1,6 +1,5 @@
 import React from 'react';
 import BondTimeline from '../common/BondTimeline';
-import Grid from '@material-ui/core/Grid';
 import TextField from '@material-ui/core/TextField';
 import AppList from '../common/AppTable';
 import { App } from '../redux/types';
@@ -76,7 +75,7 @@ export function InvestorPage(props: InvestorPageProps) {
 
       <IPFSFileListContainer app={app}/>
 
-      <Typography variant="h4" gutterBottom>Buy / Claim Money</Typography>
+      <Typography variant="h4" gutterBottom>Bond</Typography>
 
       <TextField
         label="Selected Address:"
@@ -89,19 +88,26 @@ export function InvestorPage(props: InvestorPageProps) {
         style={{ margin: '8px 0px' }}
       />
 
-      <Grid container spacing={3} style={{ marginTop: '8px' }}>
+      <Typography variant="h5" gutterBottom>Register</Typography>
 
-        {/*First Row*/}
-        <RegisterContainer app={app}/>
+      <RegisterContainer app={app}/>
 
-        {/*Second Row*/}
-        <BuyContainer
-          app={app}
-          setBondEscrowBalance={setBondEscrowBalance}
-        />
+      <Typography variant="h5" gutterBottom>Purchase</Typography>
 
-        {/*Third row*/}
-       <ClaimContainer
+      <BuyContainer
+        app={app}
+        setBondEscrowBalance={setBondEscrowBalance}
+      />
+
+      <Typography variant="h5" gutterBottom>Trade</Typography>
+
+      <TradeContainer
+        app={app}
+      />
+
+      <Typography variant="h5" gutterBottom>Claim Money</Typography>
+
+      <ClaimContainer
         app={app}
         couponRound={couponRound}
         defaulted={defaulted}
@@ -110,14 +116,7 @@ export function InvestorPage(props: InvestorPageProps) {
         setBondEscrowBalance={setBondEscrowBalance}
         stablecoinEscrowBalance={stablecoinEscrowBalance}
         setStablecoinEscrowBalance={setStablecoinEscrowBalance}
-       />
-
-        {/*Fourth and Fifth row*/}
-       <TradeContainer
-        app={app}
-       />
-
-      </Grid>
+      />
 
     </div>
   )

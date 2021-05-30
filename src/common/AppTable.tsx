@@ -1,15 +1,14 @@
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
+import { DataGrid, GridCellParams } from '@material-ui/data-grid';
 import React, { useEffect } from 'react';
-import { appsSelector } from '../redux/selectors/bondSelector';
+import { appsTableSelector } from '../redux/selectors/bondSelector';
 import { connect } from 'react-redux';
 import { useAuth0 } from '@auth0/auth0-react';
 import { setApps } from '../redux/actions/actions';
-import { App } from '../redux/types';
+import { App, AppsTable, AppsTableElem } from '../redux/types';
+import { formatStablecoin } from '../utils/Utils';
 
 interface StateProps {
-  apps: Map<number, App>;  // appId -> App
+  appsTable: AppsTable
 }
 
 interface DispatchProps {
@@ -18,13 +17,13 @@ interface DispatchProps {
 
 interface OwnProps {
   onClick: (appId: number) => void;
-  appFilter?: (app: App) => boolean;
+  appFilter?: (appsTableElem: AppsTableElem) => boolean;
 }
 
 type AppListProps = StateProps & DispatchProps & OwnProps;
 
 function AppTable(props: AppListProps) {
-  const { apps, setApps, onClick, appFilter } = props;
+  const { appsTable, setApps, onClick, appFilter } = props;
 
   const { getAccessTokenSilently } = useAuth0();
 
@@ -46,28 +45,33 @@ function AppTable(props: AppListProps) {
     fetchApps();
   }, []);
 
+  const renderPrice = (params: GridCellParams) => (
+    <>${formatStablecoin(params.value as number)}</>
+  );
+
   return (
-    <List component="nav">
-      {apps && [...apps]
-        .filter(([, app]) => appFilter ? appFilter(app) : true)
-        .map(([appId, app]) => {
-          return (
-            <ListItem
-              button
-              onClick={() => onClick(appId)}
-              key={appId}
-            >
-              <ListItemText primary={app.name} secondary={"App Id: " + app.app_id}/>
-            </ListItem>
-          )
-        })
-      }
-    </List>
+    <div style={{ paddingTop: 16, height: '75vh', width: '100%', position: 'relative' }}>
+      <DataGrid
+        columns={[
+          { field: 'bond_id', headerName: 'Bond ID', width: 130, type: 'number' },
+          { field: 'name', headerName: 'Name', width: 200 },
+          { field: 'start_buy_date', headerName: 'Start Buy', width: 140, type: 'date' },
+          { field: 'end_buy_date', headerName: 'End Buy', width: 140, type: 'date' },
+          { field: 'maturity_date', headerName: 'Maturity', width: 140, type: 'date' },
+          { field: 'bond_cost', headerName: 'Cost', width: 120, type: 'number', renderCell: renderPrice, description: 'Initial cost of bond' },
+          { field: 'bond_coupon', headerName: 'Coupon', width: 130, type: 'number', renderCell: renderPrice },
+          { field: 'bond_length', headerName: 'Payments', type: 'number', width: 140, description: 'Number of coupon payments' },
+          { field: 'bond_principal', headerName: 'Principal', width: 140, type: 'number', renderCell: renderPrice },
+        ]}
+        rows={appsTable.filter(elem => appFilter ? appFilter(elem) : true)}
+        onRowClick={(params) => onClick(params.id as number)}
+      />
+    </div>
   );
 }
 
 const mapStateToProps = (state) => ({
-  apps: appsSelector(state),
+  appsTable: appsTableSelector(state),
 });
 
 const mapDispatchToProps = {

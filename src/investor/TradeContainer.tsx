@@ -107,13 +107,13 @@ function TradeContainer(props: TradeProps) {
   };
 
   return (
-    <>
+    <Grid container spacing={3}>
 
       {/*Row split into halves*/}
       <Grid item xs={5}>
         <FormControl fullWidth>
           <TextField
-            label="No. of Bonds Willing To Trade:"
+            label="No. of Bonds To Trade:"
             value={noOfBonds}
             onChange={e => setNoOfBonds(Number(e.target.value))}
             fullWidth
@@ -135,8 +135,8 @@ function TradeContainer(props: TradeProps) {
             disabled={!canTrade()}
             onClick={handleSetTrade}
           >
-            Current: {getAppLocalTrade(app.app_id)} <br/>
-            Set No. of Bonds Willing To Trade To {noOfBonds}
+            Currently {getAppLocalTrade(app.app_id)} Bonds in Trade Vault<br/>
+            Set Max No. of Bonds To Trade To {noOfBonds}
           </Button>
         </div>
       </Grid>
@@ -144,7 +144,7 @@ function TradeContainer(props: TradeProps) {
       {/*Row split into thirds*/}
       <Grid item xs={4}>
         <TextField
-          label="Trade Price Per Bond:"
+          label="Price Per Bond:"
           value={price}
           onChange={e => setPrice(Number(e.target.value))}
           required
@@ -157,7 +157,7 @@ function TradeContainer(props: TradeProps) {
       <Grid item xs={4}>
         <KeyboardDateTimePicker
           clearable
-          label="Trade Offer Expiry date:"
+          label="Expiry date:"
           value={expiryDate}
           onChange={handleExpiryDateChange}
           disablePast
@@ -180,7 +180,7 @@ function TradeContainer(props: TradeProps) {
         </Button>
       </Grid>
 
-    </>
+    </Grid>
   );
 }
 

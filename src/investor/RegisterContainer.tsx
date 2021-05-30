@@ -58,7 +58,7 @@ function RegisterContainer(props: RegisterProps) {
 
 
   return (
-    <>
+    <Grid container spacing={3}>
       {/*First Row*/}
       <Grid item xs={6}>
         <div title={getOptedIntoBond(app.bond_id) ? 'Already opted into bond' : undefined}>
@@ -87,7 +87,7 @@ function RegisterContainer(props: RegisterProps) {
           </Button>
         </div>
       </Grid>
-    </>
+    </Grid>
   );
 }
 

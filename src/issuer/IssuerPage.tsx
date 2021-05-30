@@ -1,7 +1,7 @@
 import React from 'react';
 import { UserAccount } from '../redux/reducers/userReducer';
 import AppList from '../common/AppTable';
-import { App } from '../redux/types';
+import { App, AppsTableElem } from '../redux/types';
 import { BackButton } from '../common/BackButton';
 import IssueBondForm from './IssueBondForm';
 import Button from '@material-ui/core/Button';
@@ -17,6 +17,7 @@ interface IssuerPageProps {
   enterIssuanceView: () => void;
   exitIssuanceView: () => void;
   app?: App;
+  getApp: (appId: number) => App | undefined;
   reportRatingRound?: number;
   uploadToIPFS: (event: any) => void;
   uploadText: string;
@@ -32,6 +33,7 @@ export function IssuerPage(props: IssuerPageProps) {
     enterIssuanceView,
     exitIssuanceView,
     app,
+    getApp,
     reportRatingRound,
     uploadToIPFS,
     uploadText,
@@ -44,7 +46,7 @@ export function IssuerPage(props: IssuerPageProps) {
 
       <AppList
         onClick={enterAppView}
-        appFilter={(app: App) => app.issuer_address === (selectedAccount ? selectedAccount.address : undefined)}
+        appFilter={(elem: AppsTableElem) => getApp(elem.id)!.issuer_address === (selectedAccount ? selectedAccount.address : undefined)}
       />
 
       <Button
@@ -52,6 +54,7 @@ export function IssuerPage(props: IssuerPageProps) {
         color="primary"
         onClick={enterIssuanceView}
         style={{ marginTop: '16px' }}
+        fullWidth
       >
         Issue new bond
       </Button>

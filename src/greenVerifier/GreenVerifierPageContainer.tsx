@@ -78,6 +78,7 @@ function GreenVerifierPageContainer(props: GreenVerifierPageContainerProps) {
       enterAppView={enterAppView}
       exitAppView={exitAppView}
       app={app}
+      getApp={getApp}
       rating={rating}
       setRating={setRating}
       reportRatingRound={reportRatingRound}

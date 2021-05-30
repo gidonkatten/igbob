@@ -86,7 +86,7 @@ function BuyContainer(props: BuyProps) {
   }
 
   return (
-    <>
+    <Grid container spacing={3}>
       <Grid item xs={5}>
         <FormControl fullWidth>
           <TextField
@@ -118,7 +118,7 @@ function BuyContainer(props: BuyProps) {
           </Button>
         </div>
       </Grid>
-    </>
+    </Grid>
   );
 }
 

@@ -225,7 +225,7 @@ function ClaimContainer(props: ClaimProps) {
   }
 
   return (
-    <>
+    <Grid container spacing={3}>
       <Grid item xs={4}>
         <div title={couponTooltip()}>
           <Button
@@ -282,7 +282,7 @@ function ClaimContainer(props: ClaimProps) {
           </Button>
         </div>
       </Grid>
-    </>
+    </Grid>
   );
 }
 
