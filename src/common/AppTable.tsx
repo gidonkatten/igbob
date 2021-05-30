@@ -23,7 +23,7 @@ interface OwnProps {
 
 type AppListProps = StateProps & DispatchProps & OwnProps;
 
-function AppList(props: AppListProps) {
+function AppTable(props: AppListProps) {
   const { apps, setApps, onClick, appFilter } = props;
 
   const { getAccessTokenSilently } = useAuth0();
@@ -74,4 +74,4 @@ const mapDispatchToProps = {
   setApps
 }
 
-export default connect<StateProps, DispatchProps, OwnProps>(mapStateToProps, mapDispatchToProps)(AppList);
+export default connect<StateProps, DispatchProps, OwnProps>(mapStateToProps, mapDispatchToProps)(AppTable);

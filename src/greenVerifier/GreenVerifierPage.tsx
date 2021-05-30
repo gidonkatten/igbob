@@ -1,5 +1,5 @@
 import React from 'react';
-import AppList from '../common/AppList';
+import AppList from '../common/AppTable';
 import { UserAccount } from '../redux/reducers/userReducer';
 import Rating from '@material-ui/lab/Rating';
 import { App } from '../redux/types';

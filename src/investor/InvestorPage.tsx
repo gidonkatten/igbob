@@ -2,7 +2,7 @@ import React from 'react';
 import BondTimeline from '../common/BondTimeline';
 import Grid from '@material-ui/core/Grid';
 import TextField from '@material-ui/core/TextField';
-import AppList from '../common/AppList';
+import AppList from '../common/AppTable';
 import { App } from '../redux/types';
 import { BackButton } from '../common/BackButton';
 import Typography from '@material-ui/core/Typography';

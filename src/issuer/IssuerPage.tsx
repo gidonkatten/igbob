@@ -1,6 +1,6 @@
 import React from 'react';
 import { UserAccount } from '../redux/reducers/userReducer';
-import AppList from '../common/AppList';
+import AppList from '../common/AppTable';
 import { App } from '../redux/types';
 import { BackButton } from '../common/BackButton';
 import IssueBondForm from './IssueBondForm';
