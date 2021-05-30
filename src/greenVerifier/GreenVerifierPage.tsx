@@ -9,12 +9,10 @@ import IPFSFileListContainer from '../common/IPFSFileListContainer';
 import Typography from '@material-ui/core/Typography';
 
 interface GreenVerifierPageProps {
-  selectedAccount?: UserAccount;
   inOverview: boolean;
   enterAppView: (appId: number) => void;
   exitAppView: () => void;
   app?: App;
-  getApp: (appId: number) => App | undefined;
   rating: number | null;
   setRating: (rating: number | null) => void;
   reportRatingRound?: number;
@@ -25,12 +23,10 @@ interface GreenVerifierPageProps {
 export function GreenVerifierPage(props: GreenVerifierPageProps) {
 
   const {
-    selectedAccount,
     inOverview,
     enterAppView,
     exitAppView,
     app,
-    getApp,
     rating,
     setRating,
     reportRatingRound,
@@ -43,7 +39,6 @@ export function GreenVerifierPage(props: GreenVerifierPageProps) {
       <Typography variant="h3">Green Verifier For These Green Bonds</Typography>
       <AppList
         onClick={enterAppView}
-        appFilter={(elem: AppsTableElem) => getApp(elem.id)!.green_verifier_address === (selectedAccount ? selectedAccount.address : undefined)}
       />
     </div>
   )

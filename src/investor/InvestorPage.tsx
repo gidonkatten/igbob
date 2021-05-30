@@ -2,7 +2,7 @@ import React from 'react';
 import BondTimeline from '../common/BondTimeline';
 import TextField from '@material-ui/core/TextField';
 import AppList from '../common/AppTable';
-import { App } from '../redux/types';
+import { App, Trade } from '../redux/types';
 import { BackButton } from '../common/BackButton';
 import Typography from '@material-ui/core/Typography';
 import IPFSFileListContainer from '../common/IPFSFileListContainer';
@@ -13,15 +13,26 @@ import { UserAccount } from '../redux/reducers/userReducer';
 import { CouponRound, Defaulted } from './Utils';
 import TradeContainer from './TradeContainer';
 import { InvestorPageNav } from './InvestorPageContainer';
-import { FETCH_APPS_FILTER } from '../common/Utils';
+import { FETCH_APPS_FILTER, FETCH_MY_TRADES_FILTER, FETCH_TRADES_FILTER } from '../common/Utils';
+import { Selection } from './Selection';
+import TradeTable from '../common/TradeTable';
 
 interface InvestorPageProps {
   investorPageNav: InvestorPageNav;
-  enterOverview: (filter: FETCH_APPS_FILTER) => Promise<void>;
-  exitOverview: () => void;
-  enterAppView: (appId: number) => void;
-  exitAppView: () => void;
+  enterAppsTable: (filter: FETCH_APPS_FILTER) => Promise<void>;
+  exitAppsTable: () => void;
+  enterInvestView: (appId: number) => void;
+  exitInvestView: () => void;
+  enterTradesTable:  (filter: FETCH_TRADES_FILTER) => Promise<void>;
+  exitTradesTable: () => void;
+  enterTrade: (tradeId: number, app_id: number) => void;
+  exitTrade: () => void;
+  enterManageTradesTable:  (filter: FETCH_MY_TRADES_FILTER) => Promise<void>;
+  exitManageTradesTable: () => void;
+  enterManageTrade: (tradeId: number, app_id: number) => void;
+  exitManageTrade: () => void;
   app?: App;
+  trade?: Trade;
   selectedAccount?: UserAccount;
   couponRound?: CouponRound;
   defaulted?: Defaulted;
@@ -36,10 +47,18 @@ export function InvestorPage(props: InvestorPageProps) {
 
   const {
     investorPageNav,
-    enterOverview,
-    exitOverview,
-    enterAppView,
-    exitAppView,
+    enterAppsTable,
+    exitAppsTable,
+    enterInvestView,
+    exitInvestView,
+    enterTradesTable,
+    exitTradesTable,
+    enterTrade,
+    exitTrade,
+    enterManageTradesTable,
+    exitManageTradesTable,
+    enterManageTrade,
+    exitManageTrade,
     app,
     selectedAccount,
     couponRound,
@@ -53,20 +72,21 @@ export function InvestorPage(props: InvestorPageProps) {
 
 
   const selection = (
-    <div>
-
-
-    </div>
+    <Selection
+      enterAppsTable={enterAppsTable}
+      enterTradesTable={enterTradesTable}
+      enterManageTradesTable={enterManageTradesTable}
+    />
   )
 
-  const appsList = (
+  const appsTable = (
     <div>
 
-      <BackButton onClick={exitOverview}/>
+      <BackButton onClick={exitAppsTable}/>
 
       <Typography variant="h3">Listed Green Bonds</Typography>
 
-      <AppList onClick={enterAppView}/>
+      <AppList onClick={enterInvestView}/>
 
     </div>
   )
@@ -74,7 +94,7 @@ export function InvestorPage(props: InvestorPageProps) {
   const appView = app && (
     <div>
 
-      <BackButton onClick={exitAppView}/>
+      <BackButton onClick={exitInvestView}/>
 
       <Typography variant="h3" gutterBottom>{app.name}</Typography>
 
@@ -140,11 +160,55 @@ export function InvestorPage(props: InvestorPageProps) {
     </div>
   )
 
+  const tradesTable = (
+    <div>
+
+      <BackButton onClick={exitTradesTable}/>
+
+      <Typography variant="h3">Listed Trades</Typography>
+
+      <TradeTable onClick={enterTrade}/>
+
+    </div>
+  )
+
+  const trade = (
+    <div>
+
+      <BackButton onClick={exitTrade}/>
+
+    </div>
+  )
+
+  const manageTradesTable = (
+    <div>
+
+      <BackButton onClick={exitManageTradesTable}/>
+
+      <Typography variant="h3">Listed Trades</Typography>
+
+      <TradeTable onClick={enterManageTrade}/>
+
+    </div>
+  )
+
+  const manageTrade = (
+    <div>
+
+      <BackButton onClick={exitManageTrade}/>
+
+    </div>
+  )
+
   return (
     <div className={"page-content"}>
-      {investorPageNav === InvestorPageNav.SELECTION ? null : null}
-      {investorPageNav === InvestorPageNav.OVERVIEW ? appsList : null}
+      {investorPageNav === InvestorPageNav.SELECTION ? selection : null}
+      {investorPageNav === InvestorPageNav.APPS_TABLE ? appsTable : null}
       {investorPageNav === InvestorPageNav.INVEST ? appView : null}
+      {investorPageNav === InvestorPageNav.TRADES_TABLE ? tradesTable : null}
+      {investorPageNav === InvestorPageNav.TRADE ? trade : null}
+      {investorPageNav === InvestorPageNav.MANAGE_TRADES_TABLE ? manageTradesTable : null}
+      {investorPageNav === InvestorPageNav.MANAGE_TRADE ? manageTrade : null}
     </div>
   );
 }

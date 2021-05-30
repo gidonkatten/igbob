@@ -13,13 +13,12 @@ interface DispatchProps {}
 
 interface OwnProps {
   onClick: (appId: number) => void;
-  appFilter?: (appsTableElem: AppsTableElem) => boolean;
 }
 
 type AppListProps = StateProps & DispatchProps & OwnProps;
 
 function AppTable(props: AppListProps) {
-  const { appsTable, onClick, appFilter } = props;
+  const { appsTable, onClick } = props;
 
   const renderPrice = (params: GridCellParams) => (
     <>${formatStablecoin(params.value as number)}</>
@@ -34,12 +33,12 @@ function AppTable(props: AppListProps) {
           { field: 'start_buy_date', headerName: 'Start Buy', width: 140, type: 'date' },
           { field: 'end_buy_date', headerName: 'End Buy', width: 140, type: 'date' },
           { field: 'maturity_date', headerName: 'Maturity', width: 140, type: 'date' },
-          { field: 'bond_cost', headerName: 'Cost', width: 120, type: 'number', renderCell: renderPrice, description: 'Initial cost of bond' },
+          { field: 'bond_cost', headerName: 'Cost', width: 120, type: 'number', renderCell: renderPrice, description: 'Initial cost of one bond' },
           { field: 'bond_coupon', headerName: 'Coupon', width: 130, type: 'number', renderCell: renderPrice },
           { field: 'bond_length', headerName: 'Payments', type: 'number', width: 140, description: 'Number of coupon payments' },
           { field: 'bond_principal', headerName: 'Principal', width: 140, type: 'number', renderCell: renderPrice },
         ]}
-        rows={appsTable.filter(elem => appFilter ? appFilter(elem) : true)}
+        rows={appsTable}
         onRowClick={(params) => onClick(params.id as number)}
       />
     </div>

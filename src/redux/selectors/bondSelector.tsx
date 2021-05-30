@@ -1,4 +1,4 @@
-import { App, AppsTable } from '../types';
+import { App, AppsTable, Trade, TradesTable } from '../types';
 
 export const appsSelector = state => state.bondReducer.apps;
 
@@ -26,6 +26,33 @@ export const appsTableSelector = state => {
 export const getAppSelector = state => appId => {
   const apps: Map<number, App> = state.bondReducer.apps;
   return apps.get(appId);
+};
+
+export const tradesSelector = state => state.bondReducer.trades;
+
+export const tradesTableSelector = state => {
+  const trades: Map<number, Trade> = state.bondReducer.trades;
+
+  const tradesTable: TradesTable = Array.from(trades.values()).map((trade: Trade) => {
+    return {
+      id: trade.trade_id,
+      bond_id: trade.bond_id,
+      name: trade.name,
+      bond_length: trade.bond_length,
+      maturity_date: new Date(trade.maturity_date * 1000),
+      bond_coupon: trade.bond_coupon,
+      bond_principal: trade.bond_principal,
+      expiry: trade.expiry,
+      price: trade.price,
+    }
+  });
+
+  return tradesTable;
+};
+
+export const getTradesSelector = state => tradeId => {
+  const trades: Map<number, Trade> = state.bondReducer.trades;
+  return trades.get(tradeId);
 };
 
 export const getMainAppGlobalStateSelector = state => appId => {

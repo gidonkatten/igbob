@@ -1,11 +1,13 @@
-import { App } from '../types';
+import { App, Trade } from '../types';
 
 interface BondState {
   apps: Map<number, App>,
+  trades: Map<number, Trade>,
 }
 
 const initialState: BondState = {
-  apps: new Map<number, App>()
+  apps: new Map<number, App>(),
+  trades: new Map<number, Trade>(),
 };
 
 export function bondReducer(state = initialState, action: any) {
@@ -16,6 +18,14 @@ export function bondReducer(state = initialState, action: any) {
       return {
         ...state,
         apps: appsMap
+      };
+    }
+    case "SET_TRADES": {
+      const { trades } = action.payload;
+      const tradesMap = new Map<number, Trade>(trades.map(trade => [trade.trade_id, trade]));
+      return {
+        ...state,
+        trades: tradesMap
       };
     }
     case "SET_MAIN_APP_GLOBAL_STATE": {

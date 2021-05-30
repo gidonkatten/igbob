@@ -1,7 +1,6 @@
 import React from 'react';
-import { UserAccount } from '../redux/reducers/userReducer';
 import AppList from '../common/AppTable';
-import { App, AppsTableElem } from '../redux/types';
+import { App } from '../redux/types';
 import { BackButton } from '../common/BackButton';
 import IssueBondForm from './IssueBondForm';
 import Button from '@material-ui/core/Button';
@@ -10,14 +9,12 @@ import Typography from '@material-ui/core/Typography';
 import { IssuerPageNav } from './IssuerPageContainer';
 
 interface IssuerPageProps {
-  selectedAccount?: UserAccount;
   issuerPageNav: IssuerPageNav;
   enterAppView: (appId) => void;
   exitAppView: () => void;
   enterIssuanceView: () => void;
   exitIssuanceView: () => void;
   app?: App;
-  getApp: (appId: number) => App | undefined;
   reportRatingRound?: number;
   uploadToIPFS: (event: any) => void;
   uploadText: string;
@@ -26,14 +23,12 @@ interface IssuerPageProps {
 export function IssuerPage(props: IssuerPageProps) {
 
   const {
-    selectedAccount,
     issuerPageNav,
     enterAppView,
     exitAppView,
     enterIssuanceView,
     exitIssuanceView,
     app,
-    getApp,
     reportRatingRound,
     uploadToIPFS,
     uploadText,
@@ -46,7 +41,6 @@ export function IssuerPage(props: IssuerPageProps) {
 
       <AppList
         onClick={enterAppView}
-        appFilter={(elem: AppsTableElem) => getApp(elem.id)!.issuer_address === (selectedAccount ? selectedAccount.address : undefined)}
       />
 
       <Button

@@ -93,14 +93,12 @@ function IssuerPageContainer(props: IssuerPageContainerProps) {
 
   return (
     <IssuerPage
-      selectedAccount={selectedAccount}
       issuerPageNav={issuerPageNav}
       enterAppView={enterAppView}
       exitAppView={exitAppView}
       enterIssuanceView={enterIssuanceView}
       exitIssuanceView={exitIssuanceView}
       app={app}
-      getApp={getApp}
       reportRatingRound={reportRatingRound}
       uploadToIPFS={uploadToIPFS}
       uploadText={uploadText()}

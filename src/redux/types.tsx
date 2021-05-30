@@ -38,3 +38,35 @@ export interface AppsTableElem {
 }
 
 export type AppsTable = AppsTableElem[];
+
+export interface Trade {
+  trade_id: number,
+  app_id: number,
+  bond_id: number,
+  bond_escrow_address: string,
+  bond_escrow_program: string,
+  name: string,
+  expiry: number,
+  expiry_round: number,
+  price: number,
+  seller_address: string,
+  lsig: Uint8Array,
+  bond_length: number,
+  maturity_date: number,
+  bond_coupon: number,
+  bond_principal: number,
+}
+
+export interface TradesTableElem {
+  id: number,
+  bond_id: number,
+  name: string,
+  bond_length: number,
+  maturity_date: Date,
+  bond_coupon: number,
+  bond_principal: number,
+  expiry: number,
+  price: number,
+}
+
+export type TradesTable = TradesTableElem[];

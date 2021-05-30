@@ -86,12 +86,10 @@ function GreenVerifierPageContainer(props: GreenVerifierPageContainerProps) {
 
   return (
     <GreenVerifierPage
-      selectedAccount={selectedAccount}
       inOverview={inOverview}
       enterAppView={enterAppView}
       exitAppView={exitAppView}
       app={app}
-      getApp={getApp}
       rating={rating}
       setRating={setRating}
       reportRatingRound={reportRatingRound}

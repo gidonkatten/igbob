@@ -1,5 +1,5 @@
 import { UserAccount } from '../reducers/userReducer';
-import { App, AppState } from '../types';
+import { App, AppState, Trade } from '../types';
 
 export const setAccountAddresses = (addresses: string[]) => ({
   type: "SET_ACCOUNT_ADDRESSES",
@@ -14,6 +14,11 @@ export const setSelectedAccount = (account: UserAccount) => ({
 export const setApps = (apps: App[]) => ({
   type: "SET_APPS",
   payload: { apps }
+});
+
+export const setTrades = (trades: Trade[]) => ({
+  type: "SET_TRADES",
+  payload: { trades }
 });
 
 export const setMainAppGlobalState = (appId: number | bigint, state: AppState) => ({
