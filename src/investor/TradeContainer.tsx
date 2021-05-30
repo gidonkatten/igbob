@@ -48,17 +48,23 @@ function TradeContainer(props: TradeProps) {
   } = props;
   const { getAccessTokenSilently } = useAuth0();
 
+  const bondBalance: number = app ? (getBondBalance(app.bond_id) as number) : 0;
+  const currentTime: number = Date.now() / 1000;
+  const inTradeWindow = app && (currentTime > app.end_buy_date);
+
   const handleExpiryDateChange = (date) => setExpiryDate(date)
 
-  const bondBalance: number = app ? (getBondBalance(app.bond_id) as number) : 0;
-
   const canTrade = () => {
-    return app && bondBalance !== 0;
+    return app && bondBalance !== 0 && inTradeWindow;
   }
 
   const tradeTooltip = () => {
-    if (bondBalance === 0) return 'Do not own any bonds\n';
-    return undefined
+    if (!app) return undefined;
+
+    let err = '';
+    if (bondBalance === 0) err = err.concat('Do not own any bonds\n')
+    if (!inTradeWindow) err = err.concat('Can only trade bond after initial buy period\n')
+    return err;
   }
 
   const handleSetTrade= async () => {
@@ -113,32 +119,28 @@ function TradeContainer(props: TradeProps) {
       <Grid item xs={5}>
         <FormControl fullWidth>
           <TextField
-            label="No. of Bonds To Trade:"
+            label="Max No. of Bonds To Trade:"
             value={noOfBonds}
             onChange={e => setNoOfBonds(Number(e.target.value))}
             fullWidth
             InputLabelProps={{ required: false }}
             InputProps={{ inputComponent: AlgoNumberInput }}
-            disabled={!canTrade()}
-            title={tradeTooltip()}
           />
         </FormControl>
       </Grid>
 
-      <Grid item xs={7}>
-        <div title={tradeTooltip()}>
-          <Button
-            variant="outlined"
-            color="primary"
-            fullWidth
-            style={{ textTransform: 'none' }}
-            disabled={!canTrade()}
-            onClick={handleSetTrade}
-          >
-            Currently {getAppLocalTrade(app.app_id)} Bonds in Trade Vault<br/>
-            Set Max No. of Bonds To Trade To {noOfBonds}
-          </Button>
-        </div>
+      <Grid item xs={7} title={tradeTooltip()}>
+        <Button
+          variant="outlined"
+          color="primary"
+          fullWidth
+          style={{ textTransform: 'none' }}
+          disabled={!canTrade()}
+          onClick={handleSetTrade}
+        >
+          Currently Up To {getAppLocalTrade(app.app_id)} Of Your Bonds Can Be Traded<br/>
+          Set Max No. of Bonds To Trade To {noOfBonds}
+        </Button>
       </Grid>
 
       {/*Row split into thirds*/}
@@ -167,14 +169,14 @@ function TradeContainer(props: TradeProps) {
         />
       </Grid>
 
-      <Grid item xs={4}>
+      <Grid item xs={4} title={tradeTooltip()}>
         <Button
           variant="outlined"
           color="primary"
           fullWidth
           style={{ textTransform: 'none' }}
           onClick={handleGenTradeLSig}
-          disabled={expiryDate === null}
+          disabled={expiryDate === null || !canTrade()}
         >
           Generate Trade Logic Signature
         </Button>

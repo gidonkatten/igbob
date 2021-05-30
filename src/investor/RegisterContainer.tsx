@@ -1,5 +1,4 @@
 import React from 'react';
-import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
 import { getAccountInformation } from '../algorand/account/Account';
 import { App } from '../redux/types';
@@ -56,38 +55,30 @@ function RegisterContainer(props: RegisterProps) {
     getAccountInformation(selectedAccount.address).then(acc => setSelectedAccount(acc));
   }
 
+  const canRegister = () => {
+    if (!app) return false;
+
+    return !getOptedIntoBond(app.bond_id) || !getOptedIntoApp(app.app_id)
+  }
+
+  const handleRegister = async () => {
+    if (!selectedAccount || !app) return;
+
+    if (!getOptedIntoBond(app.bond_id)) handleAssetOptIn();
+    if (!getOptedIntoApp(app.app_id)) handleAppOptIn();
+  }
 
   return (
-    <Grid container spacing={3}>
-      {/*First Row*/}
-      <Grid item xs={6}>
-        <div title={getOptedIntoBond(app.bond_id) ? 'Already opted into bond' : undefined}>
-          <Button
-            variant="outlined"
-            color="primary"
-            fullWidth
-            disabled={getOptedIntoBond(app.bond_id)}
-            onClick={handleAssetOptIn}
-          >
-            Opt into bond
-          </Button>
-        </div>
-      </Grid>
-
-      <Grid item xs={6}>
-        <div title={getOptedIntoApp(app.bond_id) ? 'Already opted into application' : undefined}>
-          <Button
-            variant="outlined"
-            color="primary"
-            fullWidth
-            disabled={getOptedIntoApp(app.app_id)}
-            onClick={handleAppOptIn}
-          >
-            Opt into application
-          </Button>
-        </div>
-      </Grid>
-    </Grid>
+    <Button
+      variant="outlined"
+      color="primary"
+      fullWidth
+      disabled={!canRegister()}
+      title={!canRegister() ? 'Already opted into bond and application' : undefined}
+      onClick={handleRegister}
+    >
+      Register
+    </Button>
   );
 }
 

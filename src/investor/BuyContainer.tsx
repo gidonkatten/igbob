@@ -97,8 +97,6 @@ function BuyContainer(props: BuyProps) {
             fullWidth
             InputLabelProps={{ required: false }}
             InputProps={{ inputComponent: AlgoNumberInput }}
-            disabled={!canBuy()}
-            title={buyTooltip()}
           />
         </FormControl>
       </Grid>
