@@ -1,19 +1,15 @@
 import { DataGrid, GridCellParams } from '@material-ui/data-grid';
-import React, { useEffect } from 'react';
+import React from 'react';
 import { appsTableSelector } from '../redux/selectors/bondSelector';
 import { connect } from 'react-redux';
-import { useAuth0 } from '@auth0/auth0-react';
-import { setApps } from '../redux/actions/actions';
-import { App, AppsTable, AppsTableElem } from '../redux/types';
+import { AppsTable, AppsTableElem } from '../redux/types';
 import { formatStablecoin } from '../utils/Utils';
 
 interface StateProps {
   appsTable: AppsTable
 }
 
-interface DispatchProps {
-  setApps: typeof setApps;
-}
+interface DispatchProps {}
 
 interface OwnProps {
   onClick: (appId: number) => void;
@@ -23,27 +19,7 @@ interface OwnProps {
 type AppListProps = StateProps & DispatchProps & OwnProps;
 
 function AppTable(props: AppListProps) {
-  const { appsTable, setApps, onClick, appFilter } = props;
-
-  const { getAccessTokenSilently } = useAuth0();
-
-  async function fetchApps() {
-    try {
-      const accessToken = await getAccessTokenSilently();
-      const response = await fetch("https://igbob.herokuapp.com/apps/all-apps", {
-        headers: { Authorization: `Bearer ${accessToken}`},
-      });
-      const parseResponse = await response.json();
-      setApps(parseResponse);
-    } catch (err) {
-      console.error(err.message);
-    }
-  }
-
-  // fetch apps after initial render
-  useEffect( () => {
-    fetchApps();
-  }, []);
+  const { appsTable, onClick, appFilter } = props;
 
   const renderPrice = (params: GridCellParams) => (
     <>${formatStablecoin(params.value as number)}</>
@@ -74,8 +50,6 @@ const mapStateToProps = (state) => ({
   appsTable: appsTableSelector(state),
 });
 
-const mapDispatchToProps = {
-  setApps
-}
+const mapDispatchToProps = {}
 
 export default connect<StateProps, DispatchProps, OwnProps>(mapStateToProps, mapDispatchToProps)(AppTable);

@@ -12,9 +12,13 @@ import ClaimContainer from './ClaimContainer';
 import { UserAccount } from '../redux/reducers/userReducer';
 import { CouponRound, Defaulted } from './Utils';
 import TradeContainer from './TradeContainer';
+import { InvestorPageNav } from './InvestorPageContainer';
+import { FETCH_APPS_FILTER } from '../common/Utils';
 
 interface InvestorPageProps {
-  inOverview: boolean;
+  investorPageNav: InvestorPageNav;
+  enterOverview: (filter: FETCH_APPS_FILTER) => Promise<void>;
+  exitOverview: () => void;
   enterAppView: (appId: number) => void;
   exitAppView: () => void;
   app?: App;
@@ -31,7 +35,9 @@ interface InvestorPageProps {
 export function InvestorPage(props: InvestorPageProps) {
 
   const {
-    inOverview,
+    investorPageNav,
+    enterOverview,
+    exitOverview,
     enterAppView,
     exitAppView,
     app,
@@ -45,10 +51,23 @@ export function InvestorPage(props: InvestorPageProps) {
     setStablecoinEscrowBalance,
   } = props;
 
+
+  const selection = (
+    <div>
+
+
+    </div>
+  )
+
   const appsList = (
     <div>
+
+      <BackButton onClick={exitOverview}/>
+
       <Typography variant="h3">Listed Green Bonds</Typography>
+
       <AppList onClick={enterAppView}/>
+
     </div>
   )
 
@@ -123,7 +142,9 @@ export function InvestorPage(props: InvestorPageProps) {
 
   return (
     <div className={"page-content"}>
-      {inOverview ? appsList : appView}
+      {investorPageNav === InvestorPageNav.SELECTION ? null : null}
+      {investorPageNav === InvestorPageNav.OVERVIEW ? appsList : null}
+      {investorPageNav === InvestorPageNav.INVEST ? appView : null}
     </div>
   );
 }

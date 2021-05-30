@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { UserAccount } from '../redux/reducers/userReducer';
 import { selectedAccountSelector } from '../redux/selectors/userSelector';
@@ -7,6 +7,9 @@ import { getAppSelector } from '../redux/selectors/bondSelector';
 import { IPFSAlgoWrapper } from '../ipfs/IPFSAlgoWrapper';
 import { getReportRatingRound } from '../investor/Utils';
 import { IssuerPage } from './IssuerPage';
+import { FETCH_APPS_FILTER, fetchApps } from '../common/Utils';
+import { useAuth0 } from '@auth0/auth0-react';
+import { setApps } from '../redux/actions/actions';
 
 export enum IssuerPageNav {
   OVERVIEW,
@@ -19,7 +22,9 @@ interface StateProps {
   getApp: (appId: number) => App | undefined;
 }
 
-interface DispatchProps {}
+interface DispatchProps {
+  setApps: typeof setApps;
+}
 
 interface OwnProps {}
 
@@ -30,7 +35,17 @@ function IssuerPageContainer(props: IssuerPageContainerProps) {
   const [issuerPageNav, setIssuerPageNav] = useState<IssuerPageNav>(IssuerPageNav.OVERVIEW);
   const [app, setApp] = useState<App>();
 
-  const { selectedAccount, getApp } = props;
+  const { selectedAccount, getApp, setApps } = props;
+  const { getAccessTokenSilently } = useAuth0();
+
+  // Fetch apps for which selected address is issuer
+  useEffect(() => {
+    if (!selectedAccount) return;
+
+    getAccessTokenSilently().then(accessToken => {
+      fetchApps(accessToken, setApps, FETCH_APPS_FILTER.ISSUER, selectedAccount!.address);
+    })
+  }, [selectedAccount]);
 
   const enterAppView = (appId) => {
     setIssuerPageNav(IssuerPageNav.MANAGE);
@@ -98,6 +113,8 @@ const mapStateToProps = (state: any) => ({
   getApp: getAppSelector(state),
 });
 
-const mapDispatchToProps = {}
+const mapDispatchToProps = {
+  setApps,
+}
 
 export default connect<StateProps, DispatchProps, OwnProps>(mapStateToProps, mapDispatchToProps)(IssuerPageContainer);

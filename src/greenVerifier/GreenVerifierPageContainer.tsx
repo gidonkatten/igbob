@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { selectedAccountSelector } from '../redux/selectors/userSelector';
 import { getAppSelector } from '../redux/selectors/bondSelector';
@@ -6,10 +6,12 @@ import { UserAccount } from '../redux/reducers/userReducer';
 import { App } from '../redux/types';
 import { algodClient } from '../algorand/utils/Utils';
 import { extractManageAppState } from '../utils/Utils';
-import { setManageAppGlobalState } from '../redux/actions/actions';
+import { setApps, setManageAppGlobalState } from '../redux/actions/actions';
 import { rate } from '../algorand/bond/Rate';
 import { getReportRatingRound } from '../investor/Utils';
 import { GreenVerifierPage } from './GreenVerifierPage';
+import { useAuth0 } from '@auth0/auth0-react';
+import { FETCH_APPS_FILTER, fetchApps } from '../common/Utils';
 
 interface StateProps {
   selectedAccount?: UserAccount;
@@ -17,7 +19,8 @@ interface StateProps {
 }
 
 interface DispatchProps {
-  setManageAppGlobalState: typeof setManageAppGlobalState,
+  setApps: typeof setApps;
+  setManageAppGlobalState: typeof setManageAppGlobalState;
 }
 
 interface OwnProps {}
@@ -36,6 +39,16 @@ function GreenVerifierPageContainer(props: GreenVerifierPageContainerProps) {
     getApp,
     setManageAppGlobalState,
   } = props;
+  const { getAccessTokenSilently } = useAuth0();
+
+  // Fetch apps for which selected address is green verifier
+  useEffect(() => {
+    if (!selectedAccount) return;
+
+    getAccessTokenSilently().then(accessToken => {
+      fetchApps(accessToken, setApps, FETCH_APPS_FILTER.GREEN_VERIFIER, selectedAccount!.address);
+    })
+  }, [selectedAccount]);
 
   const reportRatingRound: number | undefined = app ? getReportRatingRound(
     app.start_buy_date,
@@ -94,7 +107,8 @@ const mapStateToProps = (state: any) => ({
 });
 
 const mapDispatchToProps = {
-  setManageAppGlobalState
+  setApps,
+  setManageAppGlobalState,
 };
 
 export default connect<StateProps, DispatchProps, OwnProps>(mapStateToProps, mapDispatchToProps)(GreenVerifierPageContainer);

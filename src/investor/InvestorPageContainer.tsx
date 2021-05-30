@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux'
-import { setMainAppGlobalState, setManageAppGlobalState } from '../redux/actions/actions';
+import { setApps, setMainAppGlobalState, setManageAppGlobalState } from '../redux/actions/actions';
 import { selectedAccountSelector } from '../redux/selectors/userSelector';
 import { getAppSelector } from '../redux/selectors/bondSelector';
 import {
@@ -20,6 +20,14 @@ import {
 } from './Utils';
 import { App, AppState } from '../redux/types';
 import { InvestorPage } from './InvestorPage';
+import { useAuth0 } from '@auth0/auth0-react';
+import { FETCH_APPS_FILTER, fetchApps } from '../common/Utils';
+
+export enum InvestorPageNav {
+  SELECTION,
+  OVERVIEW,
+  INVEST,
+}
 
 interface StateProps {
   selectedAccount?: UserAccount;
@@ -27,7 +35,8 @@ interface StateProps {
 }
 
 interface DispatchProps {
-  setMainAppGlobalState: typeof setMainAppGlobalState,
+  setApps: typeof setApps;
+  setMainAppGlobalState: typeof setMainAppGlobalState;
   setManageAppGlobalState: typeof setManageAppGlobalState;
 }
 
@@ -37,7 +46,7 @@ type InvestorPageContainerProps = StateProps & DispatchProps & OwnProps;
 
 function InvestorPageContainer(props: InvestorPageContainerProps) {
 
-  const [inOverview, setInOverview] = useState<boolean>(true);
+  const [investorPageNav, setInvestorPageNav] = useState<InvestorPageNav>(InvestorPageNav.SELECTION);
   const [app, setApp] = useState<App>();
 
   // Blockchain readings
@@ -50,21 +59,38 @@ function InvestorPageContainer(props: InvestorPageContainerProps) {
   const {
     selectedAccount,
     getApp,
+    setApps,
     setMainAppGlobalState,
     setManageAppGlobalState,
   } = props;
+  const { getAccessTokenSilently } = useAuth0();
 
-  const enterAppView = (appId) => {
-    setInOverview(false);
+  const enterOverview = async (filter: FETCH_APPS_FILTER) => {
+    setInvestorPageNav(InvestorPageNav.OVERVIEW);
+
+    // Set apps using given filter e.g. upcoming, live etc
+    getAccessTokenSilently().then(accessToken => {
+      fetchApps(accessToken, setApps, filter);
+    })
+  }
+
+  const exitOverview = () => {
+    setInvestorPageNav(InvestorPageNav.SELECTION);
+    setApp(undefined);
+  }
+
+  const enterAppView = (appId: number) => {
+    setInvestorPageNav(InvestorPageNav.INVEST);
     const newApp = getApp(appId);
     setApp(newApp);
   }
 
   const exitAppView = () => {
-    setInOverview(true);
+    setInvestorPageNav(InvestorPageNav.OVERVIEW);
     setApp(undefined);
   }
 
+  // On entering into new app
   const appId = app ? app.app_id : 0;
   useEffect(() => {
     if (!app) return;
@@ -116,7 +142,9 @@ function InvestorPageContainer(props: InvestorPageContainerProps) {
 
   return (
     <InvestorPage
-      inOverview={inOverview}
+      investorPageNav={investorPageNav}
+      enterOverview={enterOverview}
+      exitOverview={exitOverview}
       enterAppView={enterAppView}
       exitAppView={exitAppView}
       app={app}
@@ -138,6 +166,7 @@ const mapStateToProps = (state: any) => ({
 });
 
 const mapDispatchToProps = {
+  setApps,
   setMainAppGlobalState,
   setManageAppGlobalState,
 };
