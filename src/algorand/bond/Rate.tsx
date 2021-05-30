@@ -12,6 +12,7 @@ export async function rate(
   rating: number,
 ) {
   let params: SuggestedParams = await algodClient.getTransactionParams().do();
+  params.fee = 1000;
 
   const enc = new TextEncoder();
   const rate: Uint8Array = enc.encode("rate");

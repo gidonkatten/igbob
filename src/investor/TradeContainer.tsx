@@ -8,13 +8,15 @@ import { AlgoNumberInput } from '../common/AlgoNumberInput';
 import {
   getAppLocalTradeSelector,
   getBondBalanceSelector,
-  getOptedIntoAppSelector
+  getOptedIntoAppSelector, selectedAccountSelector
 } from '../redux/selectors/userSelector';
 import { App } from '../redux/types';
 import { UserAccount } from '../redux/reducers/userReducer';
 import { KeyboardDateTimePicker } from '@material-ui/pickers';
 import { StablecoinInput } from '../common/StablecoinInput';
-import { setTrade } from '../algorand/bond/Trade';
+import { setTrade, signTradeLSig } from '../algorand/bond/Trade';
+import { useAuth0 } from '@auth0/auth0-react';
+import { convertDateToUnixTime } from '../utils/Utils';
 
 interface StateProps {
   selectedAccount?: UserAccount;
@@ -44,6 +46,7 @@ function TradeContainer(props: TradeProps) {
     getBondBalance,
     getAppLocalTrade,
   } = props;
+  const { getAccessTokenSilently } = useAuth0();
 
   const handleExpiryDateChange = (date) => setExpiryDate(date)
 
@@ -59,7 +62,7 @@ function TradeContainer(props: TradeProps) {
   }
 
   const handleSetTrade= async () => {
-    if (!selectedAccount || !app) return;
+    if (!selectedAccount) return;
     await setTrade(
       app.app_id,
       selectedAccount.address,
@@ -67,16 +70,46 @@ function TradeContainer(props: TradeProps) {
     );
   };
 
-  const handleGenTradeLSig= async () => {
-    if (!selectedAccount || !app) return;
-    // await genTradeLsig();
+  const handleGenTradeLSig = async () => {
+    if (!selectedAccount || !expiryDate) return;
+
+    const accessToken = await getAccessTokenSilently();
+    const headers = new Headers();
+    headers.append("Content-Type", "application/json");
+    headers.append("Authorization", `Bearer ${accessToken}`);
+
+    const genTradeResponse = await fetch("https://igbob.herokuapp.com/trade/generate-trade", {
+      method: "POST",
+      headers: headers,
+      body: JSON.stringify({
+        "userAddress": selectedAccount.address,
+        "mainAppId": app.app_id,
+        "bondId": app.bond_id,
+        "expiry": convertDateToUnixTime(expiryDate!),
+        "price": price * 1000000,
+      })
+    });
+
+    const { tradeId, program } = await genTradeResponse.json();
+    const lsig = await signTradeLSig(
+      Uint8Array.from(Object.values(program)),
+      selectedAccount.address
+    );
+
+    await fetch("https://igbob.herokuapp.com/trade/add-trade-lsig", {
+      method: "POST",
+      headers: headers,
+      body: JSON.stringify({
+        "tradeId": tradeId,
+        "lsig": Object.values(lsig),
+      })
+    });
   };
 
-
   return (
-    <div>
+    <>
 
-      {/*/!*Row split into halves*!/*/}
+      {/*Row split into halves*/}
       <Grid item xs={5}>
         <FormControl fullWidth>
           <TextField
@@ -141,16 +174,18 @@ function TradeContainer(props: TradeProps) {
           fullWidth
           style={{ textTransform: 'none' }}
           onClick={handleGenTradeLSig}
+          disabled={expiryDate === null}
         >
           Generate Trade Logic Signature
         </Button>
       </Grid>
 
-    </div>
+    </>
   );
 }
 
 const mapStateToProps = (state: any) => ({
+  selectedAccount: selectedAccountSelector(state),
   getBondBalance: getBondBalanceSelector(state),
   getOptedIntoApp: getOptedIntoAppSelector(state),
   getAppLocalTrade: getAppLocalTradeSelector(state),

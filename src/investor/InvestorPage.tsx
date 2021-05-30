@@ -12,6 +12,7 @@ import RegisterContainer from './RegisterContainer';
 import ClaimContainer from './ClaimContainer';
 import { UserAccount } from '../redux/reducers/userReducer';
 import { CouponRound, Defaulted } from './Utils';
+import TradeContainer from './TradeContainer';
 
 interface InvestorPageProps {
   inOverview: boolean;
@@ -109,6 +110,11 @@ export function InvestorPage(props: InvestorPageProps) {
         setBondEscrowBalance={setBondEscrowBalance}
         stablecoinEscrowBalance={stablecoinEscrowBalance}
         setStablecoinEscrowBalance={setStablecoinEscrowBalance}
+       />
+
+        {/*Fourth and Fifth row*/}
+       <TradeContainer
+        app={app}
        />
 
       </Grid>
