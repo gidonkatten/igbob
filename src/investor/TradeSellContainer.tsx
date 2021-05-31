@@ -104,9 +104,9 @@ function TradeSellContainer(props: TradeProps) {
       })
     });
 
-    const { tradeId, program } = await genTradeResponse.json();
+    const { tradeId, tradeLsig } = await genTradeResponse.json();
     const lsig = await signTradeLSig(
-      Uint8Array.from(Object.values(program)),
+      Uint8Array.from(Object.values(tradeLsig)),
       selectedAccount.address
     );
 

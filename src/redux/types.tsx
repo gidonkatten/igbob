@@ -51,6 +51,7 @@ export interface Trade {
   price: number,
   seller_address: string,
   lsig: Uint8Array,
+  lsig_program: string,
   bond_length: number,
   maturity_date: number,
   bond_coupon: number,

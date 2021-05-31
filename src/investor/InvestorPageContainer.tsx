@@ -160,14 +160,13 @@ function InvestorPageContainer(props: InvestorPageContainerProps) {
   }
 
   const enterManageTrade = (tradeId: number, app_id: number, addr: string) => {
-    // Switch of account if neccessary
+    // Switch of account if necessary
     if (selectedAccount &&
       selectedAccount.address !== addr &&
       window.confirm(`The selected account will be switched to the one with the trade offer`)
     ) {
       getAccountInformation(addr).then(acc => setSelectedAccount(acc));
     }
-
 
     setInvestorPageNav(InvestorPageNav.MANAGE_TRADE);
     const newTrade = getTrade(tradeId);
