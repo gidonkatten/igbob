@@ -46,7 +46,7 @@ export interface Trade {
   bond_escrow_address: string,
   bond_escrow_program: string,
   name: string,
-  expiry: number,
+  expiry_date: number,
   expiry_round: number,
   price: number,
   seller_address: string,
@@ -59,14 +59,17 @@ export interface Trade {
 
 export interface TradesTableElem {
   id: number,
+  trade_id: number,
   bond_id: number,
+  app_id: number,
   name: string,
   bond_length: number,
   maturity_date: Date,
   bond_coupon: number,
   bond_principal: number,
-  expiry: number,
+  expiry_date: Date,
   price: number,
+  seller_address: string,
 }
 
 export type TradesTable = TradesTableElem[];

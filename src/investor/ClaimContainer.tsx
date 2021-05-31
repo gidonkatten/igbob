@@ -1,7 +1,7 @@
 import React from 'react';
 import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
-import { formatStablecoin } from '../utils/Utils';
+import { formatAlgoDecimalNumber } from '../utils/Utils';
 import { getAccountInformation, getAssetBalance, getStablecoinBalance } from '../algorand/account/Account';
 import { App } from '../redux/types';
 import { UserAccount } from '../redux/reducers/userReducer';
@@ -238,7 +238,7 @@ function ClaimContainer(props: ClaimProps) {
           >
             You have claimed {getAppLocalCouponRoundsPaid(app.app_id)} / {app.bond_length} coupons <br/>
             Multiplier for this coupon round is {getMultiplier(getRatingFromState(getAppLocalCouponRoundsPaid(app.app_id) + 1, app.manage_app_global_state)).toFixed(4)} <br/>
-            Can claim ${formatStablecoin(Math.floor(app.bond_coupon * getMultiplier(getRatingFromState(getAppLocalCouponRoundsPaid(app.app_id) + 1, app.manage_app_global_state))) * bondBalance)} <br/>
+            Can claim ${formatAlgoDecimalNumber(Math.floor(app.bond_coupon * getMultiplier(getRatingFromState(getAppLocalCouponRoundsPaid(app.app_id) + 1, app.manage_app_global_state))) * bondBalance)} <br/>
             CLAIM COUPON
           </Button>
         </div>
@@ -254,7 +254,7 @@ function ClaimContainer(props: ClaimProps) {
             disabled={!canClaimPrincipal()}
             onClick={handleClaimPrincipal}
           >
-            Can claim ${formatStablecoin(bondBalance * app.bond_principal)} <br/>
+            Can claim ${formatAlgoDecimalNumber(bondBalance * app.bond_principal)} <br/>
             CLAIM PRINCIPAL
           </Button>
         </div>
@@ -270,14 +270,14 @@ function ClaimContainer(props: ClaimProps) {
             disabled={!canClaimDefault()}
             onClick={handleClaimDefault}
           >
-            Stablecoin balance of bond escrow: ${formatStablecoin(stablecoinEscrowBalance)} <br/>
+            Stablecoin balance of bond escrow: ${formatAlgoDecimalNumber(stablecoinEscrowBalance)} <br/>
             {defaulted ?
               defaulted.isDueToPrincipal ?
-                ('Defaulted at principal payment owing $' + formatStablecoin(defaulted.owedAtRound) + '. ') :
-                ('Defaulted at coupon payment ' + defaulted.round + ' owing $' + formatStablecoin(defaulted.owedAtRound) + ". ") :
+                ('Defaulted at principal payment owing $' + formatAlgoDecimalNumber(defaulted.owedAtRound) + '. ') :
+                ('Defaulted at coupon payment ' + defaulted.round + ' owing $' + formatAlgoDecimalNumber(defaulted.owedAtRound) + ". ") :
               undefined
             }
-            Can claim ${formatStablecoin((bondBalance / (bondsMinted - (bondEscrowBalance as number))) * (stablecoinEscrowBalance as number))} <br/>
+            Can claim ${formatAlgoDecimalNumber((bondBalance / (bondsMinted - (bondEscrowBalance as number))) * (stablecoinEscrowBalance as number))} <br/>
             CLAIM DEFAULT
           </Button>
         </div>

@@ -36,14 +36,17 @@ export const tradesTableSelector = state => {
   const tradesTable: TradesTable = Array.from(trades.values()).map((trade: Trade) => {
     return {
       id: trade.trade_id,
+      trade_id: trade.trade_id,
       bond_id: trade.bond_id,
+      app_id: trade.app_id,
       name: trade.name,
       bond_length: trade.bond_length,
       maturity_date: new Date(trade.maturity_date * 1000),
       bond_coupon: trade.bond_coupon,
       bond_principal: trade.bond_principal,
-      expiry: trade.expiry,
+      expiry_date: new Date(trade.expiry_date * 1000),
       price: trade.price,
+      seller_address: trade.seller_address,
     }
   });
 

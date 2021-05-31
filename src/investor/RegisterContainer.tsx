@@ -69,16 +69,18 @@ function RegisterContainer(props: RegisterProps) {
   }
 
   return (
-    <Button
-      variant="outlined"
-      color="primary"
-      fullWidth
-      disabled={!canRegister()}
-      title={!canRegister() ? 'Already opted into bond and application' : undefined}
-      onClick={handleRegister}
-    >
-      Register
-    </Button>
+    <div title={!canRegister() ? 'Already opted into bond and application' : undefined}>
+      <Button
+        variant="outlined"
+        color="primary"
+        fullWidth
+        disabled={!canRegister()}
+        title={!canRegister() ? 'Already opted into bond and application' : undefined}
+        onClick={handleRegister}
+      >
+        Register
+      </Button>
+    </div>
   );
 }
 

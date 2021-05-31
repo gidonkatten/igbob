@@ -49,15 +49,15 @@ export async function fetchApp(
 }
 
 export enum FETCH_TRADES_FILTER {
-  ALL = 'all-trades',
-  LIVE = 'live-trades',
-  EXPIRED = 'expired-trades',
+  ALL = 'all',
+  LIVE = 'live',
+  EXPIRED = 'expired',
 }
 
 export enum FETCH_MY_TRADES_FILTER {
-  MY_ALL = 'my-all-trades',
-  MY_LIVE = 'my-live-trades',
-  MY_SALE = 'my-expired-trades',
+  MY_ALL = 'my-all',
+  MY_LIVE = 'my-live',
+  MY_SALE = 'my-expired',
 }
 
 export async function fetchTrades(

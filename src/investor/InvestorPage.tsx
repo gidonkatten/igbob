@@ -11,11 +11,12 @@ import RegisterContainer from './RegisterContainer';
 import ClaimContainer from './ClaimContainer';
 import { UserAccount } from '../redux/reducers/userReducer';
 import { CouponRound, Defaulted } from './Utils';
-import TradeContainer from './TradeContainer';
+import TradeSellContainer from './TradeSellContainer';
 import { InvestorPageNav } from './InvestorPageContainer';
 import { FETCH_APPS_FILTER, FETCH_MY_TRADES_FILTER, FETCH_TRADES_FILTER } from '../common/Utils';
 import { Selection } from './Selection';
 import TradeTable from '../common/TradeTable';
+import TradeBuyContainer from './TradeBuyContainer';
 
 interface InvestorPageProps {
   investorPageNav: InvestorPageNav;
@@ -29,7 +30,7 @@ interface InvestorPageProps {
   exitTrade: () => void;
   enterManageTradesTable:  (filter: FETCH_MY_TRADES_FILTER) => Promise<void>;
   exitManageTradesTable: () => void;
-  enterManageTrade: (tradeId: number, app_id: number) => void;
+  enterManageTrade: (tradeId: number, app_id: number, addr: string) => void;
   exitManageTrade: () => void;
   app?: App;
   trade?: Trade;
@@ -60,6 +61,7 @@ export function InvestorPage(props: InvestorPageProps) {
     enterManageTrade,
     exitManageTrade,
     app,
+    trade,
     selectedAccount,
     couponRound,
     defaulted,
@@ -81,20 +83,30 @@ export function InvestorPage(props: InvestorPageProps) {
 
   const appsTable = (
     <div>
-
       <BackButton onClick={exitAppsTable}/>
-
       <Typography variant="h3">Listed Green Bonds</Typography>
-
       <AppList onClick={enterInvestView}/>
+    </div>
+  )
 
+  const tradesTable = (
+    <div>
+      <BackButton onClick={exitTradesTable}/>
+      <Typography variant="h3">Listed Trades</Typography>
+      <TradeTable onClick={enterTrade}/>
+    </div>
+  )
+
+  const manageTradesTable = (
+    <div>
+      <BackButton onClick={exitManageTradesTable}/>
+      <Typography variant="h3">Listed Trades</Typography>
+      <TradeTable onClick={enterManageTrade}/>
     </div>
   )
 
   const appView = app && (
-    <div>
-
-      <BackButton onClick={exitInvestView}/>
+    <>
 
       <Typography variant="h3" gutterBottom>{app.name}</Typography>
 
@@ -140,7 +152,7 @@ export function InvestorPage(props: InvestorPageProps) {
 
       <Typography variant="h5" gutterBottom>Trade</Typography>
 
-      <TradeContainer
+      <TradeSellContainer
         app={app}
       />
 
@@ -157,45 +169,66 @@ export function InvestorPage(props: InvestorPageProps) {
         setStablecoinEscrowBalance={setStablecoinEscrowBalance}
       />
 
-    </div>
+    </>
   )
 
-  const tradesTable = (
+  const investAppView = app && (
     <div>
-
-      <BackButton onClick={exitTradesTable}/>
-
-      <Typography variant="h3">Listed Trades</Typography>
-
-      <TradeTable onClick={enterTrade}/>
-
+      <BackButton onClick={exitInvestView}/>
+      {appView}
     </div>
   )
 
-  const trade = (
+  const manageAppView = (
+    <div>
+      <BackButton onClick={exitManageTrade}/>
+      {appView}
+    </div>
+  )
+
+  const tradeAppView = app && trade && (
     <div>
 
       <BackButton onClick={exitTrade}/>
 
-    </div>
-  )
+      <Typography variant="h3" gutterBottom>{app.name}</Typography>
 
-  const manageTradesTable = (
-    <div>
+      <Typography variant="body1" gutterBottom>{app.description}</Typography>
 
-      <BackButton onClick={exitManageTradesTable}/>
+      <Typography variant="h4" gutterBottom>Bond Timeline</Typography>
 
-      <Typography variant="h3">Listed Trades</Typography>
+      <BondTimeline
+        startBuyDate={app.start_buy_date}
+        endBuyDate={app.end_buy_date}
+        bondLength={app.bond_length}
+        maturityDate={app.maturity_date}
+        period={app.period}
+      />
 
-      <TradeTable onClick={enterManageTrade}/>
+      <Typography variant="h4" gutterBottom>Bond Rating</Typography>
 
-    </div>
-  )
+      <IPFSFileListContainer app={app}/>
 
-  const manageTrade = (
-    <div>
+      <Typography variant="h4" gutterBottom>Bond</Typography>
 
-      <BackButton onClick={exitManageTrade}/>
+      <TextField
+        label="Selected Address:"
+        defaultValue={selectedAccount ? selectedAccount.address : undefined}
+        required
+        fullWidth
+        InputProps={{ readOnly: true }}
+        helperText="Can be changed in settings"
+        InputLabelProps={{ required: false }}
+        style={{ margin: '8px 0px' }}
+      />
+
+      <Typography variant="h5" gutterBottom>Register</Typography>
+
+      <RegisterContainer app={app}/>
+
+      <Typography variant="h5" gutterBottom>Trade</Typography>
+
+      <TradeBuyContainer app={app} trade={trade} />
 
     </div>
   )
@@ -204,11 +237,11 @@ export function InvestorPage(props: InvestorPageProps) {
     <div className={"page-content"}>
       {investorPageNav === InvestorPageNav.SELECTION ? selection : null}
       {investorPageNav === InvestorPageNav.APPS_TABLE ? appsTable : null}
-      {investorPageNav === InvestorPageNav.INVEST ? appView : null}
+      {investorPageNav === InvestorPageNav.INVEST ? investAppView : null}
       {investorPageNav === InvestorPageNav.TRADES_TABLE ? tradesTable : null}
-      {investorPageNav === InvestorPageNav.TRADE ? trade : null}
+      {investorPageNav === InvestorPageNav.TRADE ? tradeAppView : null}
       {investorPageNav === InvestorPageNav.MANAGE_TRADES_TABLE ? manageTradesTable : null}
-      {investorPageNav === InvestorPageNav.MANAGE_TRADE ? manageTrade : null}
+      {investorPageNav === InvestorPageNav.MANAGE_TRADE ? manageAppView : null}
     </div>
   );
 }

@@ -75,7 +75,7 @@ function IssuerPageContainer(props: IssuerPageContainerProps) {
     return 'Report ' + reportRatingRound;
   }
 
-  const uploadToIPFS = (event: any) => {
+  const uploadToIPFS = async (event: any) => {
     if (!selectedAccount || !app || reportRatingRound === undefined) return;
 
     const target = event.target as HTMLInputElement;
@@ -83,12 +83,14 @@ function IssuerPageContainer(props: IssuerPageContainerProps) {
 
     // Check file is defined and upload
     if (!file) return;
-    new IPFSAlgoWrapper().addData(
+    await new IPFSAlgoWrapper().addData(
       file,
       selectedAccount.address,
       app.manage_app_id,
       reportRatingRound
     );
+
+    // Get new uploaded docs TODO
   };
 
   return (

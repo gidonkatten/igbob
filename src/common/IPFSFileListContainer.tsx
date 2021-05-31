@@ -34,10 +34,7 @@ function IPFSFileListContainer(props: IPFSFileListContainerProps) {
     if (!app) return;
 
     // Get IPFS docs associated with current application
-    const ipfs = new IPFSAlgoWrapper();
-    ipfs.getData(app.issuer_address, app.manage_app_id, app.bond_length).then(res => {
-      setCids(res);
-    });
+    new IPFSAlgoWrapper().getData(app).then(res => setCids(res));
 
     // Get global state of current manage application
     algodClient.getApplicationByID(app.manage_app_id).do().then(manageApp => {

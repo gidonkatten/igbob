@@ -2,6 +2,7 @@ import { PaymentTxn, SignedTx } from '@randlabs/myalgo-connect';
 import { SuggestedParams } from 'algosdk';
 import { algodClient, indexerClient, waitForConfirmation } from '../algorand/utils/Utils';
 import { myAlgoWallet } from '../algorand/wallet/myAlgo/MyAlgoWallet';
+import { App } from '../redux/types';
 
 const IPFS = require('ipfs');
 
@@ -51,19 +52,16 @@ export class IPFSAlgoWrapper {
     await waitForConfirmation(tx.txId);
   }
 
-  public async getData(
-    issuerAddr: string,
-    manageAppId: number,
-    rounds: number,
-  ): Promise<{ cid: string, time: number }[][]> {
-    const prefix: Uint8Array = new Uint8Array(Buffer.from(manageAppId + '+'));
+  public async getData(app: App): Promise<{ cid: string, time: number }[][]> {
+    const { issuer_address, manage_app_id, bond_length } = app;
+    const prefix: Uint8Array = new Uint8Array(Buffer.from(manage_app_id + '+'));
 
     // TODO: Use afterTime() beforeTime() to verify upload time within bounds
-    const res = await indexerClient.lookupAccountTransactions(issuerAddr)
+    const res = await indexerClient.lookupAccountTransactions(issuer_address)
       .notePrefix(prefix).do()
 
     // could have more than one CID for given round
-    const cids: { cid: string, time: number }[][] = new Array(rounds + 1);
+    const cids: { cid: string, time: number }[][] = new Array(bond_length + 1);
     for (let i = 0; i < cids.length; i++) cids[i] = [];
 
     res.transactions.forEach(txn => {

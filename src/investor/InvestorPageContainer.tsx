@@ -1,6 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux'
-import { setApps, setMainAppGlobalState, setManageAppGlobalState, setTrades } from '../redux/actions/actions';
+import {
+  setApps,
+  setMainAppGlobalState,
+  setManageAppGlobalState,
+  setSelectedAccount,
+  setTrades
+} from '../redux/actions/actions';
 import { selectedAccountSelector } from '../redux/selectors/userSelector';
 import { getAppSelector, getTradesSelector } from '../redux/selectors/bondSelector';
 import {
@@ -47,6 +53,7 @@ interface StateProps {
 }
 
 interface DispatchProps {
+  setSelectedAccount: typeof setSelectedAccount;
   setApps: typeof setApps;
   setTrades: typeof setTrades;
   setMainAppGlobalState: typeof setMainAppGlobalState;
@@ -74,6 +81,7 @@ function InvestorPageContainer(props: InvestorPageContainerProps) {
     selectedAccount,
     getApp,
     getTrade,
+    setSelectedAccount,
     setApps,
     setTrades,
     setMainAppGlobalState,
@@ -83,6 +91,7 @@ function InvestorPageContainer(props: InvestorPageContainerProps) {
 
   const enterAppsTable = async (filter: FETCH_APPS_FILTER) => {
     setInvestorPageNav(InvestorPageNav.APPS_TABLE);
+    setApps([]); // clear
 
     // Set apps using given filter e.g. upcoming, live etc
     getAccessTokenSilently().then(accessToken => {
@@ -107,8 +116,9 @@ function InvestorPageContainer(props: InvestorPageContainerProps) {
 
   const enterTradesTable = async (filter: FETCH_TRADES_FILTER) => {
     setInvestorPageNav(InvestorPageNav.TRADES_TABLE);
+    setTrades([]); // clear
 
-    // Set apps using given filter e.g. upcoming, live etc
+    // Set trades using given filter e.g. expired, live etc
     getAccessTokenSilently().then(accessToken => {
       fetchTrades(accessToken, setTrades, filter);
     })
@@ -122,8 +132,10 @@ function InvestorPageContainer(props: InvestorPageContainerProps) {
     setInvestorPageNav(InvestorPageNav.TRADE);
     const newTrade = getTrade(tradeId);
     setTrade(newTrade);
+
+    // Fetch and set app
     getAccessTokenSilently().then(accessToken => {
-      fetchApp(accessToken, setApp, app_id); // This fetches and sets app
+      fetchApp(accessToken, setApp, app_id);
     });
   }
 
@@ -135,8 +147,9 @@ function InvestorPageContainer(props: InvestorPageContainerProps) {
 
   const enterManageTradesTable = async (filter: FETCH_MY_TRADES_FILTER) => {
     setInvestorPageNav(InvestorPageNav.MANAGE_TRADES_TABLE);
+    setTrades([]); // clear
 
-    // Set apps using given filter e.g. upcoming, live etc
+    // Set trades using given filter e.g. expired, live etc
     getAccessTokenSilently().then(accessToken => {
       fetchTrades(accessToken, setTrades, filter);
     })
@@ -146,12 +159,23 @@ function InvestorPageContainer(props: InvestorPageContainerProps) {
     setInvestorPageNav(InvestorPageNav.SELECTION);
   }
 
-  const enterManageTrade = (tradeId: number, app_id: number) => {
+  const enterManageTrade = (tradeId: number, app_id: number, addr: string) => {
+    // Switch of account if neccessary
+    if (selectedAccount &&
+      selectedAccount.address !== addr &&
+      window.confirm(`The selected account will be switched to the one with the trade offer`)
+    ) {
+      getAccountInformation(addr).then(acc => setSelectedAccount(acc));
+    }
+
+
     setInvestorPageNav(InvestorPageNav.MANAGE_TRADE);
     const newTrade = getTrade(tradeId);
     setTrade(newTrade);
+
+    // Fetch and set app
     getAccessTokenSilently().then(accessToken => {
-      fetchApp(accessToken, setApp, app_id); // This fetches and sets app
+      fetchApp(accessToken, setApp, app_id);
     });
   }
 
@@ -247,6 +271,7 @@ const mapStateToProps = (state: any) => ({
 });
 
 const mapDispatchToProps = {
+  setSelectedAccount,
   setApps,
   setTrades,
   setMainAppGlobalState,

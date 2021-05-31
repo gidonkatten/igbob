@@ -9,7 +9,7 @@ import {
   selectedAccountSelector,
   stablecoinBalanceSelector
 } from '../redux/selectors/userSelector';
-import { formatStablecoin } from '../utils/Utils';
+import { formatAlgoDecimalNumber } from '../utils/Utils';
 import Button from '@material-ui/core/Button';
 import Typography from '@material-ui/core/Typography';
 
@@ -90,7 +90,7 @@ function DashboardPage(props: DashboardPageProps) {
         {selectedAccount && optedIntoStablecoin ?
           <div>
             <Typography variant="body1" gutterBottom>
-              Current balance is ${formatStablecoin(stablecoinBalance)}
+              Current balance is ${formatAlgoDecimalNumber(stablecoinBalance)}
             </Typography>
             <form onSubmit={handleSubmit}>
               <Typography variant="body1" gutterBottom>

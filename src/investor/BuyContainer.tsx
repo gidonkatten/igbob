@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Grid from '@material-ui/core/Grid';
 import FormControl from '@material-ui/core/FormControl';
 import Button from '@material-ui/core/Button';
-import { formatStablecoin } from '../utils/Utils';
+import { formatAlgoDecimalNumber } from '../utils/Utils';
 import { buyBond } from '../algorand/bond/Buy';
 import { getAccountInformation, getAssetBalance } from '../algorand/account/Account';
 import { App } from '../redux/types';
@@ -15,7 +15,7 @@ import {
   selectedAccountSelector
 } from '../redux/selectors/userSelector';
 import TextField from '@material-ui/core/TextField';
-import { AlgoNumberInput } from '../common/AlgoNumberInput';
+import { AlgoNumberInput } from '../common/NumberInput';
 
 interface StateProps {
   selectedAccount?: UserAccount;
@@ -54,15 +54,16 @@ function BuyContainer(props: BuyProps) {
   const canBuy = () => {
     if (!app) return false;
 
-    return inBuyWindow && getOptedIntoBond(app.bond_id);
+    return inBuyWindow && getOptedIntoBond(app.bond_id) && noOfBondsToBuy !== 0;
   }
 
   const buyTooltip = () => {
     if (!app) return undefined;
 
     let err = '';
-    if (!inBuyWindow) err = err.concat('Not in buy window\n')
-    if (!getOptedIntoBond(app.bond_id)) err = err.concat('Have not opted into bond\n')
+    if (!inBuyWindow) err = err.concat('Not in buy window\n');
+    if (!getOptedIntoBond(app.bond_id)) err = err.concat('Have not opted into bond\n');
+    if (noOfBondsToBuy === 0) err = err.concat('Must specify more than 0 bonds\n');
     return err;
   }
 
@@ -75,7 +76,7 @@ function BuyContainer(props: BuyProps) {
       app.bond_id,
       app.bond_escrow_address,
       app.bond_escrow_program,
-      noOfBondsToBuy,
+      noOfBondsToBuy * 1e6,
       app.bond_cost
     );
 
@@ -108,11 +109,11 @@ function BuyContainer(props: BuyProps) {
             color="primary"
             fullWidth
             style={{ textTransform: 'none' }}
-            disabled={!canBuy() || noOfBondsToBuy === 0}
+            disabled={!canBuy()}
             onClick={handleBuy}
           >
-            You own {bondBalance} bonds <br/>
-            BUY {noOfBondsToBuy} bonds for ${formatStablecoin(noOfBondsToBuy * app.bond_cost)}
+            You own {formatAlgoDecimalNumber(bondBalance)} bonds <br/>
+            BUY {noOfBondsToBuy} bonds for ${(noOfBondsToBuy * app.bond_cost).toFixed(6)}
           </Button>
         </div>
       </Grid>

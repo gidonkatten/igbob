@@ -24,7 +24,7 @@ export function Selection(props: SelectionProps) {
           style={{ textTransform: 'none' }}
           onClick={() => enterAppsTable(FETCH_APPS_FILTER.SALE)}
         >
-          Bonds For Sale From Issuer
+          Bonds For Sale
         </Button>
       </Grid>
 
@@ -36,7 +36,7 @@ export function Selection(props: SelectionProps) {
           style={{ textTransform: 'none' }}
           onClick={() => enterAppsTable(FETCH_APPS_FILTER.LIVE)}
         >
-          Active Bonds
+          Ongoing Bonds
         </Button>
       </Grid>
 

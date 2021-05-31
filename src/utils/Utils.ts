@@ -25,7 +25,7 @@ export function convertUnixTimeToTime(unixTime: number): string {
 /**
  * Format stablecoin
  */
-export function formatStablecoin(amount: number | bigint): string {
+export function formatAlgoDecimalNumber(amount: number | bigint): string {
   return (amount as number / 1e6).toFixed(6);
 }
 

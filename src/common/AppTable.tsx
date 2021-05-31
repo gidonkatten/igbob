@@ -2,8 +2,8 @@ import { DataGrid, GridCellParams } from '@material-ui/data-grid';
 import React from 'react';
 import { appsTableSelector } from '../redux/selectors/bondSelector';
 import { connect } from 'react-redux';
-import { AppsTable, AppsTableElem } from '../redux/types';
-import { formatStablecoin } from '../utils/Utils';
+import { AppsTable } from '../redux/types';
+import { formatAlgoDecimalNumber } from '../utils/Utils';
 
 interface StateProps {
   appsTable: AppsTable
@@ -21,7 +21,7 @@ function AppTable(props: AppListProps) {
   const { appsTable, onClick } = props;
 
   const renderPrice = (params: GridCellParams) => (
-    <>${formatStablecoin(params.value as number)}</>
+    <>${formatAlgoDecimalNumber(params.value as number)}</>
   );
 
   return (

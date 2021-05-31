@@ -4,19 +4,21 @@ import FormControl from '@material-ui/core/FormControl';
 import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
-import { AlgoNumberInput } from '../common/AlgoNumberInput';
 import {
   getAppLocalTradeSelector,
   getBondBalanceSelector,
-  getOptedIntoAppSelector, selectedAccountSelector
+  getOptedIntoAppSelector,
+  selectedAccountSelector
 } from '../redux/selectors/userSelector';
 import { App } from '../redux/types';
 import { UserAccount } from '../redux/reducers/userReducer';
 import { KeyboardDateTimePicker } from '@material-ui/pickers';
-import { StablecoinInput } from '../common/StablecoinInput';
+import { AlgoNumberInput, StableCoinInputNoDecimal } from '../common/NumberInput';
 import { setTrade, signTradeLSig } from '../algorand/bond/Trade';
 import { useAuth0 } from '@auth0/auth0-react';
-import { convertDateToUnixTime } from '../utils/Utils';
+import { convertDateToUnixTime, formatAlgoDecimalNumber } from '../utils/Utils';
+import { getAccountInformation } from '../algorand/account/Account';
+import { setSelectedAccount } from '../redux/actions/actions';
 
 interface StateProps {
   selectedAccount?: UserAccount;
@@ -26,6 +28,7 @@ interface StateProps {
 }
 
 interface DispatchProps {
+  setSelectedAccount: typeof setSelectedAccount
 }
 
 interface OwnProps {
@@ -34,7 +37,7 @@ interface OwnProps {
 
 type TradeProps = StateProps & DispatchProps & OwnProps;
 
-function TradeContainer(props: TradeProps) {
+function TradeSellContainer(props: TradeProps) {
 
   const [noOfBonds, setNoOfBonds] = useState<number>(0);
   const [price, setPrice] = useState<number>(0);
@@ -45,6 +48,7 @@ function TradeContainer(props: TradeProps) {
     selectedAccount,
     getBondBalance,
     getAppLocalTrade,
+    setSelectedAccount,
   } = props;
   const { getAccessTokenSilently } = useAuth0();
 
@@ -72,8 +76,12 @@ function TradeContainer(props: TradeProps) {
     await setTrade(
       app.app_id,
       selectedAccount.address,
-      noOfBonds,
+      noOfBonds * 1e6,
     );
+
+    // Update max no of bonds to be traded
+    const userAccount = await getAccountInformation(selectedAccount.address);
+    setSelectedAccount(userAccount);
   };
 
   const handleGenTradeLSig = async () => {
@@ -84,7 +92,7 @@ function TradeContainer(props: TradeProps) {
     headers.append("Content-Type", "application/json");
     headers.append("Authorization", `Bearer ${accessToken}`);
 
-    const genTradeResponse = await fetch("https://igbob.herokuapp.com/trade/generate-trade", {
+    const genTradeResponse = await fetch("https://igbob.herokuapp.com/trades/generate-trade", {
       method: "POST",
       headers: headers,
       body: JSON.stringify({
@@ -92,7 +100,7 @@ function TradeContainer(props: TradeProps) {
         "mainAppId": app.app_id,
         "bondId": app.bond_id,
         "expiry": convertDateToUnixTime(expiryDate!),
-        "price": price * 1000000,
+        "price": price,
       })
     });
 
@@ -102,7 +110,7 @@ function TradeContainer(props: TradeProps) {
       selectedAccount.address
     );
 
-    await fetch("https://igbob.herokuapp.com/trade/add-trade-lsig", {
+    await fetch("https://igbob.herokuapp.com/trades/add-trade-lsig", {
       method: "POST",
       headers: headers,
       body: JSON.stringify({
@@ -138,7 +146,7 @@ function TradeContainer(props: TradeProps) {
           disabled={!canTrade()}
           onClick={handleSetTrade}
         >
-          Currently Up To {getAppLocalTrade(app.app_id)} Of Your Bonds Can Be Traded<br/>
+          Currently Up To {formatAlgoDecimalNumber(getAppLocalTrade(app.app_id))} Of Your Bonds Can Be Traded<br/>
           Set Max No. of Bonds To Trade To {noOfBonds}
         </Button>
       </Grid>
@@ -148,11 +156,11 @@ function TradeContainer(props: TradeProps) {
         <TextField
           label="Price Per Bond:"
           value={price}
-          onChange={e => setPrice(Number(e.target.value))}
+          onChange={e => setPrice(parseInt(e.target.value))}
           required
           fullWidth
           InputLabelProps={{ required: false }}
-          InputProps={{ inputComponent: StablecoinInput }}
+          InputProps={{ inputComponent: StableCoinInputNoDecimal }}
         />
       </Grid>
 
@@ -194,6 +202,7 @@ const mapStateToProps = (state: any) => ({
 });
 
 const mapDispatchToProps = {
+  setSelectedAccount,
 };
 
-export default connect<StateProps, DispatchProps, OwnProps>(mapStateToProps, mapDispatchToProps)(TradeContainer);
+export default connect<StateProps, DispatchProps, OwnProps>(mapStateToProps, mapDispatchToProps)(TradeSellContainer);

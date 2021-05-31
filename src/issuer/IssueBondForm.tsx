@@ -11,7 +11,7 @@ import Input from '@material-ui/core/Input';
 import TextField from '@material-ui/core/TextField';
 import { KeyboardDateTimePicker } from "@material-ui/pickers";
 import * as algosdk from 'algosdk';
-import { StablecoinInput } from '../common/StablecoinInput';
+import { AlgoNumberInput, StableCoinInputNoDecimal } from '../common/NumberInput';
 
 interface StateProps {
   selectedAccount?: UserAccount;
@@ -56,7 +56,7 @@ function IssueBondForm(props: IssueBondFormProps) {
     const sbd = convertDateToUnixTime(startBuyDate!);
     const ebd = convertDateToUnixTime(endBuyDate!);
     const md = convertDateToUnixTime(maturityDate!);
-    const period = numCouponPayments === 0 ? (md - ebd) : ((md - ebd) / numCouponPayments);
+    const period = numCouponPayments === 0 ? (md - ebd) : Math.round((md - ebd) / numCouponPayments);
 
     const response = await fetch("https://igbob.herokuapp.com/apps/create-app", {
       method: "POST",
@@ -66,16 +66,16 @@ function IssueBondForm(props: IssueBondFormProps) {
         "description": des,
         "bondUnitName": "TB",
         "bondName": "TestBond",
-        "totalIssuance": totalIssuance,
+        "totalIssuance": totalIssuance * 1e6,
         "issuerAddr": selectedAccount.address,
         "greenVerifierAddr": greenVerifierAddr,
         "bondLength": numCouponPayments,
         "period": period,
         "startBuyDate": sbd,
         "endBuyDate": ebd,
-        "bondCost": bondCost * 1000000,
-        "bondCoupon": bondCoupon * 1000000,
-        "bondPrincipal": bondPrincipal * 1000000
+        "bondCost": bondCost, // Per .000001 bond
+        "bondCoupon": bondCoupon, // Per .000001 bond
+        "bondPrincipal": bondPrincipal, // Per .000001 bond
       })
     });
 
@@ -141,14 +141,14 @@ function IssueBondForm(props: IssueBondFormProps) {
       {/*Row split into halves*/}
       <div style={{ margin: '8px 0px', width: '100%' }}>
         <FormControl style={{ width: '50%', paddingRight: '4px' }}>
-          <InputLabel>No. of Bonds To Mint:</InputLabel>
-          <Input
+          <TextField
+            label="No. of Bonds To Mint:"
             value={totalIssuance}
-            onChange={e => setTotalIssuance(parseInt(e.target.value))}
-            type="number"
-            name="totalIssuance"
+            onChange={e => setTotalIssuance(Number(e.target.value))}
             required
-            inputProps={{ min: 0 }}
+            fullWidth
+            InputLabelProps={{ required: false }}
+            InputProps={{ inputComponent: AlgoNumberInput }}
           />
         </FormControl>
 
@@ -210,31 +210,31 @@ function IssueBondForm(props: IssueBondFormProps) {
         <TextField
           label="Bond Cost:"
           value={bondCost}
-          onChange={e => setBondCost(Number(e.target.value))}
+          onChange={e => setBondCost(parseInt(e.target.value))}
           required
           InputLabelProps={{ required: false }}
-          InputProps={{ inputComponent: StablecoinInput }}
+          InputProps={{ inputComponent: StableCoinInputNoDecimal }}
           style={{ width: '33.33%', paddingRight: '4px' }}
         />
 
         <TextField
           label="Bond Coupon:"
           value={numCouponPayments === 0 ? 0 : bondCoupon}
-          onChange={e => setBondCoupon(Number(e.target.value))}
+          onChange={e => setBondCoupon(parseInt(e.target.value))}
           disabled={numCouponPayments === 0}
           required
           InputLabelProps={{ required: false }}
-          InputProps={{ inputComponent: StablecoinInput }}
+          InputProps={{ inputComponent: StableCoinInputNoDecimal }}
           style={{ width: '33.33%', paddingRight: '4px', paddingLeft: '4px' }}
         />
 
         <TextField
           label="Bond Principal:"
           value={bondPrincipal}
-          onChange={e => setBondPrincipal(Number(e.target.value))}
+          onChange={e => setBondPrincipal(parseInt(e.target.value))}
           required
           InputLabelProps={{ required: false }}
-          InputProps={{ inputComponent: StablecoinInput }}
+          InputProps={{ inputComponent: StableCoinInputNoDecimal }}
           style={{ width: '33.33%', paddingLeft: '4px' }}
         />
 
