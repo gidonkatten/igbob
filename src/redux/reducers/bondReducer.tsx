@@ -1,8 +1,8 @@
 import { App, Trade } from '../types';
 
 interface BondState {
-  apps: Map<number, App>,
-  trades: Map<number, Trade>,
+  apps: Map<number, App>;
+  trades: Map<number, Trade>;
 }
 
 const initialState: BondState = {
