@@ -7,12 +7,12 @@ export interface UserAccount {
   appsLocalState: Map<number, AppState>; // appId -> localStateKey -> localStateValue
 }
 
-interface InvestorState {
+interface UserState {
   addresses: string[];
   selectedAccount?: UserAccount;
 }
 
-const initialState: InvestorState = {
+const initialState: UserState = {
   addresses: [],
 };
 

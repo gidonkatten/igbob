@@ -70,9 +70,9 @@ function IssuerPageContainer(props: IssuerPageContainerProps) {
   ) : undefined;
 
   const uploadText = (): string => {
-    if (reportRatingRound === undefined) return '';
-    if (reportRatingRound === 0) return 'Use of Proceeds'
-    return 'Report ' + reportRatingRound;
+    if (reportRatingRound === undefined) return 'Upload PDF Not Available At This Time';
+    if (reportRatingRound === 0) return 'Upload PDF For Use of Proceeds'
+    return 'Upload PDF For Report ' + reportRatingRound;
   }
 
   const uploadToIPFS = async (event: any) => {

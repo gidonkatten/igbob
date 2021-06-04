@@ -1,8 +1,7 @@
 import React from 'react';
 import AppList from '../common/AppTable';
-import { UserAccount } from '../redux/reducers/userReducer';
 import Rating from '@material-ui/lab/Rating';
-import { App, AppsTableElem } from '../redux/types';
+import { App } from '../redux/types';
 import Button from '@material-ui/core/Button';
 import { BackButton } from '../common/BackButton';
 import IPFSFileListContainer from '../common/IPFSFileListContainer';
@@ -65,7 +64,7 @@ export function GreenVerifierPage(props: GreenVerifierPageProps) {
           onClick={handleRate}
           disabled={rating === 0 || reportRatingRound === undefined}
         >
-          Add Rating {rateText}
+          {rateText}
         </Button>
       </div>
 

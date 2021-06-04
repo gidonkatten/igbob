@@ -78,7 +78,7 @@ export function IssuerPage(props: IssuerPageProps) {
         onChange={uploadToIPFS}
         disabled={reportRatingRound === undefined}
       >
-        Upload PDF For {uploadText}
+        {uploadText}
         <input type="file" accept="application/pdf" hidden/>
       </Button>
 

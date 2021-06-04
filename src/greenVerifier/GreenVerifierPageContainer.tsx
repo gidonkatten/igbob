@@ -68,9 +68,9 @@ function GreenVerifierPageContainer(props: GreenVerifierPageContainerProps) {
   }
 
   const rateText = (): string => {
-    if (reportRatingRound === undefined) return 'Not Available At This Time';
-    if (reportRatingRound === 0) return 'For Use of Proceeds'
-    return 'For Report ' + reportRatingRound;
+    if (reportRatingRound === undefined) return 'Add Rating Not Available At This Time';
+    if (reportRatingRound === 0) return 'Add Rating For Use of Proceeds'
+    return 'Add Rating For Report ' + reportRatingRound;
   }
 
   const enterAppView = (appId: number) => {
