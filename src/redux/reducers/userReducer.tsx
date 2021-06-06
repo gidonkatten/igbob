@@ -1,11 +1,4 @@
-import { AppState } from '../types';
-
-export interface UserAccount {
-  address: string;
-  algoBalance: number | bigint;
-  assets: Map<number, number | bigint>; // assetId -> amount
-  appsLocalState: Map<number, AppState>; // appId -> localStateKey -> localStateValue
-}
+import { UserAccount } from '../types';
 
 interface UserState {
   addresses: string[];

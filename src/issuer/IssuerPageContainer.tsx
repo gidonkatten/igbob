@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
-import { UserAccount } from '../redux/reducers/userReducer';
 import { selectedAccountSelector } from '../redux/selectors/userSelector';
-import { App } from '../redux/types';
+import { App, UserAccount } from '../redux/types';
 import { getAppSelector } from '../redux/selectors/bondSelector';
 import { IPFSAlgoWrapper } from '../ipfs/IPFSAlgoWrapper';
 import { getReportRatingRound } from '../investor/Utils';

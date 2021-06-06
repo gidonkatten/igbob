@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { connect } from 'react-redux';
 import { useAuth0 } from '@auth0/auth0-react';
 import Button from '@material-ui/core/Button';
-import { UserAccount } from '../redux/reducers/userReducer';
 import { selectedAccountSelector } from '../redux/selectors/userSelector';
 import { convertDateToUnixTime } from '../utils/Utils';
 import FormControl from '@material-ui/core/FormControl';
@@ -12,6 +11,7 @@ import TextField from '@material-ui/core/TextField';
 import { KeyboardDateTimePicker } from "@material-ui/pickers";
 import * as algosdk from 'algosdk';
 import { AlgoNumberInput, StableCoinInputNoDecimal } from '../common/NumberInput';
+import { UserAccount } from '../redux/types';
 
 interface StateProps {
   selectedAccount?: UserAccount;
@@ -36,16 +36,24 @@ function IssueBondForm(props: IssueBondFormProps) {
   const [bondCoupon, setBondCoupon] = useState<number>(0);
   const [bondPrincipal, setBondPrincipal] = useState<number>(0);
   const [greenVerifierAddr, setGreenVerifierAddr] = useState<string>('');
+  const [financialRegulatorAddr, setFinancialRegulatorAddr] = useState<string>('');
 
   const { selectedAccount } = props;
   const { getAccessTokenSilently } = useAuth0();
 
-  const isValidAddr = greenVerifierAddr ? algosdk.isValidAddress(greenVerifierAddr) : true;
+  const isGreenVerifierAddrValid = greenVerifierAddr ? algosdk.isValidAddress(greenVerifierAddr) : true;
+  const isFinancialRegulatorAddrValid = greenVerifierAddr ? algosdk.isValidAddress(financialRegulatorAddr) : true;
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
 
-    if (!selectedAccount || !startBuyDate || !endBuyDate || numCouponPayments === undefined || !isValidAddr) return;
+    if (!selectedAccount ||
+      !startBuyDate ||
+      !endBuyDate ||
+      numCouponPayments === undefined ||
+      !isGreenVerifierAddrValid ||
+      !isFinancialRegulatorAddrValid
+    ) return;
 
     const accessToken = await getAccessTokenSilently();
 
@@ -69,6 +77,7 @@ function IssueBondForm(props: IssueBondFormProps) {
         "totalIssuance": totalIssuance * 1e6,
         "issuerAddr": selectedAccount.address,
         "greenVerifierAddr": greenVerifierAddr,
+        "financialRegulatorAddr": financialRegulatorAddr,
         "bondLength": numCouponPayments,
         "period": period,
         "startBuyDate": sbd,
@@ -127,13 +136,25 @@ function IssueBondForm(props: IssueBondFormProps) {
       />
 
       <TextField
-        error={!isValidAddr}
+        error={!isGreenVerifierAddrValid}
         label="Green Verifier Address:"
         value={greenVerifierAddr}
         onChange={e => setGreenVerifierAddr(e.target.value)}
         required
         fullWidth
-        helperText={!isValidAddr ? "Invalid address" : undefined}
+        helperText={!isGreenVerifierAddrValid ? "Invalid address" : undefined}
+        InputLabelProps={{ required: false }}
+        style={{ margin: '8px 0px' }}
+      />
+
+      <TextField
+        error={!isFinancialRegulatorAddrValid}
+        label="Financial regulator Address:"
+        value={financialRegulatorAddr}
+        onChange={e => setFinancialRegulatorAddr(e.target.value)}
+        required
+        fullWidth
+        helperText={!isFinancialRegulatorAddrValid ? "Invalid address" : undefined}
         InputLabelProps={{ required: false }}
         style={{ margin: '8px 0px' }}
       />

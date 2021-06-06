@@ -10,8 +10,7 @@ import {
   getOptedIntoBondSelector,
   selectedAccountSelector
 } from '../redux/selectors/userSelector';
-import { App, AppState, Trade } from '../redux/types';
-import { UserAccount } from '../redux/reducers/userReducer';
+import { App, AppState, Trade, UserAccount } from '../redux/types';
 import { AlgoNumberInput } from '../common/NumberInput';
 import { tradeBond } from '../algorand/bond/Trade';
 import { formatAlgoDecimalNumber } from '../utils/Utils';

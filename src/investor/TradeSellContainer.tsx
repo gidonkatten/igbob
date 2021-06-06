@@ -10,8 +10,7 @@ import {
   getOptedIntoAppSelector,
   selectedAccountSelector
 } from '../redux/selectors/userSelector';
-import { App } from '../redux/types';
-import { UserAccount } from '../redux/reducers/userReducer';
+import { App, UserAccount } from '../redux/types';
 import { KeyboardDateTimePicker } from '@material-ui/pickers';
 import { AlgoNumberInput, StableCoinInputNoDecimal } from '../common/NumberInput';
 import { setTrade, signTradeLSig } from '../algorand/bond/Trade';

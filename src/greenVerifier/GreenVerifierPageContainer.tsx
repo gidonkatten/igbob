@@ -2,8 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { selectedAccountSelector } from '../redux/selectors/userSelector';
 import { getAppSelector } from '../redux/selectors/bondSelector';
-import { UserAccount } from '../redux/reducers/userReducer';
-import { App } from '../redux/types';
+import { App, UserAccount } from '../redux/types';
 import { algodClient } from '../algorand/utils/Utils';
 import { extractManageAppState } from '../utils/Utils';
 import { setApps, setManageAppGlobalState } from '../redux/actions/actions';
@@ -65,6 +64,7 @@ function GreenVerifierPageContainer(props: GreenVerifierPageContainerProps) {
     if (!selectedAccount || !app || !rating) return;
     await rate(app.manage_app_id, selectedAccount.address, rating);
 
+    // Update ratings
     algodClient.getApplicationByID(app.manage_app_id).do().then(manageApp => {
       setManageAppGlobalState(app.app_id, extractManageAppState(manageApp.params['global-state']));
     })

@@ -1,5 +1,18 @@
 export type AppState = Map<string, number | bigint | string | Uint8Array>;
 
+export interface UserAccount {
+  address: string;
+  algoBalance: number | bigint;
+  assets: Map<number, number | bigint>; // assetId -> amount
+  appsLocalState: Map<number, AppState>; // appId -> localStateKey -> localStateValue
+}
+
+export interface AppAddress {
+  addr: string,
+  frozen: boolean,
+  bondBalance: number,
+}
+
 export interface App {
   app_id: number;
   app_global_state?: AppState;

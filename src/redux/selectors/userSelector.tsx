@@ -65,3 +65,12 @@ export const getAppLocalTradeSelector = state => appId => {
   return getStateValue("Trade", localState);
 }
 
+export const getAppLocalFrozenSelector = state => appId => {
+  const appsLocalState: Map<number, AppState> = state.userReducer.selectedAccount.appsLocalState;
+
+  if (!appsLocalState.has(appId)) return true;
+
+  const localState: AppState = appsLocalState.get(appId)!;
+  return getStateValue("Trade", localState) === 0;
+}
+

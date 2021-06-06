@@ -3,8 +3,7 @@ import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
 import { formatAlgoDecimalNumber } from '../utils/Utils';
 import { getAccountInformation, getAssetBalance, getStablecoinBalance } from '../algorand/account/Account';
-import { App } from '../redux/types';
-import { UserAccount } from '../redux/reducers/userReducer';
+import { App, UserAccount } from '../redux/types';
 import { connect } from 'react-redux';
 import { setSelectedAccount } from '../redux/actions/actions';
 import {

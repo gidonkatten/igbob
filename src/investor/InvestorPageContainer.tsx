@@ -14,17 +14,14 @@ import {
   getAssetBalance,
   getStablecoinBalance
 } from '../algorand/account/Account';
-import { UserAccount } from '../redux/reducers/userReducer';
-import { extractAppState, extractManageAppState } from '../utils/Utils';
-import { algodClient, indexerClient } from '../algorand/utils/Utils';
+import { indexerClient } from '../algorand/utils/Utils';
 import {
   CouponRound,
   Defaulted,
   getCouponRound,
   getHasDefaulted,
-  getStateValue
 } from './Utils';
-import { App, AppState, Trade } from '../redux/types';
+import { App, Trade, UserAccount } from '../redux/types';
 import { InvestorPage } from './InvestorPage';
 import { useAuth0 } from '@auth0/auth0-react';
 import {
@@ -197,39 +194,28 @@ function InvestorPageContainer(props: InvestorPageContainerProps) {
     );
     setCouponRound(round);
 
+    // TODO: MOVE TO FETCH APPS
     Promise.all(
       [
-        algodClient.getApplicationByID(app.app_id).do(),
-        algodClient.getApplicationByID(app.manage_app_id).do(),
         indexerClient.lookupAssetByID(app.bond_id).do(),
         getAccountInformation(app.bond_escrow_address),
         getAccountInformation(app.stablecoin_escrow_address)
       ]
-    ).then(([mainApp, manageApp, asset, bondEscrow, stablecoinEscrow]) => {
+    ).then(([asset, bondEscrow, stablecoinEscrow]) => {
 
-      const mainAppGlobalState: AppState = extractAppState(mainApp.params['global-state']);
-      const manageAppGlobalState: AppState = extractManageAppState(manageApp.params['global-state']);
       const bMinted = asset.asset.params.total;
       const bEscrowBalance = getAssetBalance(bondEscrow, app.bond_id);
       const sEscrowBalance = getStablecoinBalance(stablecoinEscrow);
 
-      const globalCouponRoundsPaid: number = getStateValue("CouponsPaid", mainAppGlobalState);
-      const reserve: number = getStateValue( "Reserve", mainAppGlobalState);
-
-      setMainAppGlobalState(app.app_id, mainAppGlobalState);
-      setManageAppGlobalState(app.app_id, manageAppGlobalState);
       setBondsMinted(bMinted);
       setBondEscrowBalance(bEscrowBalance);
       setStablecoinEscrowBalance(sEscrowBalance);
       setDefaulted(getHasDefaulted(
         app,
         round.round,
-        globalCouponRoundsPaid,
         sEscrowBalance as number,
         bEscrowBalance as number,
         bMinted,
-        manageAppGlobalState,
-        reserve,
       ));
     });
   }, [appId])

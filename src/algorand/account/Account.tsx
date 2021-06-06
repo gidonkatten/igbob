@@ -1,9 +1,8 @@
 import { algodClient, STABLECOIN_ID } from '../utils/Utils';
 import algosdk, { modelsv2 } from 'algosdk';
-import { UserAccount } from '../../redux/reducers/userReducer';
 import { ApplicationLocalState, TealKeyValue } from 'algosdk/dist/types/src/client/v2/algod/models/types';
 import { extractAppState } from '../../utils/Utils';
-import { AppState } from '../../redux/types';
+import { AppState, UserAccount } from '../../redux/types';
 
 export async function getAccountInformation(address: string): Promise<UserAccount> {
   const account: modelsv2.Account = await algodClient.accountInformation(address).do();

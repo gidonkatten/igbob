@@ -91,25 +91,25 @@ export function getMultiplier(rating: number): number {
 export function getHasDefaulted(
   app: App,
   couponRound: number,
-  globalCouponsPaid: number,
   stablecoinEscrowBalance: number,
   bondEscrowBalance: number,
   bondsMinted: number,
-  manageAppState: AppState,
-  reserve: number
 ): Defaulted | undefined {
+  const { app_global_state, manage_app_global_state, maturity_date, bond_coupon, bond_principal } = app;
+  const globalCouponRoundsPaid: number = getStateValue("CouponsPaid", app_global_state);
+  const reserve: number = getStateValue( "Reserve", app_global_state);
+
   // Not defaulted if have already started paying out the curr round
-  if (globalCouponsPaid === couponRound) return undefined;
+  if (globalCouponRoundsPaid === couponRound) return undefined;
 
   const currentTime: number = Date.now() / 1000;
 
-  const { maturity_date, bond_coupon, bond_principal } = app;
   const numBondsInCirculation = bondsMinted - bondEscrowBalance;
 
-  let round = globalCouponsPaid + 1;
+  let round = globalCouponRoundsPaid + 1;
   let totalOwed: number = reserve;
   for (; round <= couponRound; round++) {
-    const rating = getRatingFromState(round, manageAppState);
+    const rating = getRatingFromState(round, manage_app_global_state);
     const multiplier = getMultiplier(rating);
     totalOwed += Math.floor(bond_coupon * multiplier) * numBondsInCirculation;
     if (totalOwed > stablecoinEscrowBalance) {

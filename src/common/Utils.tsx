@@ -1,5 +1,6 @@
 import { App, Trade } from '../redux/types';
-import { setTrades } from '../redux/actions/actions';
+import { algodClient } from '../algorand/utils/Utils';
+import { extractAppState, extractManageAppState } from '../utils/Utils';
 
 export enum FETCH_APPS_FILTER {
   ALL = 'all',
@@ -9,6 +10,7 @@ export enum FETCH_APPS_FILTER {
   EXPIRED = 'expired',
   ISSUER = 'issuer',
   GREEN_VERIFIER = 'green-verifier',
+  FINANCIAL_REGULATOR = 'financial-regulator',
 }
 
 export async function fetchApps(
@@ -18,15 +20,28 @@ export async function fetchApps(
   addr?: string,
 ): Promise<void> {
   try {
-    const url: string = filter === FETCH_APPS_FILTER.ISSUER || filter === FETCH_APPS_FILTER.GREEN_VERIFIER ?
+    // Fetch and parse
+    const url: string = filter === FETCH_APPS_FILTER.ISSUER ||
+    filter === FETCH_APPS_FILTER.GREEN_VERIFIER ||
+    filter === FETCH_APPS_FILTER.FINANCIAL_REGULATOR  ?
       `https://igbob.herokuapp.com/apps/${filter}-apps/${addr}` :
       `https://igbob.herokuapp.com/apps/${filter}-apps`
-
     const response = await fetch(url, {
       headers: { Authorization: `Bearer ${accessToken}`},
     });
-    const parseResponse = await response.json();
-    setApps(parseResponse);
+    const apps: App[] = await response.json();
+
+    // Set global state of main and manage SSCs
+    apps.forEach(app => {
+      algodClient.getApplicationByID(app.app_id).do().then(mainApp => {
+        app.app_global_state = extractAppState(mainApp.params['global-state']);
+      });
+      algodClient.getApplicationByID(app.manage_app_id).do().then(manageApp => {
+        app.manage_app_global_state = extractManageAppState(manageApp.params['global-state']);
+      })
+    });
+
+    setApps(apps);
   } catch (err) {
     console.error(err.message);
   }
