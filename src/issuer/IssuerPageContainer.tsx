@@ -45,6 +45,9 @@ function IssuerPageContainer(props: IssuerPageContainerProps) {
     getAccessTokenSilently().then(accessToken => {
       fetchApps(accessToken, setApps, FETCH_APPS_FILTER.ISSUER, selectedAccount!.address);
     })
+
+    // Clean up
+    return () => { setApps([]) };
   }, [selectedAccount]);
 
   const enterAppView = (appId) => {

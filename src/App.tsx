@@ -3,6 +3,7 @@ import { Route, Switch } from 'react-router-dom';
 import IssuerPageContainer from "./issuer/IssuerPageContainer";
 import InvestorPageContainer from './investor/InvestorPageContainer';
 import GreenVerifierPageContainer from './greenVerifier/GreenVerifierPageContainer';
+import FinancialRegulatorPageContainer from './financialRegulator/FinancialRegulatorPageContainer';
 import HomePage from "./home/HomePage";
 import ProtectedRoute from "./auth/ProtectedRoute";
 import SettingsPage from "./settings/SettingsPage";
@@ -61,6 +62,7 @@ function App(props: AppProps) {
         <ProtectedRoute exact path="/issuer" component={IssuerPageContainer}/>
         <ProtectedRoute exact path="/investor" component={InvestorPageContainer}/>
         <ProtectedRoute exact path="/green-verifier" component={GreenVerifierPageContainer}/>
+        <ProtectedRoute exact path="/financial-regulator" component={FinancialRegulatorPageContainer}/>
         <ProtectedRoute exact path="/settings" component={SettingsPage}/>
         {/*Placed last to catch all unknown paths*/}
         <Route component={HomePage}/>

@@ -47,7 +47,10 @@ function GreenVerifierPageContainer(props: GreenVerifierPageContainerProps) {
 
     getAccessTokenSilently().then(accessToken => {
       fetchApps(accessToken, setApps, FETCH_APPS_FILTER.GREEN_VERIFIER, selectedAccount!.address);
-    })
+    });
+
+    // Clean up
+    return () => { setApps([]) };
   }, [selectedAccount]);
 
   const reportRatingRound: number | undefined = app ? getReportRatingRound(
