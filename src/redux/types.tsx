@@ -7,10 +7,10 @@ export interface UserAccount {
   appsLocalState: Map<number, AppState>; // appId -> localStateKey -> localStateValue
 }
 
-export interface AppAddress {
+export interface AppAccount {
   addr: string,
+  balance: number,
   frozen: boolean,
-  bondBalance: number,
 }
 
 export interface App {

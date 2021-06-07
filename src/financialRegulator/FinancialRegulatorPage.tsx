@@ -1,5 +1,5 @@
 import React from 'react';
-import { App, AppAddress } from '../redux/types';
+import { App, AppAccount } from '../redux/types';
 import Typography from '@material-ui/core/Typography';
 import AppList from '../common/AppTable';
 import { BackButton } from '../common/BackButton';
@@ -9,7 +9,7 @@ interface FinancialRegulatorPageProps {
   enterAppView: (appId: number) => void;
   exitAppView: () => void;
   app?: App;
-  appAddresses: AppAddress[];
+  appAccounts: AppAccount[];
 }
 
 export function FinancialRegulatorPage(props: FinancialRegulatorPageProps) {
@@ -19,7 +19,7 @@ export function FinancialRegulatorPage(props: FinancialRegulatorPageProps) {
     enterAppView,
     exitAppView,
     app,
-    appAddresses,
+    appAccounts,
   } = props;
 
   const appsList = (

@@ -2,11 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { selectedAccountSelector } from '../redux/selectors/userSelector';
 import { getAppSelector } from '../redux/selectors/bondSelector';
-import { App, AppAddress, UserAccount } from '../redux/types';
+import { App, AppAccount, UserAccount } from '../redux/types';
 import { setApps } from '../redux/actions/actions';
 import { FinancialRegulatorPage } from './FinancialRegulatorPage';
 import { FETCH_APPS_FILTER, fetchApps } from '../common/Utils';
 import { useAuth0 } from '@auth0/auth0-react';
+import { getAppAccounts } from '../algorand/account/Account';
 
 interface StateProps {
   selectedAccount?: UserAccount;
@@ -26,7 +27,7 @@ function FinancialRegulatorPageContainer(props: FinancialRegulatorPageContainerP
 
   const [inOverview, setInOverview] = useState<boolean>(true);
   const [app, setApp] = useState<App>();
-  const [appAddresses, setAppAddresses] = useState<AppAddress[]>([]);
+  const [appAccounts, setAppAccounts] = useState<AppAccount[]>([]);
 
   const {
     selectedAccount,
@@ -47,6 +48,14 @@ function FinancialRegulatorPageContainer(props: FinancialRegulatorPageContainerP
     return () => { setApps([]) };
   }, [selectedAccount]);
 
+  // On entering into new app
+  const appId = app ? app.app_id : 0;
+  useEffect(() => {
+    if (!app) return;
+    getAppAccounts(app.app_id, app.bond_id).then(accs => setAppAccounts(accs));
+  }, [appId]);
+
+
   const enterAppView = (appId: number) => {
     setInOverview(false);
     const newApp = getApp(appId);
@@ -64,7 +73,7 @@ function FinancialRegulatorPageContainer(props: FinancialRegulatorPageContainerP
       enterAppView={enterAppView}
       exitAppView={exitAppView}
       app={app}
-      appAddresses={appAddresses}
+      appAccounts={appAccounts}
     />
   );
 }

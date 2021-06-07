@@ -1,9 +1,13 @@
-import { algodClient, STABLECOIN_ID } from '../utils/Utils';
+import { algodClient, indexerClient, STABLECOIN_ID } from '../utils/Utils';
 import algosdk, { modelsv2 } from 'algosdk';
 import { ApplicationLocalState, TealKeyValue } from 'algosdk/dist/types/src/client/v2/algod/models/types';
 import { extractAppState } from '../../utils/Utils';
-import { AppState, UserAccount } from '../../redux/types';
+import { AppAccount, AppState, UserAccount } from '../../redux/types';
 
+/**
+ * Get account information using Algorand address
+ * Includes asset balances and applicaton local states
+ */
 export async function getAccountInformation(address: string): Promise<UserAccount> {
   const account: modelsv2.Account = await algodClient.accountInformation(address).do();
 
@@ -33,6 +37,48 @@ export async function getAccountInformation(address: string): Promise<UserAccoun
     assets,
     appsLocalState
   }
+}
+
+/**
+ * Get accounts opted into an app
+ */
+export async function getAppAccounts(appId: number, bondId: number): Promise<AppAccount[]> {
+  const addresses: AppAccount[] = [];
+
+  // Fetch opted in accounts
+  const res = await indexerClient.searchAccounts().applicationID(appId).do();
+  const accounts: modelsv2.Account[] = res.accounts;
+
+  accounts.forEach(acc => {
+
+    // Set balance
+    let balance: number = 0;
+    if (acc.assets) {
+      acc.assets.forEach(asset => {
+        if (asset['asset-id'] == bondId) balance = asset.amount as number;
+      });
+    }
+
+    // Set frozen
+    let frozen: boolean = true;
+    const appLocalStates: ApplicationLocalState[] | undefined = acc['apps-local-state'];
+    if (appLocalStates) {
+      appLocalStates.forEach(appLocalState => {
+        if (appLocalState.id == appId) {
+          const statePairs: TealKeyValue[] | undefined = appLocalState['key-value']
+          frozen = extractAppState(statePairs).get('Frozen') === 0;
+        }
+      });
+    }
+
+    addresses.push({
+      addr: acc.address,
+      balance,
+      frozen,
+    })
+  });
+
+  return addresses;
 }
 
 /**
