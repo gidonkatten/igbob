@@ -53,6 +53,7 @@ function TradeBuyContainer(props: TradeProps) {
     setTradeAvailableBalance,
   } = props;
 
+  const currentTime: number = Date.now() / 1000;
   const bondBalance: number = getBondBalance(app.bond_id) as number;
 
   const canTrade = () => {
@@ -61,6 +62,7 @@ function TradeBuyContainer(props: TradeProps) {
       noOfBondsToBuy <= trade.seller_balance &&
       getOptedIntoBond(app.bond_id) &&
       getOptedIntoApp(app.app_id) &&
+      currentTime < trade.expiry_date &&
       !trade.seller_frozen &&
       getStateValue('Frozen', app.app_global_state) > 0;
   }
@@ -73,6 +75,7 @@ function TradeBuyContainer(props: TradeProps) {
     if (noOfBondsToBuy > trade.seller_balance ) err = err.concat('Must be less than number of available bonds\n');
     if (!getOptedIntoBond(app.bond_id)) err = err.concat('Must be opted into bond\n');
     if (!getOptedIntoApp(app.app_id)) err = err.concat('Must be opted into app\n');
+    if (currentTime >= trade.expiry_date) err = err.concat("Trade offer has expired\n");
     if (trade.seller_frozen) err = err.concat("Seller's account is frozen\n");
     if (getStateValue('Frozen', app.app_global_state) === 0) err = err.concat('Your account is frozen\n');
     return err;
