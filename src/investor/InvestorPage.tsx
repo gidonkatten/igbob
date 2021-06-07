@@ -9,7 +9,6 @@ import IPFSFileListContainer from '../common/IPFSFileListContainer';
 import BuyContainer from './BuyContainer';
 import RegisterContainer from './RegisterContainer';
 import ClaimContainer from './ClaimContainer';
-import { CouponRound, Defaulted } from './Utils';
 import TradeSellContainer from './TradeSellContainer';
 import { InvestorPageNav } from './InvestorPageContainer';
 import { FETCH_APPS_FILTER, FETCH_MY_TRADES_FILTER, FETCH_TRADES_FILTER } from '../common/Utils';
@@ -34,13 +33,6 @@ interface InvestorPageProps {
   app?: App;
   trade?: Trade;
   selectedAccount?: UserAccount;
-  couponRound?: CouponRound;
-  defaulted?: Defaulted;
-  bondsMinted: number;
-  bondEscrowBalance: number | bigint;
-  setBondEscrowBalance: (balance: number | bigint) => void;
-  stablecoinEscrowBalance: number | bigint;
-  setStablecoinEscrowBalance: (balance: number | bigint) => void;
 }
 
 export function InvestorPage(props: InvestorPageProps) {
@@ -62,13 +54,6 @@ export function InvestorPage(props: InvestorPageProps) {
     app,
     trade,
     selectedAccount,
-    couponRound,
-    defaulted,
-    bondsMinted,
-    bondEscrowBalance,
-    setBondEscrowBalance,
-    stablecoinEscrowBalance,
-    setStablecoinEscrowBalance,
   } = props;
 
 
@@ -144,29 +129,15 @@ export function InvestorPage(props: InvestorPageProps) {
 
       <Typography variant="h5" gutterBottom>Purchase</Typography>
 
-      <BuyContainer
-        app={app}
-        setBondEscrowBalance={setBondEscrowBalance}
-      />
+      <BuyContainer app={app}/>
 
       <Typography variant="h5" gutterBottom>Trade</Typography>
 
-      <TradeSellContainer
-        app={app}
-      />
+      <TradeSellContainer app={app}/>
 
       <Typography variant="h5" gutterBottom>Claim Money</Typography>
 
-      <ClaimContainer
-        app={app}
-        couponRound={couponRound}
-        defaulted={defaulted}
-        bondsMinted={bondsMinted}
-        bondEscrowBalance={bondEscrowBalance}
-        setBondEscrowBalance={setBondEscrowBalance}
-        stablecoinEscrowBalance={stablecoinEscrowBalance}
-        setStablecoinEscrowBalance={setStablecoinEscrowBalance}
-      />
+      <ClaimContainer app={app}/>
 
     </>
   )

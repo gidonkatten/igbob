@@ -15,6 +15,16 @@ export const setApps = (apps: App[]) => ({
   payload: { apps }
 });
 
+export const setAppBondEscrowBalance = (appId: number, balance: number) => ({
+  type: "SET_APP_BOND_ESCROW_BALANCE",
+  payload: { appId, balance }
+});
+
+export const setAppStablecoinEscrowBalance = (appId: number, balance: number) => ({
+  type: "SET_APP_STABLECOIN_ESCROW_BALANCE",
+  payload: { appId, balance }
+});
+
 export const setTrades = (trades: Trade[]) => ({
   type: "SET_TRADES",
   payload: { trades }

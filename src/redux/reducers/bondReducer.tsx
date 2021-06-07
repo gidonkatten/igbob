@@ -20,6 +20,36 @@ export function bondReducer(state = initialState, action: any) {
         apps: appsMap
       };
     }
+    case "SET_APP_BOND_ESCROW_BALANCE": {
+      const { appId, balance } = action.payload;
+      const appsMap = state.apps;
+      const app = appsMap.get(appId);
+
+      if (!app) return state;
+
+      app.bond_escrow_balance = balance;
+      appsMap.set(appId, app);
+
+      return {
+        ...state,
+        apps: appsMap
+      };
+    }
+    case "SET_APP_STABLECOIN_ESCROW_BALANCE": {
+      const { appId, balance } = action.payload;
+      const appsMap = state.apps;
+      const app = appsMap.get(appId);
+
+      if (!app) return state;
+
+      app.stablecoin_escrow_balance = balance;
+      appsMap.set(appId, app);
+
+      return {
+        ...state,
+        apps: appsMap
+      };
+    }
     case "SET_TRADES": {
       const { trades } = action.payload;
       const tradesMap = new Map<number, Trade>(trades.map(trade => [trade.trade_id, trade]));
@@ -37,6 +67,7 @@ export function bondReducer(state = initialState, action: any) {
 
       trade.seller_balance = balance;
       trade.seller_frozen = frozen;
+      tradesMap.set(tradeId, trade);
 
       return {
         ...state,

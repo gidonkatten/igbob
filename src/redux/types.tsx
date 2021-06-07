@@ -1,3 +1,5 @@
+import { CouponRound, Defaulted } from '../investor/Utils';
+
 export type AppState = Map<string, number | bigint | string | Uint8Array>;
 
 export interface UserAccount {
@@ -23,10 +25,6 @@ export interface App {
   issuer_address: string;
   green_verifier_address: string;
   bond_id: number;
-  bond_escrow_address: string;
-  stablecoin_escrow_address: string;
-  bond_escrow_program: string;
-  stablecoin_escrow_program: string;
   bond_length: number;
   period: number;
   start_buy_date: number;
@@ -35,6 +33,15 @@ export interface App {
   bond_cost: number;
   bond_coupon: number;
   bond_principal: number;
+  bonds_minted?: number;
+  bond_escrow_address: string;
+  bond_escrow_program: string;
+  bond_escrow_balance?: number;
+  stablecoin_escrow_address: string;
+  stablecoin_escrow_program: string;
+  stablecoin_escrow_balance?: number;
+  coupon_round?: CouponRound;
+  defaulted?: Defaulted;
 }
 
 export interface AppsTableElem {

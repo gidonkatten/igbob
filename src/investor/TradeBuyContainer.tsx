@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { connect } from 'react-redux'
 import FormControl from '@material-ui/core/FormControl';
 import Grid from '@material-ui/core/Grid';
@@ -10,7 +10,7 @@ import {
   getOptedIntoBondSelector,
   selectedAccountSelector
 } from '../redux/selectors/userSelector';
-import { App, AppState, Trade, UserAccount } from '../redux/types';
+import { App, Trade, UserAccount } from '../redux/types';
 import { AlgoNumberInput } from '../common/NumberInput';
 import { tradeBond } from '../algorand/bond/Trade';
 import { formatAlgoDecimalNumber } from '../utils/Utils';
@@ -81,7 +81,7 @@ function TradeBuyContainer(props: TradeProps) {
     return err;
   }
 
-  const handleSetTrade= async () => {
+  const handleSetTrade = async () => {
     if (!selectedAccount) return;
 
     await tradeBond(

@@ -5,14 +5,14 @@ import { formatAlgoDecimalNumber } from '../utils/Utils';
 import { getAccountInformation, getAssetBalance, getStablecoinBalance } from '../algorand/account/Account';
 import { App, UserAccount } from '../redux/types';
 import { connect } from 'react-redux';
-import { setSelectedAccount } from '../redux/actions/actions';
+import { setAppBondEscrowBalance, setAppStablecoinEscrowBalance, setSelectedAccount } from '../redux/actions/actions';
 import {
   getAppLocalCouponRoundsPaidSelector,
   getBondBalanceSelector,
   getOptedIntoAppSelector,
   selectedAccountSelector
 } from '../redux/selectors/userSelector';
-import { CouponRound, Defaulted, getMultiplier, getRatingFromState, getStateValue } from './Utils';
+import { getMultiplier, getRatingFromState, getStateValue } from './Utils';
 import { claimCoupon } from '../algorand/bond/Coupon';
 import { claimPrincipal } from '../algorand/bond/Principal';
 import { claimDefault } from '../algorand/bond/Default';
@@ -26,17 +26,12 @@ interface StateProps {
 
 interface DispatchProps {
   setSelectedAccount: typeof setSelectedAccount;
+  setAppBondEscrowBalance: typeof setAppBondEscrowBalance;
+  setAppStablecoinEscrowBalance: typeof setAppStablecoinEscrowBalance;
 }
 
 interface OwnProps {
   app: App;
-  couponRound?: CouponRound;
-  defaulted?: Defaulted;
-  bondsMinted: number;
-  bondEscrowBalance: number | bigint;
-  setBondEscrowBalance: (balance: number | bigint) => void;
-  stablecoinEscrowBalance: number | bigint;
-  setStablecoinEscrowBalance: (balance: number | bigint) => void;
 }
 
 type ClaimProps = StateProps & DispatchProps & OwnProps;
@@ -45,18 +40,13 @@ function ClaimContainer(props: ClaimProps) {
 
   const {
     app,
-    couponRound,
-    defaulted,
-    bondsMinted,
-    bondEscrowBalance,
-    setBondEscrowBalance,
-    stablecoinEscrowBalance,
-    setStablecoinEscrowBalance,
-    setSelectedAccount,
+    selectedAccount,
     getBondBalance,
     getOptedIntoApp,
     getAppLocalCouponRoundsPaid,
-    selectedAccount,
+    setSelectedAccount,
+    setAppBondEscrowBalance,
+    setAppStablecoinEscrowBalance,
   } = props;
 
   const currentTime: number = Date.now() / 1000;
@@ -64,26 +54,26 @@ function ClaimContainer(props: ClaimProps) {
 
   // COUPON
   const canClaimCoupon = () => {
-    if (!app || !couponRound) return false;
+    if (!app || !app.coupon_round) return false;
 
     const couponRoundsPaid = getAppLocalCouponRoundsPaid(app.app_id);
-    const hasNotDefaulted = !defaulted || (defaulted && (couponRoundsPaid + 1 < defaulted.round));
+    const hasNotDefaulted = !app.defaulted || (app.defaulted && (couponRoundsPaid + 1 < app.defaulted.round));
 
-    return couponRound.round > couponRoundsPaid &&
+    return app.coupon_round.round > couponRoundsPaid &&
       bondBalance > 0 &&
       getOptedIntoApp(app.app_id) &&
       hasNotDefaulted &&
-      getStateValue('Frozen', app.app_global_state) === 0;
+      getStateValue('Frozen', app.app_global_state) > 0;
   }
 
   const couponTooltip = () => {
-    if (!app || !couponRound) return undefined;
+    if (!app || !app.coupon_round) return undefined;
 
     const localCouponRoundsPaid = getAppLocalCouponRoundsPaid(app.app_id);
-    const hasDefaulted = defaulted && (localCouponRoundsPaid + 1 === defaulted.round);
+    const hasDefaulted = app.defaulted && (localCouponRoundsPaid + 1 === app.defaulted.round);
 
     let err = '';
-    if (localCouponRoundsPaid >= couponRound.round) err = err.concat('Have collected all available coupons\n');
+    if (localCouponRoundsPaid >= app.coupon_round.round) err = err.concat('Have collected all available coupons\n');
     if (bondBalance === 0) err = err.concat('Do not own bond\n');
     if (!getOptedIntoApp(app.app_id)) err = err.concat('Have not opted into app\n');
     if (hasDefaulted) err = err.concat('Not enough funds to pay out money owed at this round\n');
@@ -113,7 +103,7 @@ function ClaimContainer(props: ClaimProps) {
 
     getAccountInformation(selectedAccount.address).then(acc => setSelectedAccount(acc));
     getAccountInformation(app.stablecoin_escrow_address).then(acc =>
-      setStablecoinEscrowBalance(getStablecoinBalance(acc))
+      setAppStablecoinEscrowBalance(app.app_id, getStablecoinBalance(acc) as number)
     )
   }
 
@@ -126,8 +116,8 @@ function ClaimContainer(props: ClaimProps) {
       bondBalance > 0 &&
       localCouponRoundsPaid >= app.bond_length &&
       getOptedIntoApp(app.app_id) &&
-      !defaulted &&
-      getStateValue('Frozen', app.app_global_state) === 0;
+      !app.defaulted &&
+      getStateValue('Frozen', app.app_global_state) > 0;
   }
 
   const principalTooltip = () => {
@@ -140,7 +130,7 @@ function ClaimContainer(props: ClaimProps) {
     if (bondBalance === 0) err = err.concat('Do not own bond\n');
     if (localCouponRoundsPaid < app.bond_length) err = err.concat('Have not collected all coupons\n');
     if (!getOptedIntoApp(app.app_id)) err = err.concat('Have not opted into app\n');
-    if (defaulted) err = err.concat('Not enough funds to pay out all money owed\n');
+    if (app.defaulted) err = err.concat('Not enough funds to pay out all money owed\n');
     if (getStateValue('Frozen', app.app_global_state) === 0) err = err.concat('Your account is frozen\n');
     return err;
   }
@@ -164,10 +154,10 @@ function ClaimContainer(props: ClaimProps) {
 
     getAccountInformation(selectedAccount.address).then(acc => setSelectedAccount(acc));
     getAccountInformation(app.stablecoin_escrow_address).then(acc =>
-      setStablecoinEscrowBalance(getStablecoinBalance(acc))
+      setAppStablecoinEscrowBalance(app.app_id, getStablecoinBalance(acc) as number)
     );
     getAccountInformation(app.bond_escrow_address).then(acc =>
-      setBondEscrowBalance(getAssetBalance(acc, app.bond_id))
+      setAppBondEscrowBalance(app.app_id, getAssetBalance(acc, app.bond_id) as number)
     );
   }
 
@@ -176,12 +166,12 @@ function ClaimContainer(props: ClaimProps) {
     if (!app) return undefined;
 
     const localCouponRoundsPaid = getAppLocalCouponRoundsPaid(app.app_id);
-    const hasDefaulted = defaulted && (localCouponRoundsPaid + 1 === defaulted.round);
+    const hasDefaulted = app.defaulted && (localCouponRoundsPaid + 1 === app.defaulted.round);
 
     return hasDefaulted &&
       bondBalance > 0 &&
       getOptedIntoApp(app.app_id) &&
-      getStateValue('Frozen', app.app_global_state) === 0;
+      getStateValue('Frozen', app.app_global_state) > 0;
   }
 
   const defaultTooltip = () => {
@@ -190,8 +180,8 @@ function ClaimContainer(props: ClaimProps) {
     const localCouponRoundsPaid = getAppLocalCouponRoundsPaid(app.app_id);
 
     let err = '';
-    if (!defaulted) err = err.concat('Enough funds to pay money owed\n');
-    if (defaulted && (localCouponRoundsPaid + 1 < defaulted.round)) err = err.concat('Have not collected all available coupons\n');
+    if (!app.defaulted) err = err.concat('Enough funds to pay money owed\n');
+    if (app.defaulted && (localCouponRoundsPaid + 1 < app.defaulted.round)) err = err.concat('Have not collected all available coupons\n');
     if (bondBalance === 0) err = err.concat('Do not own bond\n');
     if (!getOptedIntoApp(app.app_id)) err = err.concat('Have not opted into app\n');
     if (getStateValue('Frozen', app.app_global_state) === 0) err = err.concat('Your account is frozen\n');
@@ -199,10 +189,19 @@ function ClaimContainer(props: ClaimProps) {
   }
 
   const bondBalance: number = app ? (getBondBalance(app.bond_id) as number) : 0;
+  const defaultAmount = app && app.bonds_minted && app.bond_escrow_balance && app.stablecoin_escrow_balance ?
+    (bondBalance / (app.bonds_minted - app.bond_escrow_balance)) * app.stablecoin_escrow_balance :
+    0
+
 
   const handleClaimDefault = async (e: any) => {
     e.preventDefault();
-    if (!selectedAccount || !app) return;
+    if (!selectedAccount ||
+      !app ||
+      app.bonds_minted === undefined ||
+      app.bond_escrow_balance === undefined ||
+      app.stablecoin_escrow_balance === undefined
+    ) return;
 
     const reserve: number = getStateValue( "Reserve", app.app_global_state);
 
@@ -217,15 +216,15 @@ function ClaimContainer(props: ClaimProps) {
       app.stablecoin_escrow_address,
       app.stablecoin_escrow_program,
       bondBalance,
-      (1 / (bondsMinted - (bondEscrowBalance as number))) * ((stablecoinEscrowBalance as number) - reserve)
+      (1 / (app.bonds_minted - app.bond_escrow_balance)) * (app.stablecoin_escrow_balance - reserve)
     );
 
     getAccountInformation(selectedAccount.address).then(acc => setSelectedAccount(acc));
     getAccountInformation(app.stablecoin_escrow_address).then(acc =>
-      setStablecoinEscrowBalance(getStablecoinBalance(acc))
+      setAppStablecoinEscrowBalance(app.app_id, getStablecoinBalance(acc) as number)
     );
     getAccountInformation(app.bond_escrow_address).then(acc =>
-      setBondEscrowBalance(getAssetBalance(acc, app.bond_id))
+      setAppBondEscrowBalance(app.app_id, getAssetBalance(acc, app.bond_id) as number)
     );
   }
 
@@ -275,14 +274,14 @@ function ClaimContainer(props: ClaimProps) {
             disabled={!canClaimDefault()}
             onClick={handleClaimDefault}
           >
-            Stablecoin balance of bond escrow: ${formatAlgoDecimalNumber(stablecoinEscrowBalance)} <br/>
-            {defaulted ?
-              defaulted.isDueToPrincipal ?
-                ('Defaulted at principal payment owing $' + formatAlgoDecimalNumber(defaulted.owedAtRound) + '. ') :
-                ('Defaulted at coupon payment ' + defaulted.round + ' owing $' + formatAlgoDecimalNumber(defaulted.owedAtRound) + ". ") :
+            Stablecoin balance of bond escrow: ${formatAlgoDecimalNumber(app.stablecoin_escrow_balance === undefined ? 0 : app.stablecoin_escrow_balance)} <br/>
+            {app.defaulted ?
+              app.defaulted.isDueToPrincipal ?
+                ('Defaulted at principal payment owing $' + formatAlgoDecimalNumber(app.defaulted.owedAtRound) + '. ') :
+                ('Defaulted at coupon payment ' + app.defaulted.round + ' owing $' + formatAlgoDecimalNumber(app.defaulted.owedAtRound) + ". ") :
               undefined
             }
-            Can claim ${formatAlgoDecimalNumber((bondBalance / (bondsMinted - (bondEscrowBalance as number))) * (stablecoinEscrowBalance as number))} <br/>
+            Can claim ${formatAlgoDecimalNumber(defaultAmount)} <br/>
             CLAIM DEFAULT
           </Button>
         </div>
@@ -299,7 +298,9 @@ const mapStateToProps = (state: any) => ({
 });
 
 const mapDispatchToProps = {
-  setSelectedAccount
+  setSelectedAccount,
+  setAppBondEscrowBalance,
+  setAppStablecoinEscrowBalance,
 };
 
 export default connect<StateProps, DispatchProps, OwnProps>(mapStateToProps, mapDispatchToProps)(ClaimContainer);

@@ -1,4 +1,4 @@
-import { App, AppState } from '../redux/types';
+import { App } from '../redux/types';
 
 export interface CouponRound {
   round: number,
@@ -88,31 +88,41 @@ export function getMultiplier(rating: number): number {
 
 // Returns round and money owed then if defaulted
 // Returns undefined if has not defaulted
-export function getHasDefaulted(
-  app: App,
-  couponRound: number,
-  stablecoinEscrowBalance: number,
-  bondEscrowBalance: number,
-  bondsMinted: number,
-): Defaulted | undefined {
-  const { app_global_state, manage_app_global_state, maturity_date, bond_coupon, bond_principal } = app;
+export function getHasDefaulted(app: App): Defaulted | undefined {
+  const {
+    app_global_state,
+    manage_app_global_state,
+    maturity_date,
+    bond_coupon,
+    bond_principal,
+    coupon_round,
+    bonds_minted,
+    bond_escrow_balance,
+    stablecoin_escrow_balance,
+  } = app;
+  if (!coupon_round ||
+    bonds_minted === undefined ||
+    bond_escrow_balance === undefined ||
+    stablecoin_escrow_balance === undefined
+  ) return undefined;
+
   const globalCouponRoundsPaid: number = getStateValue("CouponsPaid", app_global_state);
   const reserve: number = getStateValue( "Reserve", app_global_state);
 
   // Not defaulted if have already started paying out the curr round
-  if (globalCouponRoundsPaid === couponRound) return undefined;
+  if (globalCouponRoundsPaid === coupon_round.round) return undefined;
 
   const currentTime: number = Date.now() / 1000;
 
-  const numBondsInCirculation = bondsMinted - bondEscrowBalance;
+  const numBondsInCirculation = bonds_minted - bond_escrow_balance;
 
   let round = globalCouponRoundsPaid + 1;
   let totalOwed: number = reserve;
-  for (; round <= couponRound; round++) {
+  for (; round <= coupon_round.round; round++) {
     const rating = getRatingFromState(round, manage_app_global_state);
     const multiplier = getMultiplier(rating);
     totalOwed += Math.floor(bond_coupon * multiplier) * numBondsInCirculation;
-    if (totalOwed > stablecoinEscrowBalance) {
+    if (totalOwed > stablecoin_escrow_balance) {
       return {
         round,
         owedAtRound: totalOwed,
@@ -123,7 +133,7 @@ export function getHasDefaulted(
 
   if (currentTime >= maturity_date) {
     totalOwed += bond_principal * numBondsInCirculation;
-    if (totalOwed > stablecoinEscrowBalance) {
+    if (totalOwed > stablecoin_escrow_balance) {
       return {
         round,
         owedAtRound: totalOwed,

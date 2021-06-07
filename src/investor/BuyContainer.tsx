@@ -7,7 +7,7 @@ import { buyBond } from '../algorand/bond/Buy';
 import { getAccountInformation, getAssetBalance } from '../algorand/account/Account';
 import { App, UserAccount } from '../redux/types';
 import { connect } from 'react-redux';
-import { setSelectedAccount } from '../redux/actions/actions';
+import { setAppBondEscrowBalance, setSelectedAccount } from '../redux/actions/actions';
 import {
   getBondBalanceSelector,
   getOptedIntoBondSelector,
@@ -25,11 +25,11 @@ interface StateProps {
 
 interface DispatchProps {
   setSelectedAccount: typeof setSelectedAccount;
+  setAppBondEscrowBalance: typeof setAppBondEscrowBalance;
 }
 
 interface OwnProps {
   app: App;
-  setBondEscrowBalance: (balance: number | bigint) => void;
 }
 
 type BuyProps = StateProps & DispatchProps & OwnProps;
@@ -40,11 +40,11 @@ function BuyContainer(props: BuyProps) {
 
   const {
     app,
-    setBondEscrowBalance,
     selectedAccount,
     getOptedIntoBond,
     getBondBalance,
-    setSelectedAccount
+    setSelectedAccount,
+    setAppBondEscrowBalance,
   } = props;
 
   const currentTime: number = Date.now() / 1000;
@@ -57,7 +57,7 @@ function BuyContainer(props: BuyProps) {
     return inBuyWindow &&
       getOptedIntoBond(app.bond_id) &&
       noOfBondsToBuy !== 0 &&
-      getStateValue('Frozen', app.app_global_state) === 0;
+      getStateValue('Frozen', app.app_global_state) > 0;
   }
 
   const buyTooltip = () => {
@@ -86,7 +86,7 @@ function BuyContainer(props: BuyProps) {
 
     getAccountInformation(selectedAccount.address).then(acc => setSelectedAccount(acc));
     getAccountInformation(app.bond_escrow_address).then(acc =>
-      setBondEscrowBalance(getAssetBalance(acc, app.bond_id) as number)
+      setAppBondEscrowBalance(app.app_id, getAssetBalance(acc, app.bond_id) as number)
     );
   }
 
@@ -132,7 +132,8 @@ const mapStateToProps = (state: any) => ({
 });
 
 const mapDispatchToProps = {
-  setSelectedAccount
+  setSelectedAccount,
+  setAppBondEscrowBalance,
 };
 
 export default connect<StateProps, DispatchProps, OwnProps>(mapStateToProps, mapDispatchToProps)(BuyContainer);

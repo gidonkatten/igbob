@@ -1,7 +1,13 @@
 import { App, Trade } from '../redux/types';
-import { algodClient } from '../algorand/utils/Utils';
+import { algodClient, indexerClient } from '../algorand/utils/Utils';
 import { extractAppState, extractManageAppState } from '../utils/Utils';
-import { getAppAccountTrade } from '../algorand/account/Account';
+import {
+  getAccountInformation,
+  getAppAccountTrade,
+  getAssetBalance,
+  getStablecoinBalance
+} from '../algorand/account/Account';
+import { getCouponRound, getHasDefaulted } from '../investor/Utils';
 
 export enum FETCH_APPS_FILTER {
   ALL = 'all',
@@ -30,16 +36,31 @@ export async function fetchApps(
     const response = await fetch(url, {
       headers: { Authorization: `Bearer ${accessToken}`},
     });
-    const apps: App[] = await response.json();
+    const parsedResponse = await response.json();
 
-    // Set global state of main and manage SSCs
-    apps.forEach(app => {
-      algodClient.getApplicationByID(app.app_id).do().then(mainApp => {
+    const apps = parsedResponse.map(app => {
+      // Set current coupon round
+      app.coupon_round = getCouponRound(app.end_buy_date, app.maturity_date, app.period, app.bond_length);
+
+      // Set ssc states, minted, balances and default
+      Promise.all(
+        [
+          algodClient.getApplicationByID(app.app_id).do(),
+          algodClient.getApplicationByID(app.manage_app_id).do(),
+          indexerClient.lookupAssetByID(app.bond_id).do(),
+          getAccountInformation(app.bond_escrow_address),
+          getAccountInformation(app.stablecoin_escrow_address)
+        ]
+      ).then(([mainApp, manageApp, asset, bondEscrow, stablecoinEscrow]) => {
         app.app_global_state = extractAppState(mainApp.params['global-state']);
-      });
-      algodClient.getApplicationByID(app.manage_app_id).do().then(manageApp => {
         app.manage_app_global_state = extractManageAppState(manageApp.params['global-state']);
-      })
+        app.bonds_minted = asset.asset.params.total as number;
+        app.bond_escrow_balance = getAssetBalance(bondEscrow, app.bond_id) as number;
+        app.stablecoin_escrow_balance = getStablecoinBalance(stablecoinEscrow) as number;
+        app.defaulted = getHasDefaulted(app);
+      });
+
+      return app;
     });
 
     setApps(apps);
@@ -85,7 +106,7 @@ export async function fetchTrades(
     const response = await fetch(`https://igbob.herokuapp.com/trades/${filter}-trades`, {
       headers: { Authorization: `Bearer ${accessToken}`},
     });
-    let parsedResponse = await response.json();
+    const parsedResponse = await response.json();
 
     // Set balance and frozen
     const trades = parsedResponse.map(async trade => {

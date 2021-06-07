@@ -1,26 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { connect } from 'react-redux'
 import {
   setApps,
-  setMainAppGlobalState,
-  setManageAppGlobalState,
   setSelectedAccount,
   setTrades
 } from '../redux/actions/actions';
 import { selectedAccountSelector } from '../redux/selectors/userSelector';
 import { getAppSelector, getTradesSelector } from '../redux/selectors/bondSelector';
-import {
-  getAccountInformation,
-  getAssetBalance,
-  getStablecoinBalance
-} from '../algorand/account/Account';
-import { indexerClient } from '../algorand/utils/Utils';
-import {
-  CouponRound,
-  Defaulted,
-  getCouponRound,
-  getHasDefaulted,
-} from './Utils';
+import { getAccountInformation } from '../algorand/account/Account';
 import { App, Trade, UserAccount } from '../redux/types';
 import { InvestorPage } from './InvestorPage';
 import { useAuth0 } from '@auth0/auth0-react';
@@ -28,7 +15,6 @@ import {
   FETCH_APPS_FILTER,
   FETCH_MY_TRADES_FILTER,
   FETCH_TRADES_FILTER,
-  fetchApp,
   fetchApps,
   fetchTrades
 } from '../common/Utils';
@@ -53,8 +39,6 @@ interface DispatchProps {
   setSelectedAccount: typeof setSelectedAccount;
   setApps: typeof setApps;
   setTrades: typeof setTrades;
-  setMainAppGlobalState: typeof setMainAppGlobalState;
-  setManageAppGlobalState: typeof setManageAppGlobalState;
 }
 
 interface OwnProps {}
@@ -64,15 +48,8 @@ type InvestorPageContainerProps = StateProps & DispatchProps & OwnProps;
 function InvestorPageContainer(props: InvestorPageContainerProps) {
 
   const [investorPageNav, setInvestorPageNav] = useState<InvestorPageNav>(InvestorPageNav.SELECTION);
-  const [app, setApp] = useState<App>();
+  const [appId, setAppId] = useState<number>();
   const [trade, setTrade] = useState<Trade>();
-
-  // Blockchain readings
-  const [bondsMinted, setBondsMinted] = useState<number>(0);
-  const [bondEscrowBalance, setBondEscrowBalance] = useState<number | bigint>(0);
-  const [stablecoinEscrowBalance, setStablecoinEscrowBalance] = useState<number | bigint>(0);
-  const [defaulted, setDefaulted] = useState<Defaulted | undefined>(undefined);
-  const [couponRound, setCouponRound] = useState<CouponRound | undefined>(undefined);
 
   const {
     selectedAccount,
@@ -81,8 +58,6 @@ function InvestorPageContainer(props: InvestorPageContainerProps) {
     setSelectedAccount,
     setApps,
     setTrades,
-    setMainAppGlobalState,
-    setManageAppGlobalState,
   } = props;
   const { getAccessTokenSilently } = useAuth0();
 
@@ -102,13 +77,12 @@ function InvestorPageContainer(props: InvestorPageContainerProps) {
 
   const enterInvestView = (appId: number) => {
     setInvestorPageNav(InvestorPageNav.INVEST);
-    const newApp = getApp(appId);
-    setApp(newApp);
+    setAppId(appId);
   }
 
   const exitInvestView = () => {
     setInvestorPageNav(InvestorPageNav.APPS_TABLE);
-    setApp(undefined);
+    setAppId(undefined);
   }
 
   const enterTradesTable = async (filter: FETCH_TRADES_FILTER) => {
@@ -125,20 +99,16 @@ function InvestorPageContainer(props: InvestorPageContainerProps) {
     setInvestorPageNav(InvestorPageNav.SELECTION);
   }
 
-  const enterTrade = (tradeId: number, app_id: number) => {
+  const enterTrade = (tradeId: number, appId: number) => {
     setInvestorPageNav(InvestorPageNav.TRADE);
     const newTrade = getTrade(tradeId);
     setTrade(newTrade);
-
-    // Fetch and set app
-    getAccessTokenSilently().then(accessToken => {
-      fetchApp(accessToken, setApp, app_id);
-    });
+    setAppId(appId);
   }
 
   const exitTrade = () => {
     setInvestorPageNav(InvestorPageNav.TRADES_TABLE);
-    setApp(undefined);
+    setAppId(undefined);
     setTrade(undefined);
   }
 
@@ -156,7 +126,7 @@ function InvestorPageContainer(props: InvestorPageContainerProps) {
     setInvestorPageNav(InvestorPageNav.SELECTION);
   }
 
-  const enterManageTrade = (tradeId: number, app_id: number, addr: string) => {
+  const enterManageTrade = (tradeId: number, appId: number, addr: string) => {
     // Switch of account if necessary
     if (selectedAccount &&
       selectedAccount.address !== addr &&
@@ -168,57 +138,14 @@ function InvestorPageContainer(props: InvestorPageContainerProps) {
     setInvestorPageNav(InvestorPageNav.MANAGE_TRADE);
     const newTrade = getTrade(tradeId);
     setTrade(newTrade);
-
-    // Fetch and set app
-    getAccessTokenSilently().then(accessToken => {
-      fetchApp(accessToken, setApp, app_id);
-    });
+    setAppId(appId);
   }
 
   const exitManageTrade = () => {
     setInvestorPageNav(InvestorPageNav.MANAGE_TRADES_TABLE);
-    setApp(undefined);
+    setAppId(undefined);
     setTrade(undefined);
   }
-
-  // On entering into new app
-  const appId = app ? app.app_id : 0;
-  useEffect(() => {
-    if (!app) return;
-
-    const round = getCouponRound(
-      app.end_buy_date,
-      app.maturity_date,
-      app.period,
-      app.bond_length
-    );
-    setCouponRound(round);
-
-    // TODO: MOVE TO FETCH APPS
-    Promise.all(
-      [
-        indexerClient.lookupAssetByID(app.bond_id).do(),
-        getAccountInformation(app.bond_escrow_address),
-        getAccountInformation(app.stablecoin_escrow_address)
-      ]
-    ).then(([asset, bondEscrow, stablecoinEscrow]) => {
-
-      const bMinted = asset.asset.params.total;
-      const bEscrowBalance = getAssetBalance(bondEscrow, app.bond_id);
-      const sEscrowBalance = getStablecoinBalance(stablecoinEscrow);
-
-      setBondsMinted(bMinted);
-      setBondEscrowBalance(bEscrowBalance);
-      setStablecoinEscrowBalance(sEscrowBalance);
-      setDefaulted(getHasDefaulted(
-        app,
-        round.round,
-        sEscrowBalance as number,
-        bEscrowBalance as number,
-        bMinted,
-      ));
-    });
-  }, [appId])
 
   return (
     <InvestorPage
@@ -235,16 +162,9 @@ function InvestorPageContainer(props: InvestorPageContainerProps) {
       exitManageTradesTable={exitManageTradesTable}
       enterManageTrade={enterManageTrade}
       exitManageTrade={exitManageTrade}
-      app={app}
+      app={appId === undefined ? undefined : getApp(appId)}
       trade={trade}
       selectedAccount={selectedAccount}
-      couponRound={couponRound}
-      defaulted={defaulted}
-      bondsMinted={bondsMinted}
-      bondEscrowBalance={bondEscrowBalance}
-      setBondEscrowBalance={setBondEscrowBalance}
-      stablecoinEscrowBalance={stablecoinEscrowBalance}
-      setStablecoinEscrowBalance={setStablecoinEscrowBalance}
     />
   );
 }
@@ -259,8 +179,6 @@ const mapDispatchToProps = {
   setSelectedAccount,
   setApps,
   setTrades,
-  setMainAppGlobalState,
-  setManageAppGlobalState,
 };
 
 export default connect<StateProps, DispatchProps, OwnProps>(mapStateToProps, mapDispatchToProps)(InvestorPageContainer);
