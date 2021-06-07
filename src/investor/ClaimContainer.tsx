@@ -72,7 +72,8 @@ function ClaimContainer(props: ClaimProps) {
     return couponRound.round > couponRoundsPaid &&
       bondBalance > 0 &&
       getOptedIntoApp(app.app_id) &&
-      hasNotDefaulted
+      hasNotDefaulted &&
+      getStateValue('Frozen', app.app_global_state) === 0;
   }
 
   const couponTooltip = () => {
@@ -82,10 +83,11 @@ function ClaimContainer(props: ClaimProps) {
     const hasDefaulted = defaulted && (localCouponRoundsPaid + 1 === defaulted.round);
 
     let err = '';
-    if (localCouponRoundsPaid >= couponRound.round) err = err.concat('Have collected all available coupons\n')
-    if (bondBalance === 0) err = err.concat('Do not own bond\n')
-    if (!getOptedIntoApp(app.app_id)) err = err.concat('Have not opted into app\n')
-    if (hasDefaulted) err = err.concat('Not enough funds to pay out money owed at this round\n')
+    if (localCouponRoundsPaid >= couponRound.round) err = err.concat('Have collected all available coupons\n');
+    if (bondBalance === 0) err = err.concat('Do not own bond\n');
+    if (!getOptedIntoApp(app.app_id)) err = err.concat('Have not opted into app\n');
+    if (hasDefaulted) err = err.concat('Not enough funds to pay out money owed at this round\n');
+    if (getStateValue('Frozen', app.app_global_state) === 0) err = err.concat('Your account is frozen\n');
     return err;
   }
 
@@ -124,7 +126,8 @@ function ClaimContainer(props: ClaimProps) {
       bondBalance > 0 &&
       localCouponRoundsPaid >= app.bond_length &&
       getOptedIntoApp(app.app_id) &&
-      !defaulted
+      !defaulted &&
+      getStateValue('Frozen', app.app_global_state) === 0;
   }
 
   const principalTooltip = () => {
@@ -133,11 +136,12 @@ function ClaimContainer(props: ClaimProps) {
     const localCouponRoundsPaid = getAppLocalCouponRoundsPaid(app.app_id);
 
     let err = '';
-    if (!afterMaturity) err = err.concat('Not after maturity date\n')
-    if (bondBalance === 0) err = err.concat('Do not own bond\n')
-    if (localCouponRoundsPaid < app.bond_length) err = err.concat('Have not collected all coupons\n')
-    if (!getOptedIntoApp(app.app_id)) err = err.concat('Have not opted into app\n')
-    if (defaulted) err = err.concat('Not enough funds to pay out all money owed\n')
+    if (!afterMaturity) err = err.concat('Not after maturity date\n');
+    if (bondBalance === 0) err = err.concat('Do not own bond\n');
+    if (localCouponRoundsPaid < app.bond_length) err = err.concat('Have not collected all coupons\n');
+    if (!getOptedIntoApp(app.app_id)) err = err.concat('Have not opted into app\n');
+    if (defaulted) err = err.concat('Not enough funds to pay out all money owed\n');
+    if (getStateValue('Frozen', app.app_global_state) === 0) err = err.concat('Your account is frozen\n');
     return err;
   }
 
@@ -176,7 +180,8 @@ function ClaimContainer(props: ClaimProps) {
 
     return hasDefaulted &&
       bondBalance > 0 &&
-      getOptedIntoApp(app.app_id)
+      getOptedIntoApp(app.app_id) &&
+      getStateValue('Frozen', app.app_global_state) === 0;
   }
 
   const defaultTooltip = () => {
@@ -185,10 +190,11 @@ function ClaimContainer(props: ClaimProps) {
     const localCouponRoundsPaid = getAppLocalCouponRoundsPaid(app.app_id);
 
     let err = '';
-    if (!defaulted) err = err.concat('Enough funds to pay money owed\n')
-    if (defaulted && (localCouponRoundsPaid + 1 < defaulted.round)) err = err.concat('Have not collected all available coupons\n')
-    if (bondBalance === 0) err = err.concat('Do not own bond\n')
-    if (!getOptedIntoApp(app.app_id)) err = err.concat('Have not opted into app\n')
+    if (!defaulted) err = err.concat('Enough funds to pay money owed\n');
+    if (defaulted && (localCouponRoundsPaid + 1 < defaulted.round)) err = err.concat('Have not collected all available coupons\n');
+    if (bondBalance === 0) err = err.concat('Do not own bond\n');
+    if (!getOptedIntoApp(app.app_id)) err = err.concat('Have not opted into app\n');
+    if (getStateValue('Frozen', app.app_global_state) === 0) err = err.concat('Your account is frozen\n');
     return err;
   }
 

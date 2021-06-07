@@ -15,6 +15,7 @@ import {
 } from '../redux/selectors/userSelector';
 import TextField from '@material-ui/core/TextField';
 import { AlgoNumberInput } from '../common/NumberInput';
+import { getStateValue } from './Utils';
 
 interface StateProps {
   selectedAccount?: UserAccount;
@@ -53,7 +54,10 @@ function BuyContainer(props: BuyProps) {
   const canBuy = () => {
     if (!app) return false;
 
-    return inBuyWindow && getOptedIntoBond(app.bond_id) && noOfBondsToBuy !== 0;
+    return inBuyWindow &&
+      getOptedIntoBond(app.bond_id) &&
+      noOfBondsToBuy !== 0 &&
+      getStateValue('Frozen', app.app_global_state) === 0;
   }
 
   const buyTooltip = () => {
@@ -63,6 +67,7 @@ function BuyContainer(props: BuyProps) {
     if (!inBuyWindow) err = err.concat('Not in buy window\n');
     if (!getOptedIntoBond(app.bond_id)) err = err.concat('Have not opted into bond\n');
     if (noOfBondsToBuy === 0) err = err.concat('Must specify more than 0 bonds\n');
+    if (getStateValue('Frozen', app.app_global_state) === 0) err = err.concat('Your account is frozen\n');
     return err;
   }
 

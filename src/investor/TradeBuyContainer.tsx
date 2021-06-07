@@ -41,6 +41,7 @@ function TradeBuyContainer(props: TradeProps) {
 
   const [noOfBondsToBuy, setNoOfBondsToBuy] = useState<number>(0);
   const [bondsAvailable, setBondsAvailable] = useState<number>(0);
+  const [isSellerFrozen, setIsSellerFrozen] = useState<boolean>(true);
 
   const {
     app,
@@ -61,7 +62,10 @@ function TradeBuyContainer(props: TradeProps) {
       const appId = app.app_id;
       if (appsLocalState.has(appId)) {
         const localState: AppState = appsLocalState.get(appId)!;
+        // Update bonds available
         setBondsAvailable(getStateValue("Trade", localState) / 1e6);
+        // Update if frozen
+        setIsSellerFrozen(getStateValue('Frozen', localState) === 0);
       }
     });
   }
@@ -76,7 +80,9 @@ function TradeBuyContainer(props: TradeProps) {
       noOfBondsToBuy !== 0 &&
       noOfBondsToBuy <= bondsAvailable &&
       getOptedIntoBond(app.bond_id) &&
-      getOptedIntoApp(app.app_id);
+      getOptedIntoApp(app.app_id) &&
+      !isSellerFrozen &&
+      getStateValue('Frozen', app.app_global_state) > 0;
   }
 
   const tradeTooltip = () => {
@@ -87,6 +93,8 @@ function TradeBuyContainer(props: TradeProps) {
     if (noOfBondsToBuy > bondsAvailable ) err = err.concat('Must be less than max number of available bonds\n');
     if (!getOptedIntoBond(app.bond_id)) err = err.concat('Must be opted into bond\n');
     if (!getOptedIntoApp(app.app_id)) err = err.concat('Must be opted into app\n');
+    if (isSellerFrozen) err = err.concat("Seller's account is frozen\n");
+    if (getStateValue('Frozen', app.app_global_state) === 0) err = err.concat('Your account is frozen\n');
     return err;
   }
 
