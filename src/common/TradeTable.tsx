@@ -3,7 +3,6 @@ import React from 'react';
 import { tradesTableSelector } from '../redux/selectors/bondSelector';
 import { connect } from 'react-redux';
 import { TradesTable } from '../redux/types';
-import { formatAlgoDecimalNumber } from '../utils/Utils';
 
 interface StateProps {
   tradesTable: TradesTable
@@ -21,7 +20,7 @@ function TradeTable(props: TradeTableProps) {
   const { tradesTable, onClick } = props;
 
   const renderPrice = (params: GridCellParams) => (
-    <>${formatAlgoDecimalNumber(params.value as number)}</>
+    <>${params.value as number}</>
   );
 
   return (
@@ -32,7 +31,7 @@ function TradeTable(props: TradeTableProps) {
           { field: 'bond_id', headerName: 'Bond ID', width: 130, type: 'number' },
           { field: 'app_id', headerName: 'App ID', width: 130, type: 'number', hide: true },
           { field: 'name', headerName: 'Name', width: 200 },
-          { field: 'price', headerName: 'Price', width: 130, type: 'number', description: 'Price per bond' },
+          { field: 'price', headerName: 'Price', width: 130, type: 'number', renderCell: renderPrice, description: 'Price per bond' },
           { field: 'expiry_date', headerName: 'Expiry', width: 130, type: 'date', description: 'Trade offer expiry date' },
           { field: 'maturity_date', headerName: 'Maturity', width: 130, type: 'date' },
           { field: 'bond_coupon', headerName: 'Coupon', width: 130, type: 'number', renderCell: renderPrice },

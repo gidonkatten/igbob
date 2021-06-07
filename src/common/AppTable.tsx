@@ -3,7 +3,6 @@ import React from 'react';
 import { appsTableSelector } from '../redux/selectors/bondSelector';
 import { connect } from 'react-redux';
 import { AppsTable } from '../redux/types';
-import { formatAlgoDecimalNumber } from '../utils/Utils';
 
 interface StateProps {
   appsTable: AppsTable
@@ -21,7 +20,7 @@ function AppTable(props: AppListProps) {
   const { appsTable, onClick } = props;
 
   const renderPrice = (params: GridCellParams) => (
-    <>${formatAlgoDecimalNumber(params.value as number)}</>
+    <>${params.value as number}</>
   );
 
   return (
