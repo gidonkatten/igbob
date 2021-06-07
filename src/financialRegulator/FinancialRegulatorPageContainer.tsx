@@ -5,7 +5,7 @@ import { getAppSelector } from '../redux/selectors/bondSelector';
 import { App, AppAccount, AppState, UserAccount } from '../redux/types';
 import { setApps, setMainAppGlobalState } from '../redux/actions/actions';
 import { FinancialRegulatorPage } from './FinancialRegulatorPage';
-import { FETCH_APPS_FILTER, fetchApps } from '../common/Utils';
+import { FetchAppsFilter, fetchApps } from '../common/Utils';
 import { useAuth0 } from '@auth0/auth0-react';
 import { getAccountInformation, getAppAccounts } from '../algorand/account/Account';
 import { algodClient } from '../algorand/utils/Utils';
@@ -47,7 +47,7 @@ function FinancialRegulatorPageContainer(props: FinancialRegulatorPageContainerP
     if (!selectedAccount) return;
 
     getAccessTokenSilently().then(accessToken => {
-      fetchApps(accessToken, setApps, FETCH_APPS_FILTER.FINANCIAL_REGULATOR, selectedAccount!.address);
+      fetchApps(accessToken, setApps, FetchAppsFilter.FINANCIAL_REGULATOR, selectedAccount!.address);
     });
 
     // Clean up
@@ -92,7 +92,7 @@ function FinancialRegulatorPageContainer(props: FinancialRegulatorPageContainerP
     // Update frozen value
     getAccountInformation(addr).then(account => {
       const accs: AppAccount[] = [...appAccounts];
-      const foundIndex = accs.findIndex(acc => acc.addr == addr);
+      const foundIndex = accs.findIndex(acc => acc.addr === addr);
       const localState: AppState | undefined = account.appsLocalState.get(app.app_id);
       accs[foundIndex].frozen = getStateValue('Frozen', localState);
       setAppAccounts(accs);

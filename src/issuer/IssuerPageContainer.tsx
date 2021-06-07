@@ -6,7 +6,7 @@ import { getAppSelector } from '../redux/selectors/bondSelector';
 import { IPFSAlgoWrapper } from '../ipfs/IPFSAlgoWrapper';
 import { getReportRatingRound } from '../investor/Utils';
 import { IssuerPage } from './IssuerPage';
-import { FETCH_APPS_FILTER, fetchApps } from '../common/Utils';
+import { FetchAppsFilter, fetchApps } from '../common/Utils';
 import { useAuth0 } from '@auth0/auth0-react';
 import { setApps } from '../redux/actions/actions';
 
@@ -42,7 +42,7 @@ function IssuerPageContainer(props: IssuerPageContainerProps) {
     if (!selectedAccount) return;
 
     getAccessTokenSilently().then(accessToken => {
-      fetchApps(accessToken, setApps, FETCH_APPS_FILTER.ISSUER, selectedAccount!.address);
+      fetchApps(accessToken, setApps, FetchAppsFilter.ISSUER, selectedAccount!.address);
     })
 
     // Clean up

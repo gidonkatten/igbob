@@ -9,7 +9,13 @@ import {
 } from '../algorand/account/Account';
 import { getCouponRound, getHasDefaulted } from '../investor/Utils';
 
-export enum FETCH_APPS_FILTER {
+export enum BondStatus {
+  SALE,
+  ONGOING,
+  EXPIRED,
+}
+
+export enum FetchAppsFilter {
   ALL = 'all',
   UPCOMING = 'upcoming',
   SALE = 'sale',
@@ -23,14 +29,14 @@ export enum FETCH_APPS_FILTER {
 export async function fetchApps(
   accessToken: string,
   setApps: (apps: App[]) => void,
-  filter: FETCH_APPS_FILTER,
+  filter: FetchAppsFilter,
   addr?: string,
 ): Promise<void> {
   try {
     // Fetch and parse
-    const url: string = filter === FETCH_APPS_FILTER.ISSUER ||
-    filter === FETCH_APPS_FILTER.GREEN_VERIFIER ||
-    filter === FETCH_APPS_FILTER.FINANCIAL_REGULATOR  ?
+    const url: string = filter === FetchAppsFilter.ISSUER ||
+    filter === FetchAppsFilter.GREEN_VERIFIER ||
+    filter === FetchAppsFilter.FINANCIAL_REGULATOR  ?
       `https://igbob.herokuapp.com/apps/${filter}-apps/${addr}` :
       `https://igbob.herokuapp.com/apps/${filter}-apps`
     const response = await fetch(url, {
@@ -38,12 +44,12 @@ export async function fetchApps(
     });
     const parsedResponse = await response.json();
 
-    const apps = parsedResponse.map(app => {
+    const apps = parsedResponse.map(async app => {
       // Set current coupon round
-      app.coupon_round = getCouponRound(app.end_buy_date, app.maturity_date, app.period, app.bond_length);
+      app.coupon_round = getCouponRound(app);
 
       // Set ssc states, minted, balances and default
-      Promise.all(
+      await Promise.all(
         [
           algodClient.getApplicationByID(app.app_id).do(),
           algodClient.getApplicationByID(app.manage_app_id).do(),
@@ -63,7 +69,7 @@ export async function fetchApps(
       return app;
     });
 
-    setApps(apps);
+    setApps(await Promise.all(apps));
   } catch (err) {
     console.error(err.message);
   }

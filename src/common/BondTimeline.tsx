@@ -14,25 +14,15 @@ import LocalOfferIcon from '@material-ui/icons/LocalOffer';
 import MonetizationOnIcon from '@material-ui/icons/MonetizationOn';
 import { convertUnixTimeToDate, convertUnixTimeToTime } from '../utils/Utils';
 import { CouponRound, getCouponRound } from '../investor/Utils';
+import { App } from '../redux/types';
 
 interface BondTimelineProps {
-  startBuyDate: number,
-  endBuyDate: number,
-  bondLength: number,
-  maturityDate: number
-  period: number
+  app: App
 }
 
 export default function bondTimeline(props: BondTimelineProps) {
-  const {
-    startBuyDate,
-    endBuyDate,
-    bondLength,
-    maturityDate,
-    period
-  } = props;
-
-  const couponRound: CouponRound = getCouponRound(endBuyDate, maturityDate, period, bondLength);
+  const { app } = props;
+  const couponRound: CouponRound = getCouponRound(app);
 
   return (
     <Timeline align={'alternate'}>
@@ -44,9 +34,9 @@ export default function bondTimeline(props: BondTimelineProps) {
           <Typography
             variant="body2"
             color="textSecondary"
-            title={convertUnixTimeToTime(startBuyDate)}
+            title={convertUnixTimeToTime(app.start_buy_date)}
           >
-            {convertUnixTimeToDate(startBuyDate)}
+            {convertUnixTimeToDate(app.start_buy_date)}
           </Typography>
         </TimelineOppositeContent>
 
@@ -71,9 +61,9 @@ export default function bondTimeline(props: BondTimelineProps) {
           <Typography
             variant="body2"
             color="textSecondary"
-            title={convertUnixTimeToTime(endBuyDate)}
+            title={convertUnixTimeToTime(app.end_buy_date)}
           >
-            {convertUnixTimeToDate(endBuyDate)}
+            {convertUnixTimeToDate(app.end_buy_date)}
           </Typography>
         </TimelineOppositeContent>
 
@@ -96,7 +86,7 @@ export default function bondTimeline(props: BondTimelineProps) {
 
         <TimelineOppositeContent>
           <Typography variant="body2" color="textSecondary">
-            {convertUnixTimeToDate(endBuyDate + period)} - {convertUnixTimeToDate(endBuyDate + period * bondLength)}
+            {convertUnixTimeToDate(app.end_buy_date + app.period)} - {convertUnixTimeToDate(app.end_buy_date + app.period * app.bond_length)}
           </Typography>
         </TimelineOppositeContent>
 
@@ -109,10 +99,10 @@ export default function bondTimeline(props: BondTimelineProps) {
           <Paper elevation={3} className={'timeline-box'}>
             <Typography variant="h6" component="h1">Coupon payments</Typography>
             <Typography>
-              These are payable every {period} seconds <br/>
-              There are {bondLength - Math.min(bondLength, couponRound.round)} upcoming coupon payments<br/>
-              {couponRound.round < bondLength ?
-                <>The next coupon date is {convertUnixTimeToDate(couponRound.date + period)}</> :
+              These are payable every {app.period} seconds <br/>
+              There are {app.bond_length - Math.min(app.bond_length, couponRound.round)} upcoming coupon payments<br/>
+              {couponRound.round < app.bond_length ?
+                <>The next coupon date is {convertUnixTimeToDate(couponRound.date + app.period)}</> :
                 null
               }
             </Typography>
@@ -127,9 +117,9 @@ export default function bondTimeline(props: BondTimelineProps) {
           <Typography
             variant="body2"
             color="textSecondary"
-            title={convertUnixTimeToTime(maturityDate)}
+            title={convertUnixTimeToTime(app.maturity_date)}
           >
-            {convertUnixTimeToDate(maturityDate)}
+            {convertUnixTimeToDate(app.maturity_date)}
           </Typography>
         </TimelineOppositeContent>
 

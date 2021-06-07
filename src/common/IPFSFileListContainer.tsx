@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import { App, AppState } from '../redux/types';
 import { IPFSAlgoWrapper } from '../ipfs/IPFSAlgoWrapper';
 import { IPFSFileList } from './IPFSFileList';
-import { getStateValue } from '../investor/Utils';
+import { getRatingsFromState } from '../investor/Utils';
 
 interface StateProps {}
 
@@ -34,18 +34,7 @@ function IPFSFileListContainer(props: IPFSFileListContainerProps) {
     // Get ratings
     const manageAppState: AppState | undefined =  app.manage_app_global_state
     if (!manageAppState) return;
-    const newRatings: number[] = [];
-    for (let i = 0; i <= app.bond_length; i++) {
-      const key: string = Math.floor(i / 8) + '';
-      const slot = i % 8;
-      const array: Uint8Array | number = getStateValue(key, manageAppState);
-      if (array === 0) {
-        // Uninitialised array
-        newRatings.push(0)
-      } else {
-        newRatings.push(array[slot]);
-      }
-    }
+    const newRatings: number[] = getRatingsFromState(app);
     setRatings(newRatings);
 
   }, [appId, app?.manage_app_global_state])

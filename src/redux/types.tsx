@@ -55,6 +55,14 @@ export interface AppsTableElem {
   bond_cost: number;
   bond_coupon: number;
   bond_principal: number;
+  bonds_available: number;
+  bonds_minted: number;
+  coupon_round: number;
+  stablecoin_escrow_balance: number;
+  defaulted: boolean;
+  frozen: boolean;
+  use_of_proceeds_rating: number;
+  recent_rating: number;
 }
 
 export type AppsTable = AppsTableElem[];

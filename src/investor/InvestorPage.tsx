@@ -1,7 +1,7 @@
 import React from 'react';
 import BondTimeline from '../common/BondTimeline';
 import TextField from '@material-ui/core/TextField';
-import AppList from '../common/AppTable';
+import AppTable from '../common/AppTable';
 import { App, Trade, UserAccount } from '../redux/types';
 import { BackButton } from '../common/BackButton';
 import Typography from '@material-ui/core/Typography';
@@ -11,14 +11,14 @@ import RegisterContainer from './RegisterContainer';
 import ClaimContainer from './ClaimContainer';
 import TradeSellContainer from './TradeSellContainer';
 import { InvestorPageNav } from './InvestorPageContainer';
-import { FETCH_APPS_FILTER, FETCH_MY_TRADES_FILTER, FETCH_TRADES_FILTER } from '../common/Utils';
+import { BondStatus, FetchAppsFilter, FETCH_MY_TRADES_FILTER, FETCH_TRADES_FILTER } from '../common/Utils';
 import { Selection } from './Selection';
 import TradeTable from '../common/TradeTable';
 import TradeBuyContainer from './TradeBuyContainer';
 
 interface InvestorPageProps {
   investorPageNav: InvestorPageNav;
-  enterAppsTable: (filter: FETCH_APPS_FILTER) => Promise<void>;
+  enterAppsTable: (filter: FetchAppsFilter, bondStatus: BondStatus) => Promise<void>;
   exitAppsTable: () => void;
   enterInvestView: (appId: number) => void;
   exitInvestView: () => void;
@@ -32,6 +32,7 @@ interface InvestorPageProps {
   exitManageTrade: () => void;
   app?: App;
   trade?: Trade;
+  bondStatus?: BondStatus;
   selectedAccount?: UserAccount;
 }
 
@@ -53,6 +54,7 @@ export function InvestorPage(props: InvestorPageProps) {
     exitManageTrade,
     app,
     trade,
+    bondStatus,
     selectedAccount,
   } = props;
 
@@ -69,7 +71,7 @@ export function InvestorPage(props: InvestorPageProps) {
     <div>
       <BackButton onClick={exitAppsTable}/>
       <Typography variant="h3">Listed Green Bonds</Typography>
-      <AppList onClick={enterInvestView}/>
+      <AppTable onClick={enterInvestView} bondStatus={bondStatus}/>
     </div>
   )
 
@@ -98,13 +100,7 @@ export function InvestorPage(props: InvestorPageProps) {
 
       <Typography variant="h4" gutterBottom>Bond Timeline</Typography>
 
-      <BondTimeline
-        startBuyDate={app.start_buy_date}
-        endBuyDate={app.end_buy_date}
-        bondLength={app.bond_length}
-        maturityDate={app.maturity_date}
-        period={app.period}
-      />
+      <BondTimeline app={app}/>
 
       <Typography variant="h4" gutterBottom>Bond Rating</Typography>
 
@@ -167,13 +163,7 @@ export function InvestorPage(props: InvestorPageProps) {
 
       <Typography variant="h4" gutterBottom>Bond Timeline</Typography>
 
-      <BondTimeline
-        startBuyDate={app.start_buy_date}
-        endBuyDate={app.end_buy_date}
-        bondLength={app.bond_length}
-        maturityDate={app.maturity_date}
-        period={app.period}
-      />
+      <BondTimeline app={app}/>
 
       <Typography variant="h4" gutterBottom>Bond Rating</Typography>
 

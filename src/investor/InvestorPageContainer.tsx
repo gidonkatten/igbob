@@ -12,7 +12,8 @@ import { App, Trade, UserAccount } from '../redux/types';
 import { InvestorPage } from './InvestorPage';
 import { useAuth0 } from '@auth0/auth0-react';
 import {
-  FETCH_APPS_FILTER,
+  BondStatus,
+  FetchAppsFilter,
   FETCH_MY_TRADES_FILTER,
   FETCH_TRADES_FILTER,
   fetchApps,
@@ -50,6 +51,7 @@ function InvestorPageContainer(props: InvestorPageContainerProps) {
   const [investorPageNav, setInvestorPageNav] = useState<InvestorPageNav>(InvestorPageNav.SELECTION);
   const [appId, setAppId] = useState<number>();
   const [trade, setTrade] = useState<Trade>();
+  const [bondStatus, setBondStatus] = useState<BondStatus>();
 
   const {
     selectedAccount,
@@ -61,8 +63,9 @@ function InvestorPageContainer(props: InvestorPageContainerProps) {
   } = props;
   const { getAccessTokenSilently } = useAuth0();
 
-  const enterAppsTable = async (filter: FETCH_APPS_FILTER) => {
+  const enterAppsTable = async (filter: FetchAppsFilter, bondStatus: BondStatus) => {
     setInvestorPageNav(InvestorPageNav.APPS_TABLE);
+    setBondStatus(bondStatus);
     setApps([]); // clear
 
     // Set apps using given filter e.g. upcoming, live etc
@@ -164,6 +167,7 @@ function InvestorPageContainer(props: InvestorPageContainerProps) {
       exitManageTrade={exitManageTrade}
       app={appId === undefined ? undefined : getApp(appId)}
       trade={trade}
+      bondStatus={bondStatus}
       selectedAccount={selectedAccount}
     />
   );

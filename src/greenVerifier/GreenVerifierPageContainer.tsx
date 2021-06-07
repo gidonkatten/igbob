@@ -10,7 +10,7 @@ import { rate } from '../algorand/bond/Rate';
 import { getReportRatingRound } from '../investor/Utils';
 import { GreenVerifierPage } from './GreenVerifierPage';
 import { useAuth0 } from '@auth0/auth0-react';
-import { FETCH_APPS_FILTER, fetchApps } from '../common/Utils';
+import { FetchAppsFilter, fetchApps } from '../common/Utils';
 
 interface StateProps {
   selectedAccount?: UserAccount;
@@ -46,7 +46,7 @@ function GreenVerifierPageContainer(props: GreenVerifierPageContainerProps) {
     if (!selectedAccount) return;
 
     getAccessTokenSilently().then(accessToken => {
-      fetchApps(accessToken, setApps, FETCH_APPS_FILTER.GREEN_VERIFIER, selectedAccount!.address);
+      fetchApps(accessToken, setApps, FetchAppsFilter.GREEN_VERIFIER, selectedAccount!.address);
     });
 
     // Clean up

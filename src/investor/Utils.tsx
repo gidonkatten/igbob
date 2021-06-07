@@ -13,20 +13,21 @@ export interface Defaulted {
 
 // Returns 0 if none, and bondLength if finished
 // Else returns round rounded down
-export function getCouponRound(
-  endBuyDate: number,
-  maturityDate: number,
-  period: number,
-  bondLength: number
-): CouponRound {
+export function getCouponRound(app: App): CouponRound {
+  const {
+    end_buy_date,
+    maturity_date,
+    period,
+    bond_length,
+  } = app;
   const currentTime: number = Date.now() / 1000;
 
   let round: number;
-  if (currentTime < endBuyDate) round = 0;
-  else if (currentTime > maturityDate) round = bondLength;
-  else round = Math.floor((currentTime - endBuyDate) / period);
+  if (currentTime < end_buy_date) round = 0;
+  else if (currentTime > maturity_date) round = bond_length;
+  else round = Math.floor((currentTime - end_buy_date) / period);
 
-  const date = endBuyDate + round * period;
+  const date = end_buy_date + round * period;
 
   return { round, date };
 }
@@ -73,13 +74,32 @@ export function getRatingFromState(round: number, state?: Map<string, any>): num
 
   const key: string = Math.floor(round / 8) + '';
   const slot = round % 8;
-  const array: Uint8Array | number = getStateValue( key, state);
+  const array: Uint8Array | number = getStateValue(key, state);
   if (array === 0) {
     // Uninitialised array
     return 0;
   } else {
     return array[slot];
   }
+}
+
+// Returns ratings - 0 if key doesn't exist
+export function getRatingsFromState(app: App): number[] {
+  const ratings: number[] = [];
+
+  for (let i = 0; i <= app.bond_length; i++) {
+    const key: string = Math.floor(i / 8) + '';
+    const slot = i % 8;
+    const array: Uint8Array | number = getStateValue(key, app.manage_app_global_state);
+    if (array === 0) {
+      // Uninitialised array
+      ratings.push(0)
+    } else {
+      ratings.push(array[slot]);
+    }
+  }
+
+  return ratings;
 }
 
 export function getMultiplier(rating: number): number {
