@@ -83,6 +83,32 @@ export async function getAppAccounts(appId: number, bondId: number): Promise<App
 }
 
 /**
+ * Get bonds available (+ frozen) for given account
+ */
+export async function getAppAccountTrade(
+  addr: string,
+  appId: number,
+  bondId: number,
+): Promise<{ balance: number, frozen: boolean }> {
+  const acc: UserAccount = await getAccountInformation(addr);
+
+  const { appsLocalState } = acc;
+  let balance: number = 0;
+  let frozen: boolean = true;
+
+  if (appsLocalState.has(appId)) {
+    const localState: AppState = appsLocalState.get(appId)!;
+    balance = Math.min(
+      getStateValue("Trade", localState),
+      acc.assets.has(bondId) ? acc.assets.get(bondId) as number : 0
+    ) / 1e6;
+    frozen = getStateValue('Frozen', localState) === 0;
+  }
+
+  return { balance, frozen };
+}
+
+/**
  * Get asset balance for account
  */
 export function getAssetBalance(account: UserAccount, assetId: number): number | bigint {

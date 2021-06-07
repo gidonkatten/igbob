@@ -20,6 +20,11 @@ export const setTrades = (trades: Trade[]) => ({
   payload: { trades }
 });
 
+export const setTradeAvailableBalance = (tradeId: number, balance: number, frozen: boolean) => ({
+  type: "SET_TRADE_AVAILABLE_BALANCE",
+  payload: { tradeId, balance, frozen }
+});
+
 export const setMainAppGlobalState = (appId: number | bigint, state: AppState) => ({
   type: "SET_MAIN_APP_GLOBAL_STATE",
   payload: { appId, appState: state }

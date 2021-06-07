@@ -1,6 +1,7 @@
 import { App, Trade } from '../redux/types';
 import { algodClient } from '../algorand/utils/Utils';
 import { extractAppState, extractManageAppState } from '../utils/Utils';
+import { getAppAccountTrade } from '../algorand/account/Account';
 
 export enum FETCH_APPS_FILTER {
   ALL = 'all',
@@ -84,8 +85,23 @@ export async function fetchTrades(
     const response = await fetch(`https://igbob.herokuapp.com/trades/${filter}-trades`, {
       headers: { Authorization: `Bearer ${accessToken}`},
     });
-    const parseResponse = await response.json();
-    setTrades(parseResponse);
+    let parsedResponse = await response.json();
+
+    // Set balance and frozen
+    const trades = parsedResponse.map(async trade => {
+      const appAccountTrade = await getAppAccountTrade(
+        trade.seller_address,
+        trade.app_id,
+        trade.bond_id
+      );
+      return {
+        ...trade,
+        seller_balance: appAccountTrade.balance,
+        seller_frozen: appAccountTrade.frozen,
+      }
+    });
+
+    setTrades(await Promise.all(trades));
   } catch (err) {
     console.error(err.message);
   }

@@ -28,6 +28,21 @@ export function bondReducer(state = initialState, action: any) {
         trades: tradesMap
       };
     }
+    case "SET_TRADE_AVAILABLE_BALANCE": {
+      const { tradeId, balance, frozen } = action.payload;
+      const tradesMap = state.trades;
+      const trade = tradesMap.get(tradeId);
+
+      if (!trade) return state;
+
+      trade.seller_balance = balance;
+      trade.seller_frozen = frozen;
+
+      return {
+        ...state,
+        trades: tradesMap
+      };
+    }
     case "SET_MAIN_APP_GLOBAL_STATE": {
       const { appId, appState } = action.payload;
       const appsMap = state.apps;

@@ -14,9 +14,9 @@ import { App, AppState, Trade, UserAccount } from '../redux/types';
 import { AlgoNumberInput } from '../common/NumberInput';
 import { tradeBond } from '../algorand/bond/Trade';
 import { formatAlgoDecimalNumber } from '../utils/Utils';
-import { getAccountInformation } from '../algorand/account/Account';
+import { getAccountInformation, getAppAccountTrade } from '../algorand/account/Account';
 import { getStateValue } from './Utils';
-import { setSelectedAccount } from '../redux/actions/actions';
+import { setSelectedAccount, setTradeAvailableBalance } from '../redux/actions/actions';
 
 interface StateProps {
   selectedAccount?: UserAccount;
@@ -28,6 +28,7 @@ interface StateProps {
 
 interface DispatchProps {
   setSelectedAccount: typeof setSelectedAccount;
+  setTradeAvailableBalance: typeof setTradeAvailableBalance;
 }
 
 interface OwnProps {
@@ -40,8 +41,6 @@ type TradeProps = StateProps & DispatchProps & OwnProps;
 function TradeBuyContainer(props: TradeProps) {
 
   const [noOfBondsToBuy, setNoOfBondsToBuy] = useState<number>(0);
-  const [bondsAvailable, setBondsAvailable] = useState<number>(0);
-  const [isSellerFrozen, setIsSellerFrozen] = useState<boolean>(true);
 
   const {
     app,
@@ -51,49 +50,30 @@ function TradeBuyContainer(props: TradeProps) {
     getOptedIntoApp,
     getBondBalance,
     setSelectedAccount,
+    setTradeAvailableBalance,
   } = props;
 
-  const bondBalance: number = app ? (getBondBalance(app.bond_id) as number) : 0;
-
-  const updateBondsAvailable = async () => {
-    // Fetch seller account info
-    getAccountInformation(trade.seller_address).then((acc: UserAccount) => {
-      const { appsLocalState } = acc;
-      const appId = app.app_id;
-      if (appsLocalState.has(appId)) {
-        const localState: AppState = appsLocalState.get(appId)!;
-        // Update bonds available
-        setBondsAvailable(getStateValue("Trade", localState) / 1e6);
-        // Update if frozen
-        setIsSellerFrozen(getStateValue('Frozen', localState) === 0);
-      }
-    });
-  }
-
-  // Set max number of bonds that can be purchased on initial render
-  useEffect(() => {
-    updateBondsAvailable();
-  }, []);
+  const bondBalance: number = getBondBalance(app.bond_id) as number;
 
   const canTrade = () => {
-    return app && trade &&
+    return trade.seller_balance &&
       noOfBondsToBuy !== 0 &&
-      noOfBondsToBuy <= bondsAvailable &&
+      noOfBondsToBuy <= trade.seller_balance &&
       getOptedIntoBond(app.bond_id) &&
       getOptedIntoApp(app.app_id) &&
-      !isSellerFrozen &&
+      !trade.seller_frozen &&
       getStateValue('Frozen', app.app_global_state) > 0;
   }
 
   const tradeTooltip = () => {
-    if (!app) return undefined;
+    if (!trade.seller_balance) return undefined;
 
     let err = '';
     if (noOfBondsToBuy === 0) err = err.concat('Must specify more than 0 bonds\n');
-    if (noOfBondsToBuy > bondsAvailable ) err = err.concat('Must be less than max number of available bonds\n');
+    if (noOfBondsToBuy > trade.seller_balance ) err = err.concat('Must be less than number of available bonds\n');
     if (!getOptedIntoBond(app.bond_id)) err = err.concat('Must be opted into bond\n');
     if (!getOptedIntoApp(app.app_id)) err = err.concat('Must be opted into app\n');
-    if (isSellerFrozen) err = err.concat("Seller's account is frozen\n");
+    if (trade.seller_frozen) err = err.concat("Seller's account is frozen\n");
     if (getStateValue('Frozen', app.app_global_state) === 0) err = err.concat('Your account is frozen\n');
     return err;
   }
@@ -115,7 +95,10 @@ function TradeBuyContainer(props: TradeProps) {
     )
     // Update bond balance and max no of bonds available
     getAccountInformation(selectedAccount.address).then(acc => setSelectedAccount(acc));
-    updateBondsAvailable();
+    getAppAccountTrade(trade.seller_address, trade.app_id, trade.bond_id).then(appAccountTrade => {
+      const { balance, frozen } = appAccountTrade;
+      setTradeAvailableBalance(trade.trade_id, balance, frozen);
+    })
   };
 
   return (
@@ -157,7 +140,7 @@ function TradeBuyContainer(props: TradeProps) {
           onClick={handleSetTrade}
         >
           You own {formatAlgoDecimalNumber(bondBalance)} bonds <br/>
-          {bondsAvailable.toFixed(6)} bonds available <br/>
+          {(trade.seller_balance ? trade.seller_balance : 0).toFixed(6)} bonds available <br/>
           BUY {noOfBondsToBuy} bonds for ${(noOfBondsToBuy * trade.price).toFixed(6)}
         </Button>
       </Grid>
@@ -176,6 +159,7 @@ const mapStateToProps = (state: any) => ({
 
 const mapDispatchToProps = {
   setSelectedAccount,
+  setTradeAvailableBalance,
 };
 
 export default connect<StateProps, DispatchProps, OwnProps>(mapStateToProps, mapDispatchToProps)(TradeBuyContainer);

@@ -69,6 +69,8 @@ export interface Trade {
   maturity_date: number;
   bond_coupon: number;
   bond_principal: number;
+  seller_balance?: number;
+  seller_frozen?: boolean;
 }
 
 export interface TradesTableElem {
