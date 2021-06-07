@@ -37,6 +37,7 @@ function GreenVerifierPageContainer(props: GreenVerifierPageContainerProps) {
     selectedAccount,
     getApp,
     setManageAppGlobalState,
+    setApps,
   } = props;
   const { getAccessTokenSilently } = useAuth0();
 

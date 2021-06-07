@@ -2,12 +2,16 @@ import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { selectedAccountSelector } from '../redux/selectors/userSelector';
 import { getAppSelector } from '../redux/selectors/bondSelector';
-import { App, AppAccount, UserAccount } from '../redux/types';
-import { setApps } from '../redux/actions/actions';
+import { App, AppAccount, AppState, UserAccount } from '../redux/types';
+import { setApps, setMainAppGlobalState } from '../redux/actions/actions';
 import { FinancialRegulatorPage } from './FinancialRegulatorPage';
 import { FETCH_APPS_FILTER, fetchApps } from '../common/Utils';
 import { useAuth0 } from '@auth0/auth0-react';
-import { getAppAccounts } from '../algorand/account/Account';
+import { getAccountInformation, getAppAccounts } from '../algorand/account/Account';
+import { algodClient } from '../algorand/utils/Utils';
+import { extractAppState, extractManageAppState } from '../utils/Utils';
+import { freeze } from '../algorand/bond/Freeze';
+import { getStateValue } from '../investor/Utils';
 
 interface StateProps {
   selectedAccount?: UserAccount;
@@ -16,6 +20,7 @@ interface StateProps {
 
 interface DispatchProps {
   setApps: typeof setApps;
+  setMainAppGlobalState: typeof setMainAppGlobalState;
 }
 
 interface OwnProps {}
@@ -33,6 +38,7 @@ function FinancialRegulatorPageContainer(props: FinancialRegulatorPageContainerP
     selectedAccount,
     getApp,
     setApps,
+    setMainAppGlobalState,
   } = props;
   const { getAccessTokenSilently } = useAuth0();
 
@@ -67,6 +73,31 @@ function FinancialRegulatorPageContainer(props: FinancialRegulatorPageContainerP
     setApp(undefined);
   }
 
+  // FREEZE
+  const freezeAll = async (toFreeze: boolean) => {
+    if (!selectedAccount || !app) return;
+    await freeze(app.app_id, selectedAccount.address, toFreeze, true);
+
+    // Update frozen value
+    algodClient.getApplicationByID(app.app_id).do().then(mainApp => {
+      setMainAppGlobalState(app.app_id, extractAppState(mainApp.params['global-state']));
+    })
+  }
+
+  const freezeAddress = async (toFreeze: boolean, addr: string) => {
+    if (!selectedAccount || !app) return;
+    await freeze(app.app_id, selectedAccount.address, toFreeze, false, addr);
+
+    // Update frozen value
+    getAccountInformation(addr).then(account => {
+      const accs: AppAccount[] = [...appAccounts];
+      const foundIndex = accs.findIndex(acc => acc.addr == addr);
+      const localState: AppState | undefined = account.appsLocalState.get(app.app_id);
+      accs[foundIndex].frozen = getStateValue('Frozen', localState);
+      setAppAccounts(accs);
+    });
+  }
+
   return (
     <FinancialRegulatorPage
       inOverview={inOverview}
@@ -74,6 +105,8 @@ function FinancialRegulatorPageContainer(props: FinancialRegulatorPageContainerP
       exitAppView={exitAppView}
       app={app}
       appAccounts={appAccounts}
+      freezeAll={freezeAll}
+      freezeAddress={freezeAddress}
     />
   );
 }
@@ -85,6 +118,7 @@ const mapStateToProps = (state: any) => ({
 
 const mapDispatchToProps = {
   setApps,
+  setMainAppGlobalState,
 };
 
 export default connect<StateProps, DispatchProps, OwnProps>(mapStateToProps, mapDispatchToProps)(FinancialRegulatorPageContainer);

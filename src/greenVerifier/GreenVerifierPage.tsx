@@ -57,7 +57,7 @@ export function GreenVerifierPage(props: GreenVerifierPageProps) {
 
       <div style={{ float: 'none', overflow: 'hidden' }}>
         <Button
-          variant="outlined"
+          variant="contained"
           color="primary"
           fullWidth
           style={{ textTransform: 'none' }}

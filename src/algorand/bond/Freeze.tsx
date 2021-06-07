@@ -4,33 +4,36 @@ import { CallApplTxn, SignedTx } from '@randlabs/myalgo-connect';
 import { myAlgoWallet } from '../wallet/myAlgo/MyAlgoWallet';
 
 /**
- * Set green rating using MyAlgo
+ * Freeze (all / account's) bonds using MyAlgo
+ * freezeAddr undefined iff isAll true
  */
-export async function rate(
-  manageAppId: number,
-  greenVerifierAddr: string,
-  rating: number,
+export async function freeze(
+  mainAppId: number,
+  financialRegulatorAddr: string,
+  toFreeze: boolean,
+  isAll: boolean,
+  freezeAddr?: string,
 ) {
   let params: SuggestedParams = await algodClient.getTransactionParams().do();
   params.fee = 1000;
 
   const enc = new TextEncoder();
-  const rate: Uint8Array = enc.encode("rate");
+  const freeze: Uint8Array = enc.encode(isAll ? "freeze_all" : "freeze");
+  const val: Uint8Array = numberToUint8Array(toFreeze ? 1 : 0);
+  const mainAppArgs: Uint8Array[] = [freeze, val];
 
-  const ratingPassed: Uint8Array = numberToUint8Array(rating);
-
-  const manageAppArgs: Uint8Array[] = [rate, ratingPassed];
-  const callManageAppTxn: CallApplTxn = {
+  const callMainAppTxn: CallApplTxn = {
     ...params,
     flatFee: true,
     type: "appl",
-    from: greenVerifierAddr,
-    appIndex: manageAppId,
+    from: financialRegulatorAddr,
+    appIndex: mainAppId,
     appOnComplete: OnApplicationComplete.NoOpOC,
-    appArgs: manageAppArgs,
+    appArgs: mainAppArgs,
+    appAccounts: isAll ? undefined : [freezeAddr!],
   }
 
-  let rawSignedOptTxn: SignedTx = await myAlgoWallet.signTransaction(callManageAppTxn);
+  let rawSignedOptTxn: SignedTx = await myAlgoWallet.signTransaction(callMainAppTxn);
   let tx = (await algodClient.sendRawTransaction(rawSignedOptTxn.blob).do());
 
   console.log("Transaction : " + tx.txId);

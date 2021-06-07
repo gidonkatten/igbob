@@ -70,7 +70,7 @@ export function IssuerPage(props: IssuerPageProps) {
       <BackButton onClick={exitAppView}/>
 
       <Button
-        variant="outlined"
+        variant="contained"
         color="primary"
         component="label"
         fullWidth

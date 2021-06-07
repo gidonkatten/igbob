@@ -3,6 +3,7 @@ import algosdk, { modelsv2 } from 'algosdk';
 import { ApplicationLocalState, TealKeyValue } from 'algosdk/dist/types/src/client/v2/algod/models/types';
 import { extractAppState } from '../../utils/Utils';
 import { AppAccount, AppState, UserAccount } from '../../redux/types';
+import { getStateValue } from '../../investor/Utils';
 
 /**
  * Get account information using Algorand address
@@ -63,12 +64,12 @@ export async function getAppAccounts(appId: number, bondId: number): Promise<App
     let frozen: boolean = true;
     const appLocalStates: ApplicationLocalState[] | undefined = acc['apps-local-state'];
     if (appLocalStates) {
-      appLocalStates.forEach(appLocalState => {
-        if (appLocalState.id == appId) {
-          const statePairs: TealKeyValue[] | undefined = appLocalState['key-value']
-          frozen = extractAppState(statePairs).get('Frozen') === 0;
-        }
-      });
+      const foundIndex = appLocalStates.findIndex(state => state.id === appId);
+      if (foundIndex >= 0) {
+        const appLocalState: ApplicationLocalState = appLocalStates[foundIndex];
+        const statePairs: TealKeyValue[] | undefined = appLocalState['key-value']
+        frozen = getStateValue('Frozen', extractAppState(statePairs)) === 0;
+      }
     }
 
     addresses.push({
