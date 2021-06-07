@@ -1,19 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { extractManageAppState } from '../utils/Utils';
 import { getManageAppGlobalStateSelector } from '../redux/selectors/bondSelector';
-import { setManageAppGlobalState } from '../redux/actions/actions';
 import { connect } from 'react-redux';
 import { App, AppState } from '../redux/types';
 import { IPFSAlgoWrapper } from '../ipfs/IPFSAlgoWrapper';
-import { algodClient } from '../algorand/utils/Utils';
 import { IPFSFileList } from './IPFSFileList';
 import { getStateValue } from '../investor/Utils';
 
 interface StateProps {}
 
-interface DispatchProps {
-  setManageAppGlobalState: typeof setManageAppGlobalState,
-}
+interface DispatchProps {}
 
 interface OwnProps {
   app: App | undefined
@@ -27,7 +22,7 @@ function IPFSFileListContainer(props: IPFSFileListContainerProps) {
   const [cids, setCids] = useState<{ cid: string, time: number }[][]>([]);
   const [ratings, setRatings] = useState<number[]>([]);
 
-  const { app, setManageAppGlobalState } = props;
+  const { app } = props;
 
   const appId = app ? app.app_id : 0;
   useEffect(() => {
@@ -36,29 +31,24 @@ function IPFSFileListContainer(props: IPFSFileListContainerProps) {
     // Get IPFS docs associated with current application
     new IPFSAlgoWrapper().getData(app).then(res => setCids(res));
 
-    // Get global state of current manage application
-    algodClient.getApplicationByID(app.manage_app_id).do().then(manageApp => {
-      setManageAppGlobalState(app.app_id, extractManageAppState(manageApp.params['global-state']));
-
-      // Update ratings
-      const manageAppState: AppState | undefined =  app.manage_app_global_state
-      if (!manageAppState) return;
-      const newRatings: number[] = [];
-      for (let i = 0; i <= app.bond_length; i++) {
-        const key: string = Math.floor(i / 8) + '';
-        const slot = i % 8;
-        const array: Uint8Array | number = getStateValue(key, manageAppState);
-        if (array === 0) {
-          // Uninitialised array
-          newRatings.push(0)
-        } else {
-          newRatings.push(array[slot]);
-        }
+    // Get ratings
+    const manageAppState: AppState | undefined =  app.manage_app_global_state
+    if (!manageAppState) return;
+    const newRatings: number[] = [];
+    for (let i = 0; i <= app.bond_length; i++) {
+      const key: string = Math.floor(i / 8) + '';
+      const slot = i % 8;
+      const array: Uint8Array | number = getStateValue(key, manageAppState);
+      if (array === 0) {
+        // Uninitialised array
+        newRatings.push(0)
+      } else {
+        newRatings.push(array[slot]);
       }
-      setRatings(newRatings);
-    });
+    }
+    setRatings(newRatings);
 
-  }, [appId])
+  }, [appId, app?.manage_app_global_state])
 
 
   return (
@@ -84,7 +74,6 @@ const mapStateToProps = (state: any) => ({
 });
 
 const mapDispatchToProps = {
-  setManageAppGlobalState
 };
 
 export default connect<StateProps, DispatchProps, OwnProps>(mapStateToProps, mapDispatchToProps)(IPFSFileListContainer);

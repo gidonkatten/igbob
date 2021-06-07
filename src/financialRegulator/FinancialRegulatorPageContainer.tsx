@@ -9,7 +9,7 @@ import { FETCH_APPS_FILTER, fetchApps } from '../common/Utils';
 import { useAuth0 } from '@auth0/auth0-react';
 import { getAccountInformation, getAppAccounts } from '../algorand/account/Account';
 import { algodClient } from '../algorand/utils/Utils';
-import { extractAppState, extractManageAppState } from '../utils/Utils';
+import { extractAppState } from '../utils/Utils';
 import { freeze } from '../algorand/bond/Freeze';
 import { getStateValue } from '../investor/Utils';
 
@@ -31,7 +31,7 @@ type FinancialRegulatorPageContainerProps = StateProps & DispatchProps & OwnProp
 function FinancialRegulatorPageContainer(props: FinancialRegulatorPageContainerProps) {
 
   const [inOverview, setInOverview] = useState<boolean>(true);
-  const [app, setApp] = useState<App>();
+  const [appId, setAppId] = useState<number>();
   const [appAccounts, setAppAccounts] = useState<AppAccount[]>([]);
 
   const {
@@ -55,27 +55,27 @@ function FinancialRegulatorPageContainer(props: FinancialRegulatorPageContainerP
   }, [selectedAccount]);
 
   // On entering into new app
-  const appId = app ? app.app_id : 0;
   useEffect(() => {
-    if (!app) return;
+    if (!appId) return;
+    const app: App = getApp(appId)!;
     getAppAccounts(app.app_id, app.bond_id).then(accs => setAppAccounts(accs));
   }, [appId]);
 
 
   const enterAppView = (appId: number) => {
     setInOverview(false);
-    const newApp = getApp(appId);
-    setApp(newApp);
+    setAppId(appId);
   }
 
   const exitAppView = () => {
     setInOverview(true);
-    setApp(undefined);
+    setAppId(undefined);
   }
 
   // FREEZE
   const freezeAll = async (toFreeze: boolean) => {
-    if (!selectedAccount || !app) return;
+    if (!selectedAccount || !appId) return;
+    const app: App = getApp(appId)!;
     await freeze(app.app_id, selectedAccount.address, toFreeze, true);
 
     // Update frozen value
@@ -85,7 +85,8 @@ function FinancialRegulatorPageContainer(props: FinancialRegulatorPageContainerP
   }
 
   const freezeAddress = async (toFreeze: boolean, addr: string) => {
-    if (!selectedAccount || !app) return;
+    if (!selectedAccount || !appId) return;
+    const app: App = getApp(appId)!;
     await freeze(app.app_id, selectedAccount.address, toFreeze, false, addr);
 
     // Update frozen value
@@ -103,7 +104,7 @@ function FinancialRegulatorPageContainer(props: FinancialRegulatorPageContainerP
       inOverview={inOverview}
       enterAppView={enterAppView}
       exitAppView={exitAppView}
-      app={app}
+      app={appId === undefined ? undefined : getApp(appId)}
       appAccounts={appAccounts}
       freezeAll={freezeAll}
       freezeAddress={freezeAddress}

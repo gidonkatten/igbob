@@ -32,7 +32,7 @@ type IssuerPageContainerProps = StateProps & DispatchProps & OwnProps;
 function IssuerPageContainer(props: IssuerPageContainerProps) {
 
   const [issuerPageNav, setIssuerPageNav] = useState<IssuerPageNav>(IssuerPageNav.OVERVIEW);
-  const [app, setApp] = useState<App>();
+  const [appId, setAppId] = useState<number>();
 
   const { selectedAccount, getApp, setApps } = props;
   const { getAccessTokenSilently } = useAuth0();
@@ -51,25 +51,21 @@ function IssuerPageContainer(props: IssuerPageContainerProps) {
 
   const enterAppView = (appId) => {
     setIssuerPageNav(IssuerPageNav.MANAGE);
-    const newApp = getApp(appId);
-    setApp(newApp);
+    setAppId(appId);
   }
 
   const exitAppView = () => {
     setIssuerPageNav(IssuerPageNav.OVERVIEW);
-    setApp(undefined);
+    setAppId(undefined);
   }
 
   const enterIssuanceView = () => setIssuerPageNav(IssuerPageNav.ISSUANCE);
 
   const exitIssuanceView = () => setIssuerPageNav(IssuerPageNav.OVERVIEW);
 
-  const reportRatingRound: number | undefined = app ? getReportRatingRound(
-    app.start_buy_date,
-    app.end_buy_date,
-    app.maturity_date,
-    app.period
-  ) : undefined;
+  const reportRatingRound: number | undefined = appId ?
+    getReportRatingRound(getApp(appId)!) :
+    undefined;
 
   const uploadText = (): string => {
     if (reportRatingRound === undefined) return 'Upload PDF Not Available At This Time';
@@ -78,7 +74,7 @@ function IssuerPageContainer(props: IssuerPageContainerProps) {
   }
 
   const uploadToIPFS = async (event: any) => {
-    if (!selectedAccount || !app || reportRatingRound === undefined) return;
+    if (!selectedAccount || !appId || reportRatingRound === undefined) return;
 
     const target = event.target as HTMLInputElement;
     const file: File = (target.files as FileList)[0];
@@ -88,7 +84,7 @@ function IssuerPageContainer(props: IssuerPageContainerProps) {
     await new IPFSAlgoWrapper().addData(
       file,
       selectedAccount.address,
-      app.manage_app_id,
+      getApp(appId)!.manage_app_id,
       reportRatingRound
     );
 
@@ -102,7 +98,7 @@ function IssuerPageContainer(props: IssuerPageContainerProps) {
       exitAppView={exitAppView}
       enterIssuanceView={enterIssuanceView}
       exitIssuanceView={exitIssuanceView}
-      app={app}
+      app={appId === undefined ? undefined : getApp(appId)}
       reportRatingRound={reportRatingRound}
       uploadToIPFS={uploadToIPFS}
       uploadText={uploadText()}

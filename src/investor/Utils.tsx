@@ -33,21 +33,22 @@ export function getCouponRound(
 
 // Returns undefined if invalid time
 // Else returns round: 0 is use of proceeds and 0 < n <= no.coupons is coupon round
-export function getReportRatingRound(
-  startBuyDate: number,
-  endBuyDate: number,
-  maturityDate: number,
-  period: number,
-): number | undefined {
+export function getReportRatingRound(app: App): number | undefined {
+  const {
+    start_buy_date,
+    end_buy_date,
+    maturity_date,
+    period
+  } = app;
   const currentTime: number = Date.now() / 1000;
 
   let round: number | undefined;
 
-  if (currentTime < startBuyDate) {
+  if (currentTime < start_buy_date) {
     // Use of proceeds must be before bond is bought
     round = 0;
-  } else if (currentTime >= endBuyDate && currentTime < maturityDate) {
-    round = Math.ceil((currentTime - endBuyDate) / period);
+  } else if (currentTime >= end_buy_date && currentTime < maturity_date) {
+    round = Math.ceil((currentTime - end_buy_date) / period);
   }
   // Undefined if between startBuyDate and endBuyDate
   // Undefined if after maturityDate

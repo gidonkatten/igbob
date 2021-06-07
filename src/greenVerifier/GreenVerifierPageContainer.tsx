@@ -30,7 +30,7 @@ type GreenVerifierPageContainerProps = StateProps & DispatchProps & OwnProps;
 function GreenVerifierPageContainer(props: GreenVerifierPageContainerProps) {
 
   const [inOverview, setInOverview] = useState<boolean>(true);
-  const [app, setApp] = useState<App>();
+  const [appId, setAppId] = useState<number>();
   const [rating, setRating] = useState<number | null>(0);
 
   const {
@@ -53,16 +53,15 @@ function GreenVerifierPageContainer(props: GreenVerifierPageContainerProps) {
     return () => { setApps([]) };
   }, [selectedAccount]);
 
-  const reportRatingRound: number | undefined = app ? getReportRatingRound(
-    app.start_buy_date,
-    app.end_buy_date,
-    app.maturity_date,
-    app.period
-  ) : undefined;
+  const reportRatingRound: number | undefined = appId ?
+    getReportRatingRound(getApp(appId)!) :
+    undefined;
 
   // RATE
   const handleRate = async () => {
-    if (!selectedAccount || !app || !rating) return;
+    if (!selectedAccount || !appId || !rating) return;
+    const app: App = getApp(appId)!;
+
     await rate(app.manage_app_id, selectedAccount.address, rating);
 
     // Update ratings
@@ -79,13 +78,12 @@ function GreenVerifierPageContainer(props: GreenVerifierPageContainerProps) {
 
   const enterAppView = (appId: number) => {
     setInOverview(false);
-    const newApp = getApp(appId);
-    setApp(newApp);
+    setAppId(appId);
   }
 
   const exitAppView = () => {
     setInOverview(true);
-    setApp(undefined);
+    setAppId(undefined);
   }
 
   return (
@@ -93,7 +91,7 @@ function GreenVerifierPageContainer(props: GreenVerifierPageContainerProps) {
       inOverview={inOverview}
       enterAppView={enterAppView}
       exitAppView={exitAppView}
-      app={app}
+      app={appId === undefined ? undefined : getApp(appId)}
       rating={rating}
       setRating={setRating}
       reportRatingRound={reportRatingRound}
