@@ -5,7 +5,6 @@ import AppList from '../common/AppTable';
 import { BackButton } from '../common/BackButton';
 import { AppAccountList } from './AppAccountList';
 import Button from '@material-ui/core/Button';
-import { getStateValue } from '../investor/Utils';
 
 interface FinancialRegulatorPageProps {
   inOverview: boolean;
@@ -13,6 +12,7 @@ interface FinancialRegulatorPageProps {
   exitAppView: () => void;
   app?: App;
   appAccounts: AppAccount[];
+  isAllFrozen: boolean;
   freezeAll: (toFreeze: boolean) => void;
   freezeAddress: (toFreeze: boolean, addr: string) => void;
 }
@@ -25,6 +25,7 @@ export function FinancialRegulatorPage(props: FinancialRegulatorPageProps) {
     exitAppView,
     app,
     appAccounts,
+    isAllFrozen,
     freezeAll,
     freezeAddress,
   } = props;
@@ -37,8 +38,6 @@ export function FinancialRegulatorPage(props: FinancialRegulatorPageProps) {
       />
     </div>
   )
-
-  const isAllFrozen: boolean = getStateValue('Frozen', app?.app_global_state) === 0;
 
   const appView = app && (
     <div>

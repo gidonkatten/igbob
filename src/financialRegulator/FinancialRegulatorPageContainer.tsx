@@ -34,6 +34,7 @@ function FinancialRegulatorPageContainer(props: FinancialRegulatorPageContainerP
 
   const [inOverview, setInOverview] = useState<boolean>(true);
   const [appAccounts, setAppAccounts] = useState<AppAccount[]>([]);
+  const [isAllFrozen, setIsAllFrozen] = useState<boolean>(true);
 
   const {
     selectedAccount,
@@ -63,7 +64,6 @@ function FinancialRegulatorPageContainer(props: FinancialRegulatorPageContainerP
     getAppAccounts(selectedApp.app_id, selectedApp.bond_id).then(accs => setAppAccounts(accs));
   }, [selectedApp?.app_id]);
 
-
   const enterAppView = (appId: number) => {
     setInOverview(false);
     setSelectedApp(appId);
@@ -82,6 +82,7 @@ function FinancialRegulatorPageContainer(props: FinancialRegulatorPageContainerP
     // Update frozen value
     algodClient.getApplicationByID(selectedApp.app_id).do().then(mainApp => {
       setMainAppGlobalState(selectedApp.app_id, extractAppState(mainApp.params['global-state']));
+      setIsAllFrozen(getStateValue('Frozen', selectedApp?.app_global_state) === 0);
     })
   }
 
@@ -94,7 +95,7 @@ function FinancialRegulatorPageContainer(props: FinancialRegulatorPageContainerP
       const accs: AppAccount[] = [...appAccounts];
       const foundIndex = accs.findIndex(acc => acc.addr === addr);
       const localState: AppState | undefined = account.appsLocalState.get(selectedApp.app_id);
-      accs[foundIndex].frozen = getStateValue('Frozen', localState);
+      accs[foundIndex].frozen = getStateValue('Frozen', localState) === 0;
       setAppAccounts(accs);
     });
   }
@@ -106,6 +107,7 @@ function FinancialRegulatorPageContainer(props: FinancialRegulatorPageContainerP
       exitAppView={exitAppView}
       app={selectedApp}
       appAccounts={appAccounts}
+      isAllFrozen={isAllFrozen}
       freezeAll={freezeAll}
       freezeAddress={freezeAddress}
     />

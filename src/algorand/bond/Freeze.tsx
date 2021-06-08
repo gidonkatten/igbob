@@ -19,7 +19,7 @@ export async function freeze(
 
   const enc = new TextEncoder();
   const freeze: Uint8Array = enc.encode(isAll ? "freeze_all" : "freeze");
-  const val: Uint8Array = numberToUint8Array(toFreeze ? 1 : 0);
+  const val: Uint8Array = numberToUint8Array(toFreeze ? 0 : 1);
   const mainAppArgs: Uint8Array[] = [freeze, val];
 
   const callMainAppTxn: CallApplTxn = {
