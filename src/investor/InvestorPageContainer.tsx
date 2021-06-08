@@ -17,7 +17,7 @@ import {
   FETCH_MY_TRADES_FILTER,
   FETCH_TRADES_FILTER,
   fetchApps,
-  fetchTrades
+  fetchTrades, fetchApp
 } from '../common/Utils';
 
 export enum InvestorPageNav {
@@ -104,8 +104,15 @@ function InvestorPageContainer(props: InvestorPageContainerProps) {
 
   const enterTrade = (tradeId: number, appId: number) => {
     setInvestorPageNav(InvestorPageNav.TRADE);
+    console.log('called');
+    console.log(tradeId);
+    console.log(appId);
+    console.log(getTrade(tradeId));
+    console.log(getApp(appId));
     setTrade(getTrade(tradeId));
-    setApp(getApp(appId));
+    getAccessTokenSilently().then(accessToken => {
+      fetchApp(accessToken, setApp, appId);
+    });
   }
 
   const exitTrade = () => {
@@ -121,7 +128,7 @@ function InvestorPageContainer(props: InvestorPageContainerProps) {
     // Set trades using given filter e.g. expired, live etc
     getAccessTokenSilently().then(accessToken => {
       fetchTrades(accessToken, setTrades, filter);
-    })
+    });
   }
 
   const exitManageTradesTable = () => {
@@ -142,7 +149,9 @@ function InvestorPageContainer(props: InvestorPageContainerProps) {
 
     setInvestorPageNav(InvestorPageNav.MANAGE_TRADE);
     setTrade(getTrade(tradeId));
-    setApp(getApp(appId));
+    getAccessTokenSilently().then(accessToken => {
+      fetchApp(accessToken, setApp, appId);
+    });
   }
 
   const exitManageTrade = () => {

@@ -26,6 +26,30 @@ export enum FetchAppsFilter {
   FINANCIAL_REGULATOR = 'financial-regulator',
 }
 
+async function updateApp(app: App) {
+  app.coupon_round = getCouponRound(app);
+
+  // Set ssc states, minted, balances and default
+  await Promise.all(
+    [
+      algodClient.getApplicationByID(app.app_id).do(),
+      algodClient.getApplicationByID(app.manage_app_id).do(),
+      indexerClient.lookupAssetByID(app.bond_id).do(),
+      getAccountInformation(app.bond_escrow_address),
+      getAccountInformation(app.stablecoin_escrow_address)
+    ]
+  ).then(([mainApp, manageApp, asset, bondEscrow, stablecoinEscrow]) => {
+    app.app_global_state = extractAppState(mainApp.params['global-state']);
+    app.manage_app_global_state = extractManageAppState(manageApp.params['global-state']);
+    app.bonds_minted = asset.asset.params.total as number;
+    app.bond_escrow_balance = getAssetBalance(bondEscrow, app.bond_id) as number;
+    app.stablecoin_escrow_balance = getStablecoinBalance(stablecoinEscrow) as number;
+    app.defaulted = getHasDefaulted(app);
+  });
+
+  return app;
+}
+
 export async function fetchApps(
   accessToken: string,
   setApps: (apps: App[]) => void,
@@ -45,27 +69,7 @@ export async function fetchApps(
     const parsedResponse = await response.json();
 
     const apps = parsedResponse.map(async app => {
-      // Set current coupon round
-      app.coupon_round = getCouponRound(app);
-
-      // Set ssc states, minted, balances and default
-      await Promise.all(
-        [
-          algodClient.getApplicationByID(app.app_id).do(),
-          algodClient.getApplicationByID(app.manage_app_id).do(),
-          indexerClient.lookupAssetByID(app.bond_id).do(),
-          getAccountInformation(app.bond_escrow_address),
-          getAccountInformation(app.stablecoin_escrow_address)
-        ]
-      ).then(([mainApp, manageApp, asset, bondEscrow, stablecoinEscrow]) => {
-        app.app_global_state = extractAppState(mainApp.params['global-state']);
-        app.manage_app_global_state = extractManageAppState(manageApp.params['global-state']);
-        app.bonds_minted = asset.asset.params.total as number;
-        app.bond_escrow_balance = getAssetBalance(bondEscrow, app.bond_id) as number;
-        app.stablecoin_escrow_balance = getStablecoinBalance(stablecoinEscrow) as number;
-        app.defaulted = getHasDefaulted(app);
-      });
-
+      await updateApp(app);
       return app;
     });
 
@@ -84,8 +88,9 @@ export async function fetchApp(
     const response = await fetch(`https://igbob.herokuapp.com/apps/app/${app_id}`, {
       headers: { Authorization: `Bearer ${accessToken}`},
     });
-    const parseResponse = await response.json();
-    setApp(parseResponse);
+    const app = await response.json();
+    await updateApp(app);
+    setApp(app);
   } catch (err) {
     console.error(err.message);
   }
