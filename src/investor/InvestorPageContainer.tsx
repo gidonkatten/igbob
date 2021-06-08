@@ -1,12 +1,19 @@
 import React, { useState } from 'react';
 import { connect } from 'react-redux'
 import {
+  clearSelectedApp,
+  clearSelectedTrade,
   setApps,
   setSelectedAccount,
+  setSelectedApp,
+  setSelectedTrade,
   setTrades
 } from '../redux/actions/actions';
 import { selectedAccountSelector } from '../redux/selectors/userSelector';
-import { getAppSelector, getTradesSelector } from '../redux/selectors/bondSelector';
+import {
+  selectedAppSelector,
+  selectedTradeSelector
+} from '../redux/selectors/bondSelector';
 import { getAccountInformation } from '../algorand/account/Account';
 import { App, Trade, UserAccount } from '../redux/types';
 import { InvestorPage } from './InvestorPage';
@@ -32,14 +39,18 @@ export enum InvestorPageNav {
 
 interface StateProps {
   selectedAccount?: UserAccount;
-  getApp: (appId: number) => App | undefined;
-  getTrade: (tradeId: number) => Trade | undefined;
+  selectedApp?: App;
+  selectedTrade?: Trade;
 }
 
 interface DispatchProps {
   setSelectedAccount: typeof setSelectedAccount;
   setApps: typeof setApps;
   setTrades: typeof setTrades;
+  clearSelectedApp: typeof clearSelectedApp;
+  setSelectedApp: typeof setSelectedApp;
+  clearSelectedTrade: typeof clearSelectedTrade;
+  setSelectedTrade: typeof setSelectedTrade;
 }
 
 interface OwnProps {}
@@ -49,17 +60,19 @@ type InvestorPageContainerProps = StateProps & DispatchProps & OwnProps;
 function InvestorPageContainer(props: InvestorPageContainerProps) {
 
   const [investorPageNav, setInvestorPageNav] = useState<InvestorPageNav>(InvestorPageNav.SELECTION);
-  const [app, setApp] = useState<App>();
-  const [trade, setTrade] = useState<Trade>();
   const [bondStatus, setBondStatus] = useState<BondStatus>();
 
   const {
     selectedAccount,
-    getApp,
-    getTrade,
+    selectedApp,
+    selectedTrade,
     setSelectedAccount,
     setApps,
     setTrades,
+    clearSelectedApp,
+    setSelectedApp,
+    clearSelectedTrade,
+    setSelectedTrade,
   } = props;
   const { getAccessTokenSilently } = useAuth0();
 
@@ -80,12 +93,12 @@ function InvestorPageContainer(props: InvestorPageContainerProps) {
 
   const enterInvestView = (appId: number) => {
     setInvestorPageNav(InvestorPageNav.INVEST);
-    setApp(getApp(appId));
+    setSelectedApp(appId);
   }
 
   const exitInvestView = () => {
     setInvestorPageNav(InvestorPageNav.APPS_TABLE);
-    setApp(undefined);
+    clearSelectedApp();
   }
 
   const enterTradesTable = async (filter: FETCH_TRADES_FILTER) => {
@@ -104,21 +117,22 @@ function InvestorPageContainer(props: InvestorPageContainerProps) {
 
   const enterTrade = (tradeId: number, appId: number) => {
     setInvestorPageNav(InvestorPageNav.TRADE);
-    console.log('called');
-    console.log(tradeId);
-    console.log(appId);
-    console.log(getTrade(tradeId));
-    console.log(getApp(appId));
-    setTrade(getTrade(tradeId));
+    setSelectedTrade(tradeId);
+
+    // Set selected app to the trade app
     getAccessTokenSilently().then(accessToken => {
-      fetchApp(accessToken, setApp, appId);
+      fetchApp(accessToken, appId).then(app => {
+        if (!app) return;
+        setApps([app]);
+        setSelectedApp(app.app_id)
+      });
     });
   }
 
   const exitTrade = () => {
     setInvestorPageNav(InvestorPageNav.TRADES_TABLE);
-    setApp(undefined);
-    setTrade(undefined);
+    clearSelectedApp();
+    clearSelectedTrade();
   }
 
   const enterManageTradesTable = async (filter: FETCH_MY_TRADES_FILTER) => {
@@ -148,16 +162,22 @@ function InvestorPageContainer(props: InvestorPageContainerProps) {
     }
 
     setInvestorPageNav(InvestorPageNav.MANAGE_TRADE);
-    setTrade(getTrade(tradeId));
+    setSelectedTrade(tradeId);
+
+    // Set selected app to the trade app
     getAccessTokenSilently().then(accessToken => {
-      fetchApp(accessToken, setApp, appId);
+      fetchApp(accessToken, appId).then(app => {
+        if (!app) return;
+        setApps([app]);
+        setSelectedApp(app.app_id)
+      });
     });
   }
 
   const exitManageTrade = () => {
     setInvestorPageNav(InvestorPageNav.MANAGE_TRADES_TABLE);
-    setApp(undefined);
-    setTrade(undefined);
+    clearSelectedApp();
+    clearSelectedTrade();
   }
 
   return (
@@ -175,8 +195,8 @@ function InvestorPageContainer(props: InvestorPageContainerProps) {
       exitManageTradesTable={exitManageTradesTable}
       enterManageTrade={enterManageTrade}
       exitManageTrade={exitManageTrade}
-      app={app}
-      trade={trade}
+      app={selectedApp}
+      trade={selectedTrade}
       bondStatus={bondStatus}
       selectedAccount={selectedAccount}
     />
@@ -185,14 +205,18 @@ function InvestorPageContainer(props: InvestorPageContainerProps) {
 
 const mapStateToProps = (state: any) => ({
   selectedAccount: selectedAccountSelector(state),
-  getApp: getAppSelector(state),
-  getTrade: getTradesSelector(state),
+  selectedApp: selectedAppSelector(state),
+  selectedTrade: selectedTradeSelector(state),
 });
 
 const mapDispatchToProps = {
   setSelectedAccount,
   setApps,
   setTrades,
+  clearSelectedApp,
+  setSelectedApp,
+  clearSelectedTrade,
+  setSelectedTrade,
 };
 
 export default connect<StateProps, DispatchProps, OwnProps>(mapStateToProps, mapDispatchToProps)(InvestorPageContainer);

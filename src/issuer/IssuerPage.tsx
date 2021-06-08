@@ -7,6 +7,7 @@ import Button from '@material-ui/core/Button';
 import IPFSFileListContainer from '../common/IPFSFileListContainer';
 import Typography from '@material-ui/core/Typography';
 import { IssuerPageNav } from './IssuerPageContainer';
+import FundContainer from './FundContainer';
 
 interface IssuerPageProps {
   issuerPageNav: IssuerPageNav;
@@ -83,6 +84,8 @@ export function IssuerPage(props: IssuerPageProps) {
       </Button>
 
       <IPFSFileListContainer app={app}/>
+
+      <FundContainer app={app}/>
 
     </div>
   );

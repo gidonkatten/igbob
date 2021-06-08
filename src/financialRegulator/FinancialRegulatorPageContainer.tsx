@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { selectedAccountSelector } from '../redux/selectors/userSelector';
-import { getAppSelector } from '../redux/selectors/bondSelector';
 import { App, AppAccount, AppState, UserAccount } from '../redux/types';
-import { setApps, setMainAppGlobalState } from '../redux/actions/actions';
+import { clearSelectedApp, setApps, setMainAppGlobalState, setSelectedApp } from '../redux/actions/actions';
 import { FinancialRegulatorPage } from './FinancialRegulatorPage';
 import { FetchAppsFilter, fetchApps } from '../common/Utils';
 import { useAuth0 } from '@auth0/auth0-react';
@@ -12,15 +11,18 @@ import { algodClient } from '../algorand/utils/Utils';
 import { extractAppState } from '../utils/Utils';
 import { freeze } from '../algorand/bond/Freeze';
 import { getStateValue } from '../investor/Utils';
+import { selectedAppSelector } from '../redux/selectors/bondSelector';
 
 interface StateProps {
   selectedAccount?: UserAccount;
-  getApp: (appId: number) => App | undefined;
+  selectedApp?: App;
 }
 
 interface DispatchProps {
   setApps: typeof setApps;
   setMainAppGlobalState: typeof setMainAppGlobalState;
+  clearSelectedApp: typeof clearSelectedApp;
+  setSelectedApp: typeof setSelectedApp;
 }
 
 interface OwnProps {}
@@ -31,14 +33,15 @@ type FinancialRegulatorPageContainerProps = StateProps & DispatchProps & OwnProp
 function FinancialRegulatorPageContainer(props: FinancialRegulatorPageContainerProps) {
 
   const [inOverview, setInOverview] = useState<boolean>(true);
-  const [app, setApp] = useState<App>();
   const [appAccounts, setAppAccounts] = useState<AppAccount[]>([]);
 
   const {
     selectedAccount,
-    getApp,
+    selectedApp,
     setApps,
     setMainAppGlobalState,
+    clearSelectedApp,
+    setSelectedApp,
   } = props;
   const { getAccessTokenSilently } = useAuth0();
 
@@ -56,41 +59,41 @@ function FinancialRegulatorPageContainer(props: FinancialRegulatorPageContainerP
 
   // On entering into new app
   useEffect(() => {
-    if (!app) return;
-    getAppAccounts(app.app_id, app.bond_id).then(accs => setAppAccounts(accs));
-  }, [app?.app_id]);
+    if (!selectedApp) return;
+    getAppAccounts(selectedApp.app_id, selectedApp.bond_id).then(accs => setAppAccounts(accs));
+  }, [selectedApp?.app_id]);
 
 
   const enterAppView = (appId: number) => {
     setInOverview(false);
-    setApp(getApp(appId));
+    setSelectedApp(appId);
   }
 
   const exitAppView = () => {
     setInOverview(true);
-    setApp(undefined);
+    clearSelectedApp();
   }
 
   // FREEZE
   const freezeAll = async (toFreeze: boolean) => {
-    if (!selectedAccount || !app) return;
-    await freeze(app.app_id, selectedAccount.address, toFreeze, true);
+    if (!selectedAccount || !selectedApp) return;
+    await freeze(selectedApp.app_id, selectedAccount.address, toFreeze, true);
 
     // Update frozen value
-    algodClient.getApplicationByID(app.app_id).do().then(mainApp => {
-      setMainAppGlobalState(app.app_id, extractAppState(mainApp.params['global-state']));
+    algodClient.getApplicationByID(selectedApp.app_id).do().then(mainApp => {
+      setMainAppGlobalState(selectedApp.app_id, extractAppState(mainApp.params['global-state']));
     })
   }
 
   const freezeAddress = async (toFreeze: boolean, addr: string) => {
-    if (!selectedAccount || !app) return;
-    await freeze(app.app_id, selectedAccount.address, toFreeze, false, addr);
+    if (!selectedAccount || !selectedApp) return;
+    await freeze(selectedApp.app_id, selectedAccount.address, toFreeze, false, addr);
 
     // Update frozen value
     getAccountInformation(addr).then(account => {
       const accs: AppAccount[] = [...appAccounts];
       const foundIndex = accs.findIndex(acc => acc.addr === addr);
-      const localState: AppState | undefined = account.appsLocalState.get(app.app_id);
+      const localState: AppState | undefined = account.appsLocalState.get(selectedApp.app_id);
       accs[foundIndex].frozen = getStateValue('Frozen', localState);
       setAppAccounts(accs);
     });
@@ -101,7 +104,7 @@ function FinancialRegulatorPageContainer(props: FinancialRegulatorPageContainerP
       inOverview={inOverview}
       enterAppView={enterAppView}
       exitAppView={exitAppView}
-      app={app}
+      app={selectedApp}
       appAccounts={appAccounts}
       freezeAll={freezeAll}
       freezeAddress={freezeAddress}
@@ -111,12 +114,14 @@ function FinancialRegulatorPageContainer(props: FinancialRegulatorPageContainerP
 
 const mapStateToProps = (state: any) => ({
   selectedAccount: selectedAccountSelector(state),
-  getApp: getAppSelector(state),
+  selectedApp: selectedAppSelector(state),
 });
 
 const mapDispatchToProps = {
   setApps,
   setMainAppGlobalState,
+  clearSelectedApp,
+  setSelectedApp,
 };
 
 export default connect<StateProps, DispatchProps, OwnProps>(mapStateToProps, mapDispatchToProps)(FinancialRegulatorPageContainer);

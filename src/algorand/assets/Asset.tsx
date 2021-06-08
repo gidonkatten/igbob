@@ -4,27 +4,39 @@ import { AssetTxn, SignedTx } from '@randlabs/myalgo-connect';
 import { myAlgoWallet } from '../wallet/myAlgo/MyAlgoWallet';
 
 /**
- * Opt into asset using MyAlgo
+ * Transfer asset using MyAlgo
  */
-export async function optIntoAsset(assetId: number, addr: string) {
+export async function transferAsset(
+  assetId: number,
+  from: string,
+  to: string,
+  amount: number
+) {
   const params: SuggestedParams = await algodClient.getTransactionParams().do();
 
-  const optTxn: AssetTxn = {
+  const txm: AssetTxn = {
     ...params,
     fee: 1000,
     flatFee: true,
     type: 'axfer',
-    from: addr,
-    to: addr,
-    amount: 0,
+    from,
+    to,
+    amount,
     assetIndex: assetId
   };
 
-  const rawSignedOptTxn: SignedTx = await myAlgoWallet.signTransaction(optTxn);
+  const rawSignedOptTxn: SignedTx = await myAlgoWallet.signTransaction(txm);
   const tx = await algodClient.sendRawTransaction(rawSignedOptTxn.blob).do();
 
   console.log("Transaction : " + tx.txId);
 
   // Wait for confirmation
   await waitForConfirmation(tx.txId);
+}
+
+/**
+ * Opt into asset using MyAlgo
+ */
+export async function optIntoAsset(assetId: number, addr: string) {
+  await transferAsset(assetId, addr, addr, 0);
 }

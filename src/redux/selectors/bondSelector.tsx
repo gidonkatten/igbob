@@ -40,7 +40,23 @@ export const getAppSelector = state => appId => {
   return apps.get(appId);
 };
 
+export const selectedAppSelector = state => {
+  const selected: number | undefined = state.bondReducer.selectedApp;
+  if (!selected) return undefined;
+
+  const apps: Map<number, App> = state.bondReducer.apps;
+  return apps.get(selected);
+};
+
 export const tradesSelector = state => state.bondReducer.trades;
+
+export const selectedTradeSelector = state => {
+  const selected: number | undefined = state.bondReducer.selectedTrade;
+  if (!selected) return undefined;
+
+  const trades: Map<number, Trade> = state.bondReducer.trades;
+  return trades.get(selected);
+};
 
 export const tradesTableSelector = state => {
   const trades: Map<number, Trade> = state.bondReducer.trades;

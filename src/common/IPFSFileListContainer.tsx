@@ -24,7 +24,6 @@ function IPFSFileListContainer(props: IPFSFileListContainerProps) {
 
   const { app } = props;
 
-  const appId = app ? app.app_id : 0;
   useEffect(() => {
     if (!app) return;
 
@@ -37,7 +36,7 @@ function IPFSFileListContainer(props: IPFSFileListContainerProps) {
     const newRatings: number[] = getRatingsFromState(app);
     setRatings(newRatings);
 
-  }, [appId, app?.manage_app_global_state])
+  }, [app?.app_id, app?.manage_app_global_state])
 
 
   return (

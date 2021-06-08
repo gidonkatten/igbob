@@ -1,25 +1,27 @@
 import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { selectedAccountSelector } from '../redux/selectors/userSelector';
-import { getAppSelector } from '../redux/selectors/bondSelector';
 import { App, UserAccount } from '../redux/types';
 import { algodClient } from '../algorand/utils/Utils';
 import { extractManageAppState } from '../utils/Utils';
-import { setApps, setManageAppGlobalState } from '../redux/actions/actions';
+import { clearSelectedApp, setApps, setManageAppGlobalState, setSelectedApp } from '../redux/actions/actions';
 import { rate } from '../algorand/bond/Rate';
 import { getReportRatingRound } from '../investor/Utils';
 import { GreenVerifierPage } from './GreenVerifierPage';
 import { useAuth0 } from '@auth0/auth0-react';
 import { FetchAppsFilter, fetchApps } from '../common/Utils';
+import { selectedAppSelector } from '../redux/selectors/bondSelector';
 
 interface StateProps {
   selectedAccount?: UserAccount;
-  getApp: (appId: number) => App | undefined;
+  selectedApp?: App;
 }
 
 interface DispatchProps {
   setApps: typeof setApps;
   setManageAppGlobalState: typeof setManageAppGlobalState;
+  clearSelectedApp: typeof clearSelectedApp;
+  setSelectedApp: typeof setSelectedApp;
 }
 
 interface OwnProps {}
@@ -30,14 +32,15 @@ type GreenVerifierPageContainerProps = StateProps & DispatchProps & OwnProps;
 function GreenVerifierPageContainer(props: GreenVerifierPageContainerProps) {
 
   const [inOverview, setInOverview] = useState<boolean>(true);
-  const [app, setApp] = useState<App>();
   const [rating, setRating] = useState<number | null>(0);
 
   const {
     selectedAccount,
-    getApp,
+    selectedApp,
     setManageAppGlobalState,
     setApps,
+    clearSelectedApp,
+    setSelectedApp,
   } = props;
   const { getAccessTokenSilently } = useAuth0();
 
@@ -53,19 +56,19 @@ function GreenVerifierPageContainer(props: GreenVerifierPageContainerProps) {
     return () => { setApps([]) };
   }, [selectedAccount]);
 
-  const reportRatingRound: number | undefined = app ?
-    getReportRatingRound(app) :
+  const reportRatingRound: number | undefined = selectedApp ?
+    getReportRatingRound(selectedApp) :
     undefined;
 
   // RATE
   const handleRate = async () => {
-    if (!selectedAccount || !app || !rating) return;
+    if (!selectedAccount || !selectedApp || !rating) return;
 
-    await rate(app.manage_app_id, selectedAccount.address, rating);
+    await rate(selectedApp.manage_app_id, selectedAccount.address, rating);
 
     // Update ratings
-    algodClient.getApplicationByID(app.manage_app_id).do().then(manageApp => {
-      setManageAppGlobalState(app.app_id, extractManageAppState(manageApp.params['global-state']));
+    algodClient.getApplicationByID(selectedApp.manage_app_id).do().then(manageApp => {
+      setManageAppGlobalState(selectedApp.app_id, extractManageAppState(manageApp.params['global-state']));
     })
   }
 
@@ -77,12 +80,12 @@ function GreenVerifierPageContainer(props: GreenVerifierPageContainerProps) {
 
   const enterAppView = (appId: number) => {
     setInOverview(false);
-    setApp(getApp(appId));
+    setSelectedApp(appId);
   }
 
   const exitAppView = () => {
     setInOverview(true);
-    setApp(undefined);
+    clearSelectedApp();
   }
 
   return (
@@ -90,7 +93,7 @@ function GreenVerifierPageContainer(props: GreenVerifierPageContainerProps) {
       inOverview={inOverview}
       enterAppView={enterAppView}
       exitAppView={exitAppView}
-      app={app}
+      app={selectedApp}
       rating={rating}
       setRating={setRating}
       reportRatingRound={reportRatingRound}
@@ -102,12 +105,14 @@ function GreenVerifierPageContainer(props: GreenVerifierPageContainerProps) {
 
 const mapStateToProps = (state: any) => ({
   selectedAccount: selectedAccountSelector(state),
-  getApp: getAppSelector(state),
+  selectedApp: selectedAppSelector(state),
 });
 
 const mapDispatchToProps = {
   setApps,
   setManageAppGlobalState,
+  clearSelectedApp,
+  setSelectedApp,
 };
 
 export default connect<StateProps, DispatchProps, OwnProps>(mapStateToProps, mapDispatchToProps)(GreenVerifierPageContainer);

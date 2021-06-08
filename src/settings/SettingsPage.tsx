@@ -4,7 +4,7 @@ import MyAlgoGetAccounts from '../algorand/wallet/myAlgo/MyAlgoGetAccounts';
 import { setSelectedAccount } from '../redux/actions/actions';
 import { getAccountInformation } from '../algorand/account/Account';
 import Button from '@material-ui/core/Button';
-import { optIntoAsset } from '../algorand/assets/OptIntoAsset';
+import { optIntoAsset } from '../algorand/assets/Asset';
 import { STABLECOIN_ID } from '../algorand/utils/Utils';
 import { addressesSelector, optedIntoStablecoinSelector, selectedAccountSelector } from '../redux/selectors/userSelector';
 import { UserAccount } from '../redux/types';

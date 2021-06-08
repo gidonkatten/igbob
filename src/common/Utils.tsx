@@ -81,18 +81,18 @@ export async function fetchApps(
 
 export async function fetchApp(
   accessToken: string,
-  setApp: (app: App) => void,
   app_id: number,
-): Promise<void> {
+): Promise<App | undefined> {
   try {
     const response = await fetch(`https://igbob.herokuapp.com/apps/app/${app_id}`, {
       headers: { Authorization: `Bearer ${accessToken}`},
     });
-    const app = await response.json();
-    await updateApp(app);
-    setApp(app);
+    const parsedResponse = await response.json();
+
+    return parsedResponse;
   } catch (err) {
     console.error(err.message);
+    return undefined;
   }
 }
 

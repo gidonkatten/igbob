@@ -9,7 +9,7 @@ import {
   getOptedIntoBondSelector,
   selectedAccountSelector
 } from '../redux/selectors/userSelector';
-import { optIntoAsset } from '../algorand/assets/OptIntoAsset';
+import { optIntoAsset } from '../algorand/assets/Asset';
 import { optIntoApp } from '../algorand/bond/OptIntoApp';
 
 interface StateProps {

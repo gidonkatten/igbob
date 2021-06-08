@@ -2,13 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { selectedAccountSelector } from '../redux/selectors/userSelector';
 import { App, UserAccount } from '../redux/types';
-import { getAppSelector } from '../redux/selectors/bondSelector';
+import { selectedAppSelector } from '../redux/selectors/bondSelector';
 import { IPFSAlgoWrapper } from '../ipfs/IPFSAlgoWrapper';
 import { getReportRatingRound } from '../investor/Utils';
 import { IssuerPage } from './IssuerPage';
 import { FetchAppsFilter, fetchApps } from '../common/Utils';
 import { useAuth0 } from '@auth0/auth0-react';
-import { setApps } from '../redux/actions/actions';
+import { clearSelectedApp, setApps, setSelectedApp } from '../redux/actions/actions';
 
 export enum IssuerPageNav {
   OVERVIEW,
@@ -18,11 +18,13 @@ export enum IssuerPageNav {
 
 interface StateProps {
   selectedAccount?: UserAccount;
-  getApp: (appId: number) => App | undefined;
+  selectedApp?: App;
 }
 
 interface DispatchProps {
   setApps: typeof setApps;
+  clearSelectedApp: typeof clearSelectedApp;
+  setSelectedApp: typeof setSelectedApp;
 }
 
 interface OwnProps {}
@@ -32,9 +34,14 @@ type IssuerPageContainerProps = StateProps & DispatchProps & OwnProps;
 function IssuerPageContainer(props: IssuerPageContainerProps) {
 
   const [issuerPageNav, setIssuerPageNav] = useState<IssuerPageNav>(IssuerPageNav.OVERVIEW);
-  const [app, setApp] = useState<App>();
 
-  const { selectedAccount, getApp, setApps } = props;
+  const {
+    selectedAccount,
+    selectedApp,
+    setApps,
+    clearSelectedApp,
+    setSelectedApp,
+  } = props;
   const { getAccessTokenSilently } = useAuth0();
 
   // Fetch apps for which selected address is issuer
@@ -47,24 +54,24 @@ function IssuerPageContainer(props: IssuerPageContainerProps) {
 
     // Clean up
     return () => { setApps([]) };
-  }, [selectedAccount]);
+  }, [selectedAccount?.address]);
 
   const enterAppView = (appId) => {
     setIssuerPageNav(IssuerPageNav.MANAGE);
-    setApp(getApp(appId));
+    setSelectedApp(appId);
   }
 
   const exitAppView = () => {
     setIssuerPageNav(IssuerPageNav.OVERVIEW);
-    setApp(undefined);
+    clearSelectedApp();
   }
 
   const enterIssuanceView = () => setIssuerPageNav(IssuerPageNav.ISSUANCE);
 
   const exitIssuanceView = () => setIssuerPageNav(IssuerPageNav.OVERVIEW);
 
-  const reportRatingRound: number | undefined = app ?
-    getReportRatingRound(app) :
+  const reportRatingRound: number | undefined = selectedApp ?
+    getReportRatingRound(selectedApp) :
     undefined;
 
   const uploadText = (): string => {
@@ -74,7 +81,7 @@ function IssuerPageContainer(props: IssuerPageContainerProps) {
   }
 
   const uploadToIPFS = async (event: any) => {
-    if (!selectedAccount || !app || reportRatingRound === undefined) return;
+    if (!selectedAccount || !selectedApp || reportRatingRound === undefined) return;
 
     const target = event.target as HTMLInputElement;
     const file: File = (target.files as FileList)[0];
@@ -84,7 +91,7 @@ function IssuerPageContainer(props: IssuerPageContainerProps) {
     await new IPFSAlgoWrapper().addData(
       file,
       selectedAccount.address,
-      app.manage_app_id,
+      selectedApp.manage_app_id,
       reportRatingRound
     );
 
@@ -98,7 +105,7 @@ function IssuerPageContainer(props: IssuerPageContainerProps) {
       exitAppView={exitAppView}
       enterIssuanceView={enterIssuanceView}
       exitIssuanceView={exitIssuanceView}
-      app={app}
+      app={selectedApp}
       reportRatingRound={reportRatingRound}
       uploadToIPFS={uploadToIPFS}
       uploadText={uploadText()}
@@ -108,11 +115,13 @@ function IssuerPageContainer(props: IssuerPageContainerProps) {
 
 const mapStateToProps = (state: any) => ({
   selectedAccount: selectedAccountSelector(state),
-  getApp: getAppSelector(state),
+  selectedApp: selectedAppSelector(state),
 });
 
 const mapDispatchToProps = {
   setApps,
+  clearSelectedApp,
+  setSelectedApp,
 }
 
 export default connect<StateProps, DispatchProps, OwnProps>(mapStateToProps, mapDispatchToProps)(IssuerPageContainer);

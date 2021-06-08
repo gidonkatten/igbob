@@ -2,7 +2,9 @@ import { App, Trade } from '../types';
 
 interface BondState {
   apps: Map<number, App>;
+  selectedApp?: number;
   trades: Map<number, Trade>;
+  selectedTrade?: number;
 }
 
 const initialState: BondState = {
@@ -18,6 +20,19 @@ export function bondReducer(state = initialState, action: any) {
       return {
         ...state,
         apps: appsMap
+      };
+    }
+    case "CLEAR_SELECTED_APP": {
+      return {
+        ...state,
+        selectedApp: undefined
+      };
+    }
+    case "SET_SELECTED_APP": {
+      const { appId } = action.payload;
+      return {
+        ...state,
+        selectedApp: appId
       };
     }
     case "SET_APP_BOND_ESCROW_BALANCE": {
@@ -50,30 +65,6 @@ export function bondReducer(state = initialState, action: any) {
         apps: appsMap
       };
     }
-    case "SET_TRADES": {
-      const { trades } = action.payload;
-      const tradesMap = new Map<number, Trade>(trades.map(trade => [trade.trade_id, trade]));
-      return {
-        ...state,
-        trades: tradesMap
-      };
-    }
-    case "SET_TRADE_AVAILABLE_BALANCE": {
-      const { tradeId, balance, frozen } = action.payload;
-      const tradesMap = state.trades;
-      const trade = tradesMap.get(tradeId);
-
-      if (!trade) return state;
-
-      trade.seller_balance = balance;
-      trade.seller_frozen = frozen;
-      tradesMap.set(tradeId, trade);
-
-      return {
-        ...state,
-        trades: tradesMap
-      };
-    }
     case "SET_MAIN_APP_GLOBAL_STATE": {
       const { appId, appState } = action.payload;
       const appsMap = state.apps;
@@ -96,6 +87,43 @@ export function bondReducer(state = initialState, action: any) {
       return {
         ...state,
         apps: appsMap
+      };
+    }
+    case "SET_TRADES": {
+      const { trades } = action.payload;
+      const tradesMap = new Map<number, Trade>(trades.map(trade => [trade.trade_id, trade]));
+      return {
+        ...state,
+        trades: tradesMap
+      };
+    }
+    case "CLEAR_SELECTED_TRADE": {
+      return {
+        ...state,
+        selectedTrade: undefined
+      };
+    }
+    case "SET_SELECTED_TRADE": {
+      const { tradeId } = action.payload;
+      return {
+        ...state,
+        selectedTrade: tradeId
+      };
+    }
+    case "SET_TRADE_AVAILABLE_BALANCE": {
+      const { tradeId, balance, frozen } = action.payload;
+      const tradesMap = state.trades;
+      const trade = tradesMap.get(tradeId);
+
+      if (!trade) return state;
+
+      trade.seller_balance = balance;
+      trade.seller_frozen = frozen;
+      tradesMap.set(tradeId, trade);
+
+      return {
+        ...state,
+        trades: tradesMap
       };
     }
     default:
