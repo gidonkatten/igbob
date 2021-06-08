@@ -59,7 +59,7 @@ function TradeBuyContainer(props: TradeProps) {
   const canTrade = () => {
     return trade.seller_balance &&
       noOfBondsToBuy !== 0 &&
-      noOfBondsToBuy <= trade.seller_balance &&
+      noOfBondsToBuy <= (trade.seller_balance / 1e6) &&
       getOptedIntoBond(app.bond_id) &&
       getOptedIntoApp(app.app_id) &&
       currentTime < trade.expiry_date &&
@@ -72,7 +72,7 @@ function TradeBuyContainer(props: TradeProps) {
 
     let err = '';
     if (noOfBondsToBuy === 0) err = err.concat('Must specify more than 0 bonds\n');
-    if (noOfBondsToBuy > trade.seller_balance ) err = err.concat('Must be less than number of available bonds\n');
+    if (noOfBondsToBuy > (trade.seller_balance / 1e6) ) err = err.concat('Must be less than number of available bonds\n');
     if (!getOptedIntoBond(app.bond_id)) err = err.concat('Must be opted into bond\n');
     if (!getOptedIntoApp(app.app_id)) err = err.concat('Must be opted into app\n');
     if (currentTime >= trade.expiry_date) err = err.concat("Trade offer has expired\n");
@@ -143,7 +143,7 @@ function TradeBuyContainer(props: TradeProps) {
           onClick={handleSetTrade}
         >
           You own {formatAlgoDecimalNumber(bondBalance)} bonds <br/>
-          {(trade.seller_balance ? trade.seller_balance : 0).toFixed(6)} bonds available <br/>
+          {(trade.seller_balance ? (trade.seller_balance / 1e6) : 0).toFixed(6)} bonds available <br/>
           BUY {noOfBondsToBuy} bonds for ${(noOfBondsToBuy * trade.price).toFixed(6)}
         </Button>
       </Grid>

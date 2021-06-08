@@ -32,7 +32,7 @@ type IssuerPageContainerProps = StateProps & DispatchProps & OwnProps;
 function IssuerPageContainer(props: IssuerPageContainerProps) {
 
   const [issuerPageNav, setIssuerPageNav] = useState<IssuerPageNav>(IssuerPageNav.OVERVIEW);
-  const [appId, setAppId] = useState<number>();
+  const [app, setApp] = useState<App>();
 
   const { selectedAccount, getApp, setApps } = props;
   const { getAccessTokenSilently } = useAuth0();
@@ -51,20 +51,20 @@ function IssuerPageContainer(props: IssuerPageContainerProps) {
 
   const enterAppView = (appId) => {
     setIssuerPageNav(IssuerPageNav.MANAGE);
-    setAppId(appId);
+    setApp(getApp(appId));
   }
 
   const exitAppView = () => {
     setIssuerPageNav(IssuerPageNav.OVERVIEW);
-    setAppId(undefined);
+    setApp(undefined);
   }
 
   const enterIssuanceView = () => setIssuerPageNav(IssuerPageNav.ISSUANCE);
 
   const exitIssuanceView = () => setIssuerPageNav(IssuerPageNav.OVERVIEW);
 
-  const reportRatingRound: number | undefined = appId ?
-    getReportRatingRound(getApp(appId)!) :
+  const reportRatingRound: number | undefined = app ?
+    getReportRatingRound(app) :
     undefined;
 
   const uploadText = (): string => {
@@ -74,7 +74,7 @@ function IssuerPageContainer(props: IssuerPageContainerProps) {
   }
 
   const uploadToIPFS = async (event: any) => {
-    if (!selectedAccount || !appId || reportRatingRound === undefined) return;
+    if (!selectedAccount || !app || reportRatingRound === undefined) return;
 
     const target = event.target as HTMLInputElement;
     const file: File = (target.files as FileList)[0];
@@ -84,7 +84,7 @@ function IssuerPageContainer(props: IssuerPageContainerProps) {
     await new IPFSAlgoWrapper().addData(
       file,
       selectedAccount.address,
-      getApp(appId)!.manage_app_id,
+      app.manage_app_id,
       reportRatingRound
     );
 
@@ -98,7 +98,7 @@ function IssuerPageContainer(props: IssuerPageContainerProps) {
       exitAppView={exitAppView}
       enterIssuanceView={enterIssuanceView}
       exitIssuanceView={exitIssuanceView}
-      app={appId === undefined ? undefined : getApp(appId)}
+      app={app}
       reportRatingRound={reportRatingRound}
       uploadToIPFS={uploadToIPFS}
       uploadText={uploadText()}

@@ -31,7 +31,7 @@ type FinancialRegulatorPageContainerProps = StateProps & DispatchProps & OwnProp
 function FinancialRegulatorPageContainer(props: FinancialRegulatorPageContainerProps) {
 
   const [inOverview, setInOverview] = useState<boolean>(true);
-  const [appId, setAppId] = useState<number>();
+  const [app, setApp] = useState<App>();
   const [appAccounts, setAppAccounts] = useState<AppAccount[]>([]);
 
   const {
@@ -56,26 +56,24 @@ function FinancialRegulatorPageContainer(props: FinancialRegulatorPageContainerP
 
   // On entering into new app
   useEffect(() => {
-    if (!appId) return;
-    const app: App = getApp(appId)!;
+    if (!app) return;
     getAppAccounts(app.app_id, app.bond_id).then(accs => setAppAccounts(accs));
-  }, [appId]);
+  }, [app?.app_id]);
 
 
   const enterAppView = (appId: number) => {
     setInOverview(false);
-    setAppId(appId);
+    setApp(getApp(appId));
   }
 
   const exitAppView = () => {
     setInOverview(true);
-    setAppId(undefined);
+    setApp(undefined);
   }
 
   // FREEZE
   const freezeAll = async (toFreeze: boolean) => {
-    if (!selectedAccount || !appId) return;
-    const app: App = getApp(appId)!;
+    if (!selectedAccount || !app) return;
     await freeze(app.app_id, selectedAccount.address, toFreeze, true);
 
     // Update frozen value
@@ -85,8 +83,7 @@ function FinancialRegulatorPageContainer(props: FinancialRegulatorPageContainerP
   }
 
   const freezeAddress = async (toFreeze: boolean, addr: string) => {
-    if (!selectedAccount || !appId) return;
-    const app: App = getApp(appId)!;
+    if (!selectedAccount || !app) return;
     await freeze(app.app_id, selectedAccount.address, toFreeze, false, addr);
 
     // Update frozen value
@@ -104,7 +101,7 @@ function FinancialRegulatorPageContainer(props: FinancialRegulatorPageContainerP
       inOverview={inOverview}
       enterAppView={enterAppView}
       exitAppView={exitAppView}
-      app={appId === undefined ? undefined : getApp(appId)}
+      app={app}
       appAccounts={appAccounts}
       freezeAll={freezeAll}
       freezeAddress={freezeAddress}

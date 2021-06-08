@@ -49,7 +49,7 @@ type InvestorPageContainerProps = StateProps & DispatchProps & OwnProps;
 function InvestorPageContainer(props: InvestorPageContainerProps) {
 
   const [investorPageNav, setInvestorPageNav] = useState<InvestorPageNav>(InvestorPageNav.SELECTION);
-  const [appId, setAppId] = useState<number>();
+  const [app, setApp] = useState<App>();
   const [trade, setTrade] = useState<Trade>();
   const [bondStatus, setBondStatus] = useState<BondStatus>();
 
@@ -80,12 +80,12 @@ function InvestorPageContainer(props: InvestorPageContainerProps) {
 
   const enterInvestView = (appId: number) => {
     setInvestorPageNav(InvestorPageNav.INVEST);
-    setAppId(appId);
+    setApp(getApp(appId));
   }
 
   const exitInvestView = () => {
     setInvestorPageNav(InvestorPageNav.APPS_TABLE);
-    setAppId(undefined);
+    setApp(undefined);
   }
 
   const enterTradesTable = async (filter: FETCH_TRADES_FILTER) => {
@@ -104,14 +104,13 @@ function InvestorPageContainer(props: InvestorPageContainerProps) {
 
   const enterTrade = (tradeId: number, appId: number) => {
     setInvestorPageNav(InvestorPageNav.TRADE);
-    const newTrade = getTrade(tradeId);
-    setTrade(newTrade);
-    setAppId(appId);
+    setTrade(getTrade(tradeId));
+    setApp(getApp(appId));
   }
 
   const exitTrade = () => {
     setInvestorPageNav(InvestorPageNav.TRADES_TABLE);
-    setAppId(undefined);
+    setApp(undefined);
     setTrade(undefined);
   }
 
@@ -130,23 +129,25 @@ function InvestorPageContainer(props: InvestorPageContainerProps) {
   }
 
   const enterManageTrade = (tradeId: number, appId: number, addr: string) => {
+    if (!selectedAccount) return;
+
     // Switch of account if necessary
-    if (selectedAccount &&
-      selectedAccount.address !== addr &&
-      window.confirm(`The selected account will be switched to the one with the trade offer`)
-    ) {
-      getAccountInformation(addr).then(acc => setSelectedAccount(acc));
+    if (selectedAccount.address !== addr) {
+      if (window.confirm(`The selected account will be switched to the one with the trade offer`)) {
+        getAccountInformation(addr).then(acc => setSelectedAccount(acc));
+      } else {
+        return;
+      }
     }
 
     setInvestorPageNav(InvestorPageNav.MANAGE_TRADE);
-    const newTrade = getTrade(tradeId);
-    setTrade(newTrade);
-    setAppId(appId);
+    setTrade(getTrade(tradeId));
+    setApp(getApp(appId));
   }
 
   const exitManageTrade = () => {
     setInvestorPageNav(InvestorPageNav.MANAGE_TRADES_TABLE);
-    setAppId(undefined);
+    setApp(undefined);
     setTrade(undefined);
   }
 
@@ -165,7 +166,7 @@ function InvestorPageContainer(props: InvestorPageContainerProps) {
       exitManageTradesTable={exitManageTradesTable}
       enterManageTrade={enterManageTrade}
       exitManageTrade={exitManageTrade}
-      app={appId === undefined ? undefined : getApp(appId)}
+      app={app}
       trade={trade}
       bondStatus={bondStatus}
       selectedAccount={selectedAccount}

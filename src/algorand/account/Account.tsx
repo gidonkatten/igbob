@@ -101,7 +101,7 @@ export async function getAppAccountTrade(
     balance = Math.min(
       getStateValue("Trade", localState),
       acc.assets.has(bondId) ? acc.assets.get(bondId) as number : 0
-    ) / 1e6;
+    );
     frozen = getStateValue('Frozen', localState) === 0;
   }
 

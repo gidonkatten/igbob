@@ -59,6 +59,8 @@ export const tradesTableSelector = state => {
       expiry_date: new Date(trade.expiry_date * 1000),
       price: trade.price,
       seller_address: trade.seller_address,
+      seller_balance: trade.seller_balance === undefined ? 0 : trade.seller_balance,
+      seller_frozen: trade.seller_frozen === undefined || trade.seller_frozen,
     }
   });
 

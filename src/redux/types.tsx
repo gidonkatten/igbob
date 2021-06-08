@@ -101,6 +101,8 @@ export interface TradesTableElem {
   expiry_date: Date;
   price: number;
   seller_address: string;
+  seller_balance: number;
+  seller_frozen: boolean;
 }
 
 export type TradesTable = TradesTableElem[];
