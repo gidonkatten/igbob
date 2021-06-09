@@ -47,6 +47,7 @@ function IssuerPageContainer(props: IssuerPageContainerProps) {
   // Fetch apps for which selected address is issuer
   useEffect(() => {
     if (!selectedAccount) return;
+    setApps([]); // clear
 
     getAccessTokenSilently().then(accessToken => {
       fetchApps(accessToken, setApps, FetchAppsFilter.ISSUER, selectedAccount!.address);

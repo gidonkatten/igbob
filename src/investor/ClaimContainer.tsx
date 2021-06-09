@@ -1,13 +1,19 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
-import { formatAlgoDecimalNumber } from '../utils/Utils';
+import { extractAppState, formatAlgoDecimalNumber } from '../utils/Utils';
 import { getAccountInformation, getAssetBalance, getStablecoinBalance } from '../algorand/account/Account';
 import { App, UserAccount } from '../redux/types';
 import { connect } from 'react-redux';
-import { setAppBondEscrowBalance, setAppStablecoinEscrowBalance, setSelectedAccount } from '../redux/actions/actions';
 import {
-  getAppLocalCouponRoundsPaidSelector, getAppLocalFrozenSelector,
+  setAppBondEscrowBalance,
+  setAppStablecoinEscrowBalance,
+  setMainAppGlobalState,
+  setSelectedAccount
+} from '../redux/actions/actions';
+import {
+  getAppLocalCouponRoundsPaidSelector,
+  getAppLocalFrozenSelector,
   getBondBalanceSelector,
   getOptedIntoAppSelector,
   selectedAccountSelector
@@ -16,6 +22,7 @@ import { getMultiplier, getRatingFromState, getStateValue } from './Utils';
 import { claimCoupon } from '../algorand/bond/Coupon';
 import { claimPrincipal } from '../algorand/bond/Principal';
 import { claimDefault } from '../algorand/bond/Default';
+import { algodClient } from '../algorand/utils/Utils';
 
 interface StateProps {
   selectedAccount?: UserAccount;
@@ -29,6 +36,7 @@ interface DispatchProps {
   setSelectedAccount: typeof setSelectedAccount;
   setAppBondEscrowBalance: typeof setAppBondEscrowBalance;
   setAppStablecoinEscrowBalance: typeof setAppStablecoinEscrowBalance;
+  setMainAppGlobalState: typeof setMainAppGlobalState;
 }
 
 interface OwnProps {
@@ -38,6 +46,8 @@ interface OwnProps {
 type ClaimProps = StateProps & DispatchProps & OwnProps;
 
 function ClaimContainer(props: ClaimProps) {
+
+  const [defaultAmount, setDefaultAmount] = useState<number>(0);
 
   const {
     app,
@@ -49,6 +59,7 @@ function ClaimContainer(props: ClaimProps) {
     setSelectedAccount,
     setAppBondEscrowBalance,
     setAppStablecoinEscrowBalance,
+    setMainAppGlobalState,
   } = props;
 
   const currentTime: number = Date.now() / 1000;
@@ -106,6 +117,9 @@ function ClaimContainer(props: ClaimProps) {
     );
 
     getAccountInformation(selectedAccount.address).then(acc => setSelectedAccount(acc));
+    algodClient.getApplicationByID(app.app_id).do().then(mainApp => {
+      setMainAppGlobalState(app.app_id, extractAppState(mainApp.params['global-state']));
+    });
     getAccountInformation(app.stablecoin_escrow_address).then(acc =>
       setAppStablecoinEscrowBalance(app.app_id, getStablecoinBalance(acc) as number)
     )
@@ -197,10 +211,20 @@ function ClaimContainer(props: ClaimProps) {
   }
 
   const bondBalance: number = app ? (getBondBalance(app.bond_id) as number) : 0;
-  const defaultAmount = app && app.bonds_minted && app.bond_escrow_balance && app.stablecoin_escrow_balance ?
-    (bondBalance / (app.bonds_minted - app.bond_escrow_balance)) * (app.stablecoin_escrow_balance - getStateValue( "Reserve", app.app_global_state)) :
-    0
 
+  useEffect(() => {
+    if (
+      !app ||
+      !app.bonds_minted ||
+      !app.bond_escrow_balance ||
+      !app.stablecoin_escrow_balance
+    ) {
+      setDefaultAmount(0);
+      return;
+    }
+
+    setDefaultAmount((bondBalance / (app.bonds_minted - app.bond_escrow_balance)) * (app.stablecoin_escrow_balance - getStateValue( "Reserve", app.app_global_state)));
+  }, [app, app.bonds_minted, app.bond_escrow_balance, app.stablecoin_escrow_balance]);
 
   const handleClaimDefault = async (e: any) => {
     e.preventDefault();
@@ -210,8 +234,6 @@ function ClaimContainer(props: ClaimProps) {
       app.bond_escrow_balance === undefined ||
       app.stablecoin_escrow_balance === undefined
     ) return;
-
-    const reserve: number = getStateValue( "Reserve", app.app_global_state);
 
     await claimDefault(
       selectedAccount.address,
@@ -224,7 +246,7 @@ function ClaimContainer(props: ClaimProps) {
       app.stablecoin_escrow_address,
       app.stablecoin_escrow_program,
       bondBalance,
-      (1 / (app.bonds_minted - app.bond_escrow_balance)) * (app.stablecoin_escrow_balance - reserve)
+      defaultAmount,
     );
 
     getAccountInformation(selectedAccount.address).then(acc => setSelectedAccount(acc));
@@ -310,6 +332,7 @@ const mapDispatchToProps = {
   setSelectedAccount,
   setAppBondEscrowBalance,
   setAppStablecoinEscrowBalance,
+  setMainAppGlobalState,
 };
 
 export default connect<StateProps, DispatchProps, OwnProps>(mapStateToProps, mapDispatchToProps)(ClaimContainer);

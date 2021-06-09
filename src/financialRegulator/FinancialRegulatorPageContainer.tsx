@@ -57,12 +57,13 @@ function FinancialRegulatorPageContainer(props: FinancialRegulatorPageContainerP
 
     // Clean up
     return () => { setApps([]) };
-  }, [selectedAccount]);
+  }, [selectedAccount?.address]);
 
   // On entering into new app
   useEffect(() => {
     if (!selectedApp) return;
     getAppAccounts(selectedApp.app_id, selectedApp.bond_id).then(accs => setAppAccounts(accs));
+    setIsAllFrozen(getStateValue('Frozen', selectedApp?.app_global_state) === 0);
   }, [selectedApp?.app_id]);
 
   const enterAppView = (appId: number) => {
