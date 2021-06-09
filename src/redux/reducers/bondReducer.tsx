@@ -65,6 +65,21 @@ export function bondReducer(state = initialState, action: any) {
         apps: appsMap
       };
     }
+    case "SET_APP_DEFAULTED": {
+      const { appId, defaulted } = action.payload;
+      const appsMap = state.apps;
+      const app = appsMap.get(appId);
+
+      if (!app) return state;
+
+      app.defaulted = defaulted;
+      appsMap.set(appId, app);
+
+      return {
+        ...state,
+        apps: appsMap
+      };
+    }
     case "SET_MAIN_APP_GLOBAL_STATE": {
       const { appId, appState } = action.payload;
       const appsMap = state.apps;

@@ -7,7 +7,7 @@ import { App, UserAccount } from '../redux/types';
 import { connect } from 'react-redux';
 import { setAppBondEscrowBalance, setAppStablecoinEscrowBalance, setSelectedAccount } from '../redux/actions/actions';
 import {
-  getAppLocalCouponRoundsPaidSelector,
+  getAppLocalCouponRoundsPaidSelector, getAppLocalFrozenSelector,
   getBondBalanceSelector,
   getOptedIntoAppSelector,
   selectedAccountSelector
@@ -22,6 +22,7 @@ interface StateProps {
   getBondBalance: (bondId: number) => number | bigint;
   getOptedIntoApp: (appId: number) => boolean;
   getAppLocalCouponRoundsPaid: (appId: number) => number;
+  getAppLocalFrozen: (appId: number) => boolean;
 }
 
 interface DispatchProps {
@@ -44,6 +45,7 @@ function ClaimContainer(props: ClaimProps) {
     getBondBalance,
     getOptedIntoApp,
     getAppLocalCouponRoundsPaid,
+    getAppLocalFrozen,
     setSelectedAccount,
     setAppBondEscrowBalance,
     setAppStablecoinEscrowBalance,
@@ -63,7 +65,8 @@ function ClaimContainer(props: ClaimProps) {
       bondBalance > 0 &&
       getOptedIntoApp(app.app_id) &&
       hasNotDefaulted &&
-      getStateValue('Frozen', app.app_global_state) > 0;
+      getStateValue('Frozen', app.app_global_state) > 0 &&
+      !getAppLocalFrozen(app.app_id);
   }
 
   const couponTooltip = () => {
@@ -77,7 +80,8 @@ function ClaimContainer(props: ClaimProps) {
     if (bondBalance === 0) err = err.concat('Do not own bond\n');
     if (!getOptedIntoApp(app.app_id)) err = err.concat('Have not opted into app\n');
     if (hasDefaulted) err = err.concat('Not enough funds to pay out money owed at this round\n');
-    if (getStateValue('Frozen', app.app_global_state) === 0) err = err.concat('Your account is frozen\n');
+    if (getStateValue('Frozen', app.app_global_state) === 0) err = err.concat('All accounts are frozen\n');
+    if (getAppLocalFrozen(app.app_id)) err = err.concat('Your account is frozen\n');
     return err;
   }
 
@@ -117,7 +121,8 @@ function ClaimContainer(props: ClaimProps) {
       localCouponRoundsPaid >= app.bond_length &&
       getOptedIntoApp(app.app_id) &&
       !app.defaulted &&
-      getStateValue('Frozen', app.app_global_state) > 0;
+      getStateValue('Frozen', app.app_global_state) > 0 &&
+      !getAppLocalFrozen(app.app_id);
   }
 
   const principalTooltip = () => {
@@ -131,7 +136,8 @@ function ClaimContainer(props: ClaimProps) {
     if (localCouponRoundsPaid < app.bond_length) err = err.concat('Have not collected all coupons\n');
     if (!getOptedIntoApp(app.app_id)) err = err.concat('Have not opted into app\n');
     if (app.defaulted) err = err.concat('Not enough funds to pay out all money owed\n');
-    if (getStateValue('Frozen', app.app_global_state) === 0) err = err.concat('Your account is frozen\n');
+    if (getStateValue('Frozen', app.app_global_state) === 0) err = err.concat('All accounts are frozen\n');
+    if (getAppLocalFrozen(app.app_id)) err = err.concat('Your account is frozen\n');
     return err;
   }
 
@@ -171,7 +177,8 @@ function ClaimContainer(props: ClaimProps) {
     return hasDefaulted &&
       bondBalance > 0 &&
       getOptedIntoApp(app.app_id) &&
-      getStateValue('Frozen', app.app_global_state) > 0;
+      getStateValue('Frozen', app.app_global_state) > 0 &&
+      !getAppLocalFrozen(app.app_id);
   }
 
   const defaultTooltip = () => {
@@ -184,13 +191,14 @@ function ClaimContainer(props: ClaimProps) {
     if (app.defaulted && (localCouponRoundsPaid + 1 < app.defaulted.round)) err = err.concat('Have not collected all available coupons\n');
     if (bondBalance === 0) err = err.concat('Do not own bond\n');
     if (!getOptedIntoApp(app.app_id)) err = err.concat('Have not opted into app\n');
-    if (getStateValue('Frozen', app.app_global_state) === 0) err = err.concat('Your account is frozen\n');
+    if (getStateValue('Frozen', app.app_global_state) === 0) err = err.concat('All accounts are frozen\n');
+    if (getAppLocalFrozen(app.app_id)) err = err.concat('Your account is frozen\n');
     return err;
   }
 
   const bondBalance: number = app ? (getBondBalance(app.bond_id) as number) : 0;
   const defaultAmount = app && app.bonds_minted && app.bond_escrow_balance && app.stablecoin_escrow_balance ?
-    (bondBalance / (app.bonds_minted - app.bond_escrow_balance)) * app.stablecoin_escrow_balance :
+    (bondBalance / (app.bonds_minted - app.bond_escrow_balance)) * (app.stablecoin_escrow_balance - getStateValue( "Reserve", app.app_global_state)) :
     0
 
 
@@ -295,6 +303,7 @@ const mapStateToProps = (state: any) => ({
   getBondBalance: getBondBalanceSelector(state),
   getOptedIntoApp: getOptedIntoAppSelector(state),
   getAppLocalCouponRoundsPaid: getAppLocalCouponRoundsPaidSelector(state),
+  getAppLocalFrozen: getAppLocalFrozenSelector(state),
 });
 
 const mapDispatchToProps = {

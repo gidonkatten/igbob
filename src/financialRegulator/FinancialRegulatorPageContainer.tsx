@@ -49,6 +49,7 @@ function FinancialRegulatorPageContainer(props: FinancialRegulatorPageContainerP
   // Fetch apps for which selected address is financial regulator
   useEffect(() => {
     if (!selectedAccount) return;
+    setApps([]); // clear
 
     getAccessTokenSilently().then(accessToken => {
       fetchApps(accessToken, setApps, FetchAppsFilter.FINANCIAL_REGULATOR, selectedAccount!.address);

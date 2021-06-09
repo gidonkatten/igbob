@@ -9,6 +9,7 @@ import { App, UserAccount } from '../redux/types';
 import { connect } from 'react-redux';
 import { setAppBondEscrowBalance, setSelectedAccount } from '../redux/actions/actions';
 import {
+  getAppLocalFrozenSelector,
   getBondBalanceSelector,
   getOptedIntoBondSelector,
   selectedAccountSelector
@@ -21,6 +22,7 @@ interface StateProps {
   selectedAccount?: UserAccount;
   getOptedIntoBond: (bondId: number) => boolean;
   getBondBalance: (bondId: number) => number | bigint;
+  getAppLocalFrozen: (appId: number) => boolean;
 }
 
 interface DispatchProps {
@@ -43,6 +45,7 @@ function BuyContainer(props: BuyProps) {
     selectedAccount,
     getOptedIntoBond,
     getBondBalance,
+    getAppLocalFrozen,
     setSelectedAccount,
     setAppBondEscrowBalance,
   } = props;
@@ -57,7 +60,8 @@ function BuyContainer(props: BuyProps) {
     return inBuyWindow &&
       getOptedIntoBond(app.bond_id) &&
       noOfBondsToBuy !== 0 &&
-      getStateValue('Frozen', app.app_global_state) > 0;
+      getStateValue('Frozen', app.app_global_state) > 0 &&
+      !getAppLocalFrozen(app.app_id);
   }
 
   const buyTooltip = () => {
@@ -67,7 +71,8 @@ function BuyContainer(props: BuyProps) {
     if (!inBuyWindow) err = err.concat('Not in buy window\n');
     if (!getOptedIntoBond(app.bond_id)) err = err.concat('Have not opted into bond\n');
     if (noOfBondsToBuy === 0) err = err.concat('Must specify more than 0 bonds\n');
-    if (getStateValue('Frozen', app.app_global_state) === 0) err = err.concat('Your account is frozen\n');
+    if (getStateValue('Frozen', app.app_global_state) === 0) err = err.concat('All accounts are frozen\n');
+    if (getAppLocalFrozen(app.app_id)) err = err.concat('Your account is frozen\n');
     return err;
   }
 
@@ -129,6 +134,7 @@ const mapStateToProps = (state: any) => ({
   selectedAccount: selectedAccountSelector(state),
   getOptedIntoBond: getOptedIntoBondSelector(state),
   getBondBalance: getBondBalanceSelector(state),
+  getAppLocalFrozen: getAppLocalFrozenSelector(state),
 });
 
 const mapDispatchToProps = {

@@ -71,6 +71,6 @@ export const getAppLocalFrozenSelector = state => appId => {
   if (!appsLocalState.has(appId)) return true;
 
   const localState: AppState = appsLocalState.get(appId)!;
-  return getStateValue("Trade", localState) === 0;
+  return getStateValue("Frozen", localState) === 0;
 }
 

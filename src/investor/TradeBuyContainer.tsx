@@ -5,7 +5,8 @@ import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
 import {
-  getAppLocalTradeSelector, getBondBalanceSelector,
+  getAppLocalFrozenSelector,
+  getBondBalanceSelector,
   getOptedIntoAppSelector,
   getOptedIntoBondSelector,
   selectedAccountSelector
@@ -22,7 +23,7 @@ interface StateProps {
   selectedAccount?: UserAccount;
   getOptedIntoBond: (bondId: number) => boolean;
   getOptedIntoApp: (appId: number) => boolean;
-  getAppLocalTrade: (appId: number) => number;
+  getAppLocalFrozen: (appId: number) => boolean;
   getBondBalance: (bondId: number) => number | bigint;
 }
 
@@ -48,6 +49,7 @@ function TradeBuyContainer(props: TradeProps) {
     selectedAccount,
     getOptedIntoBond,
     getOptedIntoApp,
+    getAppLocalFrozen,
     getBondBalance,
     setSelectedAccount,
     setTradeAvailableBalance,
@@ -64,7 +66,8 @@ function TradeBuyContainer(props: TradeProps) {
       getOptedIntoApp(app.app_id) &&
       currentTime < trade.expiry_date &&
       !trade.seller_frozen &&
-      getStateValue('Frozen', app.app_global_state) > 0;
+      getStateValue('Frozen', app.app_global_state) > 0 &&
+      !getAppLocalFrozen(app.app_id);
   }
 
   const tradeTooltip = () => {
@@ -77,7 +80,8 @@ function TradeBuyContainer(props: TradeProps) {
     if (!getOptedIntoApp(app.app_id)) err = err.concat('Must be opted into app\n');
     if (currentTime >= trade.expiry_date) err = err.concat("Trade offer has expired\n");
     if (trade.seller_frozen) err = err.concat("Seller's account is frozen\n");
-    if (getStateValue('Frozen', app.app_global_state) === 0) err = err.concat('Your account is frozen\n');
+    if (getStateValue('Frozen', app.app_global_state) === 0) err = err.concat('All accounts are frozen\n');
+    if (getAppLocalFrozen(app.app_id)) err = err.concat('Your account is frozen\n');
     return err;
   }
 
@@ -156,7 +160,7 @@ const mapStateToProps = (state: any) => ({
   selectedAccount: selectedAccountSelector(state),
   getOptedIntoBond: getOptedIntoBondSelector(state),
   getOptedIntoApp: getOptedIntoAppSelector(state),
-  getAppLocalTrade: getAppLocalTradeSelector(state),
+  getAppLocalFrozen: getAppLocalFrozenSelector(state),
   getBondBalance: getBondBalanceSelector(state),
 });
 
