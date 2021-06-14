@@ -223,7 +223,9 @@ function ClaimContainer(props: ClaimProps) {
       return;
     }
 
-    setDefaultAmount((bondBalance / (app.bonds_minted - app.bond_escrow_balance)) * (app.stablecoin_escrow_balance - getStateValue( "Reserve", app.app_global_state)));
+    const bondsCirc = app.bonds_minted - app.bond_escrow_balance;
+    const funds = app.stablecoin_escrow_balance - getStateValue( "Reserve", app.app_global_state);
+    setDefaultAmount((funds * bondBalance) / bondsCirc);
   }, [app, app.bonds_minted, app.bond_escrow_balance, app.stablecoin_escrow_balance]);
 
   const handleClaimDefault = async (e: any) => {

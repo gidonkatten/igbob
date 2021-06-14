@@ -36,6 +36,9 @@ function SettingsPage(props: SettingsPageProps) {
   const handleStablecoinOptIn = async () => {
     if (!selectedAccount) return;
     await optIntoAsset(STABLECOIN_ID, selectedAccount.address)
+
+    // Update
+    getAccountInformation(selectedAccount.address).then(acc => setSelectedAccount(acc));
   }
 
   return (

@@ -19,7 +19,7 @@ export async function claimDefault(
   stablecoinEscrowAddr: string,
   stablecoinEscrowProgram: string,
   noOfBonds: number,
-  bondDefault: number,
+  defaultAmount: number,
 ) {
   let params: SuggestedParams = await algodClient.getTransactionParams().do();
   params.flatFee = true;
@@ -82,7 +82,7 @@ export async function claimDefault(
     investorAddr,
     undefined,
     undefined,
-    Math.floor(noOfBonds * bondDefault),
+    Math.floor(defaultAmount),
     undefined,
     STABLECOIN_ID,
     params

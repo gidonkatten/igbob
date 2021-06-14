@@ -36,9 +36,7 @@ function DashboardPage(props: DashboardPageProps) {
     return () => clearInterval(interval);
   }, [selectedAccount?.address]);
 
-  const handleSubmit = async (e: any) => {
-    e.preventDefault();
-
+  const handleFund = async () => {
     if (!selectedAccount) return;
 
     const accessToken = await getAccessTokenSilently({ scope: "issue:bonds" });
@@ -92,19 +90,17 @@ function DashboardPage(props: DashboardPageProps) {
             <Typography variant="body1" gutterBottom>
               Current balance is ${formatAlgoDecimalNumber(stablecoinBalance)}
             </Typography>
-            <form onSubmit={handleSubmit}>
-              <Typography variant="body1" gutterBottom>
-                Can use TestNet stablecoin dispenser below to add $1000 for bond payments.
-              </Typography>
+            <Typography variant="body1" gutterBottom>
+              Can use TestNet stablecoin dispenser below to add $1000 for bond payments.
+            </Typography>
             <Button
-                variant="contained"
-                color="primary"
-                type="submit"
-                disabled={!selectedAccount}
-              >
-                Fund
-              </Button>
-            </form>
+              variant="contained"
+              color="primary"
+              onClick={handleFund}
+              disabled={!selectedAccount}
+            >
+              Fund
+            </Button>
           </div> :
           <Typography variant="body1" gutterBottom>
             Go to settings to opt in account to the stablecoin asset
