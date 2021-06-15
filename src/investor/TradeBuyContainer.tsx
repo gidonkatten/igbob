@@ -18,6 +18,7 @@ import { formatAlgoDecimalNumber } from '../utils/Utils';
 import { getAccountInformation, getAppAccountTrade } from '../algorand/account/Account';
 import { getStateValue } from './Utils';
 import { setSelectedAccount, setTradeAvailableBalance } from '../redux/actions/actions';
+import { NotificationManager } from 'react-notifications';
 
 interface StateProps {
   selectedAccount?: UserAccount;
@@ -85,7 +86,7 @@ function TradeBuyContainer(props: TradeProps) {
     return err;
   }
 
-  const handleSetTrade = async () => {
+  const handleTrade = async () => {
     if (!selectedAccount) return;
 
     await tradeBond(
@@ -105,7 +106,11 @@ function TradeBuyContainer(props: TradeProps) {
     getAppAccountTrade(trade.seller_address, trade.app_id, trade.bond_id).then(appAccountTrade => {
       const { balance, frozen } = appAccountTrade;
       setTradeAvailableBalance(trade.trade_id, balance, frozen);
-    })
+    });
+    NotificationManager.success(
+      `Bought ${noOfBondsToBuy} for $${(noOfBondsToBuy * trade.price).toFixed(6)}`,
+      "Bought Green Bonds"
+    );
   };
 
   return (
@@ -144,7 +149,7 @@ function TradeBuyContainer(props: TradeProps) {
           fullWidth
           style={{ textTransform: 'none' }}
           disabled={!canTrade()}
-          onClick={handleSetTrade}
+          onClick={handleTrade}
         >
           You own {formatAlgoDecimalNumber(bondBalance)} bonds <br/>
           {(trade.seller_balance ? (trade.seller_balance / 1e6) : 0).toFixed(6)} bonds available <br/>

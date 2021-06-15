@@ -11,6 +11,7 @@ import { GreenVerifierPage } from './GreenVerifierPage';
 import { useAuth0 } from '@auth0/auth0-react';
 import { FetchAppsFilter, fetchApps } from '../common/Utils';
 import { selectedAppSelector } from '../redux/selectors/bondSelector';
+import { NotificationManager } from 'react-notifications';
 
 interface StateProps {
   selectedAccount?: UserAccount;
@@ -69,6 +70,7 @@ function GreenVerifierPageContainer(props: GreenVerifierPageContainerProps) {
     // Update ratings
     algodClient.getApplicationByID(selectedApp.manage_app_id).do().then(manageApp => {
       setManageAppGlobalState(selectedApp.app_id, extractManageAppState(manageApp.params['global-state']));
+      NotificationManager.success('', 'Rating Added');
     })
   }
 

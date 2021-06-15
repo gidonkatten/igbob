@@ -11,6 +11,7 @@ import {
 } from '../redux/selectors/userSelector';
 import { optIntoAsset } from '../algorand/assets/Asset';
 import { optIntoApp } from '../algorand/bond/OptIntoApp';
+import { NotificationManager } from 'react-notifications';
 
 interface StateProps {
   selectedAccount?: UserAccount;
@@ -44,6 +45,7 @@ function RegisterContainer(props: RegisterProps) {
     await optIntoAsset(app.bond_id, selectedAccount.address);
 
     getAccountInformation(selectedAccount.address).then(acc => setSelectedAccount(acc));
+    NotificationManager.success('', "Opted Into Green Bond");
   }
 
   // APP OPT IN
@@ -52,6 +54,7 @@ function RegisterContainer(props: RegisterProps) {
     await optIntoApp(app.app_id, selectedAccount.address);
 
     getAccountInformation(selectedAccount.address).then(acc => setSelectedAccount(acc));
+    NotificationManager.success('', "Opted Into App");
   }
 
   const canRegister = () => {

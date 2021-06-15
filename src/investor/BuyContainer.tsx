@@ -17,6 +17,7 @@ import {
 import TextField from '@material-ui/core/TextField';
 import { AlgoNumberInput } from '../common/NumberInput';
 import { getStateValue } from './Utils';
+import { NotificationManager } from 'react-notifications';
 
 interface StateProps {
   selectedAccount?: UserAccount;
@@ -92,6 +93,10 @@ function BuyContainer(props: BuyProps) {
     getAccountInformation(selectedAccount.address).then(acc => setSelectedAccount(acc));
     getAccountInformation(app.bond_escrow_address).then(acc =>
       setAppBondEscrowBalance(app.app_id, getAssetBalance(acc, app.bond_id) as number)
+    );
+    NotificationManager.success(
+      `Bought ${noOfBondsToBuy} for $${(noOfBondsToBuy * app.bond_cost).toFixed(6)}`,
+      "Bought Green Bonds"
     );
   }
 

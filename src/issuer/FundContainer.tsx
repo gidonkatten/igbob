@@ -13,6 +13,7 @@ import { StableCoinInputWithDecimal } from '../common/NumberInput';
 import { transferAsset } from '../algorand/assets/Asset';
 import { STABLECOIN_ID } from '../algorand/utils/Utils';
 import { Defaulted, getHasDefaulted } from '../investor/Utils';
+import { NotificationManager } from 'react-notifications';
 
 interface StateProps {
   selectedAccount?: UserAccount;
@@ -70,6 +71,7 @@ function FundContainer(props: FundContainerProps) {
       setAppStablecoinEscrowBalance(app.app_id, getStablecoinBalance(acc) as number);
       setAppDefaulted(app.app_id, getHasDefaulted(app));
     });
+    NotificationManager.success(`Transferred $${noOfStablecoins.toFixed(6)}`, 'Funded Escrow');
   }
 
   return (

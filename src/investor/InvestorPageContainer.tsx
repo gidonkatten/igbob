@@ -26,6 +26,7 @@ import {
   fetchApps,
   fetchTrades, fetchApp
 } from '../common/Utils';
+import { NotificationManager } from 'react-notifications';
 
 export enum InvestorPageNav {
   SELECTION,
@@ -156,6 +157,7 @@ function InvestorPageContainer(props: InvestorPageContainerProps) {
     if (selectedAccount.address !== addr) {
       if (window.confirm(`The selected account will be switched to the one with the trade offer`)) {
         getAccountInformation(addr).then(acc => setSelectedAccount(acc));
+        NotificationManager.info(addr, 'New Algorand Account Selected');
       } else {
         return;
       }

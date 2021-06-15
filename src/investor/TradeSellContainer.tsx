@@ -18,6 +18,7 @@ import { useAuth0 } from '@auth0/auth0-react';
 import { convertDateToUnixTime, formatAlgoDecimalNumber } from '../utils/Utils';
 import { getAccountInformation } from '../algorand/account/Account';
 import { setSelectedAccount } from '../redux/actions/actions';
+import { NotificationManager } from 'react-notifications';
 
 interface StateProps {
   selectedAccount?: UserAccount;
@@ -81,6 +82,7 @@ function TradeSellContainer(props: TradeProps) {
     // Update max no of bonds to be traded
     const userAccount = await getAccountInformation(selectedAccount.address);
     setSelectedAccount(userAccount);
+    NotificationManager.success(`Can trade up to ${noOfBonds} bonds`, "Updated Trade Vault Balance");
   };
 
   const handleGenTradeLSig = async () => {
@@ -117,6 +119,7 @@ function TradeSellContainer(props: TradeProps) {
         "lsig": Object.values(lsig),
       })
     });
+    NotificationManager.success('', "Created Trade Offer");
   };
 
   return (

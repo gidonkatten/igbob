@@ -8,7 +8,8 @@ import { getReportRatingRound } from '../investor/Utils';
 import { IssuerPage } from './IssuerPage';
 import { FetchAppsFilter, fetchApps } from '../common/Utils';
 import { useAuth0 } from '@auth0/auth0-react';
-import { clearSelectedApp, setApps, setSelectedApp } from '../redux/actions/actions';
+import { clearSelectedApp, setAppFiles, setApps, setSelectedApp } from '../redux/actions/actions';
+import { NotificationManager } from 'react-notifications';
 
 export enum IssuerPageNav {
   OVERVIEW,
@@ -25,6 +26,7 @@ interface DispatchProps {
   setApps: typeof setApps;
   clearSelectedApp: typeof clearSelectedApp;
   setSelectedApp: typeof setSelectedApp;
+  setAppFiles: typeof setAppFiles;
 }
 
 interface OwnProps {}
@@ -41,6 +43,7 @@ function IssuerPageContainer(props: IssuerPageContainerProps) {
     setApps,
     clearSelectedApp,
     setSelectedApp,
+    setAppFiles,
   } = props;
   const { getAccessTokenSilently } = useAuth0();
 
@@ -96,7 +99,11 @@ function IssuerPageContainer(props: IssuerPageContainerProps) {
       reportRatingRound
     );
 
-    // Get new uploaded docs TODO
+    // Get new uploaded file
+    NotificationManager.success('File should appear in a few seconds', 'Uploaded File');
+    setTimeout(() => {
+      new IPFSAlgoWrapper().getData(selectedApp).then(res => setAppFiles(selectedApp.app_id, res));
+    }, 5000); // TODO: Investigate why need delay - does indexer not update
   };
 
   return (
@@ -123,6 +130,7 @@ const mapDispatchToProps = {
   setApps,
   clearSelectedApp,
   setSelectedApp,
+  setAppFiles,
 }
 
 export default connect<StateProps, DispatchProps, OwnProps>(mapStateToProps, mapDispatchToProps)(IssuerPageContainer);

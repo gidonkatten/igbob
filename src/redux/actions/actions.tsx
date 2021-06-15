@@ -1,4 +1,4 @@
-import { App, AppState, Trade, UserAccount } from '../types';
+import { App, AppFiles, AppState, Trade, UserAccount } from '../types';
 import { Defaulted } from '../../investor/Utils';
 
 export const setAccountAddresses = (addresses: string[]) => ({
@@ -38,6 +38,11 @@ export const setAppStablecoinEscrowBalance = (appId: number, balance: number) =>
 export const setAppDefaulted = (appId: number, defaulted?: Defaulted) => ({
   type: "SET_APP_DEFAULTED",
   payload: { appId, defaulted }
+});
+
+export const setAppFiles = (appId: number, files?: AppFiles) => ({
+  type: "SET_APP_FILES",
+  payload: { appId, files }
 });
 
 export const setMainAppGlobalState = (appId: number | bigint, state: AppState) => ({

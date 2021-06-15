@@ -12,6 +12,7 @@ import { extractAppState } from '../utils/Utils';
 import { freeze } from '../algorand/bond/Freeze';
 import { getStateValue } from '../investor/Utils';
 import { selectedAppSelector } from '../redux/selectors/bondSelector';
+import { NotificationManager } from 'react-notifications';
 
 interface StateProps {
   selectedAccount?: UserAccount;
@@ -84,7 +85,9 @@ function FinancialRegulatorPageContainer(props: FinancialRegulatorPageContainerP
     // Update frozen value
     algodClient.getApplicationByID(selectedApp.app_id).do().then(mainApp => {
       setMainAppGlobalState(selectedApp.app_id, extractAppState(mainApp.params['global-state']));
-      setIsAllFrozen(getStateValue('Frozen', selectedApp?.app_global_state) === 0);
+      const isFrozen = getStateValue('Frozen', selectedApp?.app_global_state) === 0;
+      setIsAllFrozen(isFrozen);
+      NotificationManager.success('', `Issuance ${isFrozen ? 'Frozen' : 'Unfrozen'}`);
     })
   }
 
@@ -97,8 +100,10 @@ function FinancialRegulatorPageContainer(props: FinancialRegulatorPageContainerP
       const accs: AppAccount[] = [...appAccounts];
       const foundIndex = accs.findIndex(acc => acc.addr === addr);
       const localState: AppState | undefined = account.appsLocalState.get(selectedApp.app_id);
-      accs[foundIndex].frozen = getStateValue('Frozen', localState) === 0;
+      const isFrozen = getStateValue('Frozen', localState) === 0
+      accs[foundIndex].frozen = isFrozen;
       setAppAccounts(accs);
+      NotificationManager.success('', `Account ${isFrozen ? 'Frozen' : 'Unfrozen'}`);
     });
   }
 

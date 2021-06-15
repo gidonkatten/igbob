@@ -14,6 +14,7 @@ import FormLabel from '@material-ui/core/FormLabel';
 import Radio from '@material-ui/core/Radio';
 import RadioGroup from '@material-ui/core/RadioGroup';
 import Typography from '@material-ui/core/Typography';
+import { NotificationManager } from 'react-notifications';
 
 interface SettingsPageProps {
   addresses: string[];
@@ -30,6 +31,7 @@ function SettingsPage(props: SettingsPageProps) {
     if (addr) {
       const userAccount = await getAccountInformation(addr);
       setSelectedAccount(userAccount);
+      NotificationManager.info(addr, 'New Algorand Account Selected');
     }
   }
 
@@ -39,6 +41,7 @@ function SettingsPage(props: SettingsPageProps) {
 
     // Update
     getAccountInformation(selectedAccount.address).then(acc => setSelectedAccount(acc));
+    NotificationManager.success('', "Opted Into Stablecoin");
   }
 
   return (

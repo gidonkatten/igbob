@@ -1,6 +1,7 @@
 import { CouponRound, Defaulted } from '../investor/Utils';
 
 export type AppState = Map<string, number | bigint | string | Uint8Array>;
+export type AppFiles = { cid: string, time: number }[][]; // Files In Each Round
 
 export interface UserAccount {
   address: string;
@@ -42,6 +43,7 @@ export interface App {
   stablecoin_escrow_balance?: number;
   coupon_round?: CouponRound;
   defaulted?: Defaulted;
+  cids?: AppFiles;
 }
 
 export interface AppsTableElem {

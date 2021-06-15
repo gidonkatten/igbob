@@ -23,6 +23,7 @@ import { claimCoupon } from '../algorand/bond/Coupon';
 import { claimPrincipal } from '../algorand/bond/Principal';
 import { claimDefault } from '../algorand/bond/Default';
 import { algodClient } from '../algorand/utils/Utils';
+import { NotificationManager } from 'react-notifications';
 
 interface StateProps {
   selectedAccount?: UserAccount;
@@ -122,7 +123,8 @@ function ClaimContainer(props: ClaimProps) {
     });
     getAccountInformation(app.stablecoin_escrow_address).then(acc =>
       setAppStablecoinEscrowBalance(app.app_id, getStablecoinBalance(acc) as number)
-    )
+    );
+    NotificationManager.success('', "Claimed Coupon");
   }
 
   // PRINCIPAL
@@ -179,6 +181,7 @@ function ClaimContainer(props: ClaimProps) {
     getAccountInformation(app.bond_escrow_address).then(acc =>
       setAppBondEscrowBalance(app.app_id, getAssetBalance(acc, app.bond_id) as number)
     );
+    NotificationManager.success('', "Claimed Principal");
   }
 
   // DEFAULT
@@ -258,6 +261,7 @@ function ClaimContainer(props: ClaimProps) {
     getAccountInformation(app.bond_escrow_address).then(acc =>
       setAppBondEscrowBalance(app.app_id, getAssetBalance(acc, app.bond_id) as number)
     );
+    NotificationManager.success('', "Claimed Default");
   }
 
   return (

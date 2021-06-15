@@ -49,6 +49,7 @@ function App(props: AppProps) {
         } else {
           const userAccount = await getAccountInformation(addresses[0]);
           setSelectedAccount(userAccount);
+          NotificationManager.info(addresses[0], 'New Algorand Account Selected');
         }
       }
     } catch (err) {
