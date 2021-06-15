@@ -14,6 +14,7 @@ import { setAccountAddresses, setSelectedAccount } from './redux/actions/actions
 import { connect } from 'react-redux';
 import { getAccountInformation } from './algorand/account/Account';
 import { IPFSAlgoWrapper } from './ipfs/IPFSAlgoWrapper';
+import { NotificationContainer, NotificationManager } from 'react-notifications';
 
 interface AppProps {
   setAccountAddresses: typeof setAccountAddresses;
@@ -31,13 +32,24 @@ function App(props: AppProps) {
       const response = await fetch("https://igbob.herokuapp.com/accounts/get-addresses", {
         headers: { Authorization: `Bearer ${accessToken}`},
       });
-      const parseResponse = await response.json();
-      setAccountAddresses(parseResponse.addresses);
 
-      const firstAddr = parseResponse.addresses[0];
-      if (firstAddr) {
-        const userAccount = await getAccountInformation(firstAddr);
-        setSelectedAccount(userAccount);
+
+      const status = response.status;
+      if (status >= 200 && status < 300) {
+        // Set addresses array
+        const { addresses } = await response.json();
+        setAccountAddresses(addresses);
+
+        // Set selected address
+        if (!addresses[0]) {
+          NotificationManager.info(
+            'Go to the Settings page to connect to MyAlgo Wallet',
+            'No Algorand Addresses Connected'
+          );
+        } else {
+          const userAccount = await getAccountInformation(addresses[0]);
+          setSelectedAccount(userAccount);
+        }
       }
     } catch (err) {
       console.error(err.message);
@@ -57,6 +69,7 @@ function App(props: AppProps) {
   return (
     <div>
       <NavbarManager/>
+      <NotificationContainer/>
       <Switch>
         <ProtectedRoute exact path="/dashboard" component={DashboardPage}/>
         <ProtectedRoute exact path="/issuer" component={IssuerPageContainer}/>

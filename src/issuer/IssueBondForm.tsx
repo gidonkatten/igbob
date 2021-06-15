@@ -12,6 +12,7 @@ import { KeyboardDateTimePicker } from "@material-ui/pickers";
 import * as algosdk from 'algosdk';
 import { AlgoNumberInput, StableCoinInputNoDecimal } from '../common/NumberInput';
 import { UserAccount } from '../redux/types';
+import { NotificationManager } from 'react-notifications';
 
 interface StateProps {
   selectedAccount?: UserAccount;
@@ -43,6 +44,21 @@ function IssueBondForm(props: IssueBondFormProps) {
 
   const isGreenVerifierAddrValid = greenVerifierAddr ? algosdk.isValidAddress(greenVerifierAddr) : true;
   const isFinancialRegulatorAddrValid = greenVerifierAddr ? algosdk.isValidAddress(financialRegulatorAddr) : true;
+
+  const clearForm = () => {
+    setName('');
+    setDes('');
+    setTotalIssuance(0);
+    setNumCouponPayments(0);
+    setStartBuyDate(null);
+    setEndBuyDate(null);
+    setMaturityDate(null);
+    setBondCost(0);
+    setBondCoupon(0);
+    setBondPrincipal(0);
+    setGreenVerifierAddr('');
+    setFinancialRegulatorAddr('');
+  }
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
@@ -88,8 +104,13 @@ function IssueBondForm(props: IssueBondFormProps) {
       })
     });
 
-    const parseResponse = await response.text();
-    console.log(parseResponse);
+    const status = response.status;
+    if (!(status >= 200 && status < 300)) {
+      NotificationManager.error(await response.text(), 'Failed To Issue Bond');
+    } else {
+      clearForm();
+      NotificationManager.info('This will take a few minutes...', 'Creating Bond');
+    }
   }
 
   const handleStartDateChange = (date) => setStartBuyDate(date);

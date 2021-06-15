@@ -12,6 +12,8 @@ import { formatAlgoDecimalNumber } from '../utils/Utils';
 import Button from '@material-ui/core/Button';
 import Typography from '@material-ui/core/Typography';
 import { UserAccount } from '../redux/types';
+import { waitForConfirmation } from '../algorand/utils/Utils';
+import { NotificationManager } from 'react-notifications';
 
 interface DashboardPageProps {
   selectedAccount?: UserAccount,
@@ -50,8 +52,14 @@ function DashboardPage(props: DashboardPageProps) {
       body: JSON.stringify({ "addr": selectedAccount.address })
     });
 
-    const parseResponse = await response.text();
-    console.log(parseResponse);
+    const status = response.status;
+    if (status >= 200 && status < 300) {
+      NotificationManager.info('This should take a few seconds...', 'Funding Account');
+      const { txId } = await response.json();
+      waitForConfirmation(txId).then(() => {
+        NotificationManager.success('Received $1000', 'Funded');
+      });
+    }
   }
 
   return (

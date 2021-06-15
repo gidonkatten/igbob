@@ -8,6 +8,7 @@ import Auth0ProviderWithHistory from "./auth/Auth0ProviderWithHistory";
 import { MuiPickersUtilsProvider } from '@material-ui/pickers';
 import DateFnsUtils from '@date-io/date-fns';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import 'react-notifications/lib/notifications.css';
 import '@fontsource/roboto';
 import './styles/page.css'
 
