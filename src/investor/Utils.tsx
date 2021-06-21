@@ -116,6 +116,7 @@ export function getHasDefaulted(app: App): Defaulted | undefined {
     maturity_date,
     bond_coupon,
     bond_principal,
+    bond_length,
     coupon_round,
     bonds_minted,
     bond_escrow_balance,
@@ -131,7 +132,7 @@ export function getHasDefaulted(app: App): Defaulted | undefined {
   const reserve: number = getStateValue( "Reserve", app_global_state);
 
   // Not defaulted if have already started paying out the curr round
-  if (globalCouponRoundsPaid === coupon_round.round) return undefined;
+  if (globalCouponRoundsPaid === coupon_round.round && globalCouponRoundsPaid !== bond_length) return undefined;
 
   const currentTime: number = Date.now() / 1000;
 

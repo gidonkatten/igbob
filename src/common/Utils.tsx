@@ -87,9 +87,9 @@ export async function fetchApp(
     const response = await fetch(`https://igbob.herokuapp.com/apps/app/${app_id}`, {
       headers: { Authorization: `Bearer ${accessToken}`},
     });
-    const parsedResponse = await response.json();
+    const app = await response.json();
 
-    return parsedResponse;
+    return await updateApp(app);
   } catch (err) {
     console.error(err.message);
     return undefined;
