@@ -93,7 +93,7 @@ function TradeSellContainer(props: TradeProps) {
     headers.append("Content-Type", "application/json");
     headers.append("Authorization", `Bearer ${accessToken}`);
 
-    const genTradeResponse = await fetch("https://igbob.herokuapp.com/trades/generate-trade", {
+    const genTradeResponse = await fetch("https://blockchain-bonds-server.herokuapp.com/trades/generate-trade", {
       method: "POST",
       headers: headers,
       body: JSON.stringify({
@@ -111,7 +111,7 @@ function TradeSellContainer(props: TradeProps) {
       selectedAccount.address
     );
 
-    await fetch("https://igbob.herokuapp.com/trades/add-trade-lsig", {
+    await fetch("https://blockchain-bonds-server.herokuapp.com/trades/add-trade-lsig", {
       method: "POST",
       headers: headers,
       body: JSON.stringify({

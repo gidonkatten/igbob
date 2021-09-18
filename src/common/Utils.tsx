@@ -61,8 +61,8 @@ export async function fetchApps(
     const url: string = filter === FetchAppsFilter.ISSUER ||
     filter === FetchAppsFilter.GREEN_VERIFIER ||
     filter === FetchAppsFilter.FINANCIAL_REGULATOR  ?
-      `https://igbob.herokuapp.com/apps/${filter}-apps/${addr}` :
-      `https://igbob.herokuapp.com/apps/${filter}-apps`
+      `https://blockchain-bonds-server.herokuapp.com/apps/${filter}-apps/${addr}` :
+      `https://blockchain-bonds-server.herokuapp.com/apps/${filter}-apps`
     const response = await fetch(url, {
       headers: { Authorization: `Bearer ${accessToken}`},
     });
@@ -84,7 +84,7 @@ export async function fetchApp(
   app_id: number,
 ): Promise<App | undefined> {
   try {
-    const response = await fetch(`https://igbob.herokuapp.com/apps/app/${app_id}`, {
+    const response = await fetch(`https://blockchain-bonds-server.herokuapp.com/apps/app/${app_id}`, {
       headers: { Authorization: `Bearer ${accessToken}`},
     });
     const app = await response.json();
@@ -114,7 +114,7 @@ export async function fetchTrades(
   filter: FETCH_TRADES_FILTER | FETCH_MY_TRADES_FILTER,
 ): Promise<void> {
   try {
-    const response = await fetch(`https://igbob.herokuapp.com/trades/${filter}-trades`, {
+    const response = await fetch(`https://blockchain-bonds-server.herokuapp.com/trades/${filter}-trades`, {
       headers: { Authorization: `Bearer ${accessToken}`},
     });
     const parsedResponse = await response.json();

@@ -46,7 +46,7 @@ function DashboardPage(props: DashboardPageProps) {
     const headers = new Headers();
     headers.append("Content-Type", "application/json");
     headers.append("Authorization", `Bearer ${accessToken}`);
-    const response = await fetch("https://igbob.herokuapp.com/fund/", {
+    const response = await fetch("https://blockchain-bonds-server.herokuapp.com/fund/", {
       method: "POST",
       headers: headers,
       body: JSON.stringify({ "addr": selectedAccount.address })

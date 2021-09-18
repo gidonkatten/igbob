@@ -26,7 +26,7 @@ const MyAlgoGetAccounts = (props: GetAccountsProps) => {
       const headers = new Headers();
       headers.append("Content-Type", "application/json");
       headers.append("Authorization", `Bearer ${accessToken}`);
-      const response = await fetch("https://igbob.herokuapp.com/accounts/addresses", {
+      const response = await fetch("https://blockchain-bonds-server.herokuapp.com/accounts/addresses", {
         method: "POST",
         headers: headers,
         body: JSON.stringify({

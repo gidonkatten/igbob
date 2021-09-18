@@ -82,7 +82,7 @@ function IssueBondForm(props: IssueBondFormProps) {
     const md = convertDateToUnixTime(maturityDate!);
     const period = numCouponPayments === 0 ? (md - ebd) : Math.round((md - ebd) / numCouponPayments);
 
-    const response = await fetch("https://igbob.herokuapp.com/apps/create-app", {
+    const response = await fetch("https://blockchain-bonds-server.herokuapp.com/apps/create-app", {
       method: "POST",
       headers: headers,
       body: JSON.stringify({

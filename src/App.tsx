@@ -29,7 +29,7 @@ function App(props: AppProps) {
   async function fetchAddresses() {
     try {
       const accessToken = await getAccessTokenSilently();
-      const response = await fetch("https://igbob.herokuapp.com/accounts/get-addresses", {
+      const response = await fetch("https://blockchain-bonds-server.herokuapp.com/accounts/get-addresses", {
         headers: { Authorization: `Bearer ${accessToken}`},
       });
 
