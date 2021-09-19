@@ -80,7 +80,6 @@ function IssueBondForm(props: IssueBondFormProps) {
     const sbd = convertDateToUnixTime(startBuyDate!);
     const ebd = convertDateToUnixTime(endBuyDate!);
     const md = convertDateToUnixTime(maturityDate!);
-    const period = numCouponPayments === 0 ? (md - ebd) : Math.round((md - ebd) / numCouponPayments);
 
     const response = await fetch("https://blockchain-bonds-server.herokuapp.com/apps/create-app", {
       method: "POST",
@@ -95,9 +94,9 @@ function IssueBondForm(props: IssueBondFormProps) {
         "greenVerifierAddr": greenVerifierAddr,
         "financialRegulatorAddr": financialRegulatorAddr,
         "bondLength": numCouponPayments,
-        "period": period,
         "startBuyDate": sbd,
         "endBuyDate": ebd,
+        "maturityDate": md,
         "bondCost": bondCost, // Per .000001 bond
         "bondCoupon": bondCoupon, // Per .000001 bond
         "bondPrincipal": bondPrincipal, // Per .000001 bond
