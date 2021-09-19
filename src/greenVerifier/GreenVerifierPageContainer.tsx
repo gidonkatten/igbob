@@ -3,8 +3,12 @@ import { connect } from 'react-redux';
 import { selectedAccountSelector } from '../redux/selectors/userSelector';
 import { App, UserAccount } from '../redux/types';
 import { algodClient } from '../algorand/utils/Utils';
-import { extractManageAppState } from '../utils/Utils';
-import { clearSelectedApp, setApps, setManageAppGlobalState, setSelectedApp } from '../redux/actions/actions';
+import {
+  clearSelectedApp,
+  setApps,
+  setMainAppGlobalState,
+  setSelectedApp
+} from '../redux/actions/actions';
 import { rate } from '../algorand/bond/Rate';
 import { getReportRatingRound } from '../investor/Utils';
 import { GreenVerifierPage } from './GreenVerifierPage';
@@ -12,6 +16,7 @@ import { useAuth0 } from '@auth0/auth0-react';
 import { FetchAppsFilter, fetchApps } from '../common/Utils';
 import { selectedAppSelector } from '../redux/selectors/bondSelector';
 import { NotificationManager } from 'react-notifications';
+import { extractAppState } from '../utils/Utils';
 
 interface StateProps {
   selectedAccount?: UserAccount;
@@ -20,7 +25,7 @@ interface StateProps {
 
 interface DispatchProps {
   setApps: typeof setApps;
-  setManageAppGlobalState: typeof setManageAppGlobalState;
+  setMainAppGlobalState: typeof setMainAppGlobalState;
   clearSelectedApp: typeof clearSelectedApp;
   setSelectedApp: typeof setSelectedApp;
 }
@@ -38,7 +43,7 @@ function GreenVerifierPageContainer(props: GreenVerifierPageContainerProps) {
   const {
     selectedAccount,
     selectedApp,
-    setManageAppGlobalState,
+    setMainAppGlobalState,
     setApps,
     clearSelectedApp,
     setSelectedApp,
@@ -65,11 +70,11 @@ function GreenVerifierPageContainer(props: GreenVerifierPageContainerProps) {
   const handleRate = async () => {
     if (!selectedAccount || !selectedApp || !rating) return;
 
-    await rate(selectedApp.manage_app_id, selectedAccount.address, rating);
+    await rate(selectedApp.app_id, selectedAccount.address, rating);
 
     // Update ratings
-    algodClient.getApplicationByID(selectedApp.manage_app_id).do().then(manageApp => {
-      setManageAppGlobalState(selectedApp.app_id, extractManageAppState(manageApp.params['global-state']));
+    algodClient.getApplicationByID(selectedApp.app_id).do().then(app => {
+      setMainAppGlobalState(selectedApp.app_id, extractAppState(app.params['global-state']));
       NotificationManager.success('', 'Rating Added');
     })
   }
@@ -112,7 +117,7 @@ const mapStateToProps = (state: any) => ({
 
 const mapDispatchToProps = {
   setApps,
-  setManageAppGlobalState,
+  setMainAppGlobalState,
   clearSelectedApp,
   setSelectedApp,
 };

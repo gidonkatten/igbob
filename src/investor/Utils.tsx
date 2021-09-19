@@ -71,35 +71,12 @@ export function getStateValue(key: string, state?: Map<string, any>) {
 // Returns rating - 0 if key doesn't exist
 export function getRatingFromState(round: number, state?: Map<string, any>): number {
   if (!state) return 0;
-
-  const key: string = Math.floor(round / 8) + '';
-  const slot = round % 8;
-  const array: Uint8Array | number = getStateValue(key, state);
-  if (array === 0) {
-    // Uninitialised array
-    return 0;
-  } else {
-    return array[slot];
-  }
+  return getStateValue('ratings', state)[round];
 }
 
 // Returns ratings - 0 if key doesn't exist
 export function getRatingsFromState(app: App): number[] {
-  const ratings: number[] = [];
-
-  for (let i = 0; i <= app.bond_length; i++) {
-    const key: string = Math.floor(i / 8) + '';
-    const slot = i % 8;
-    const array: Uint8Array | number = getStateValue(key, app.manage_app_global_state);
-    if (array === 0) {
-      // Uninitialised array
-      ratings.push(0)
-    } else {
-      ratings.push(array[slot]);
-    }
-  }
-
-  return ratings;
+  return getStateValue('ratings', app.app_global_state);
 }
 
 export function getMultiplier(rating: number): number {
@@ -112,7 +89,6 @@ export function getMultiplier(rating: number): number {
 export function getHasDefaulted(app: App): Defaulted | undefined {
   const {
     app_global_state,
-    manage_app_global_state,
     maturity_date,
     bond_coupon,
     bond_principal,
@@ -141,7 +117,7 @@ export function getHasDefaulted(app: App): Defaulted | undefined {
   let round = globalCouponRoundsPaid + 1;
   let totalOwed: number = reserve;
   for (; round <= coupon_round.round; round++) {
-    const rating = getRatingFromState(round, manage_app_global_state);
+    const rating = getRatingFromState(round, app_global_state);
     const multiplier = getMultiplier(rating);
     totalOwed += Math.floor(bond_coupon * multiplier) * numBondsInCirculation;
     if (totalOwed > stablecoin_escrow_balance) {

@@ -102,12 +102,11 @@ function ClaimContainer(props: ClaimProps) {
     if (!selectedAccount || !app) return;
 
     const newLocalCouponRoundsPaid = getAppLocalCouponRoundsPaid(app.app_id) + 1;
-    const rating = getRatingFromState(newLocalCouponRoundsPaid, app.manage_app_global_state);
+    const rating = getRatingFromState(newLocalCouponRoundsPaid, app.app_global_state);
 
     await claimCoupon(
       selectedAccount.address,
       app.app_id,
-      app.manage_app_id,
       app.bond_id,
       app.bond_escrow_address,
       app.stablecoin_escrow_address,
@@ -163,7 +162,6 @@ function ClaimContainer(props: ClaimProps) {
     await claimPrincipal(
       selectedAccount.address,
       app.app_id,
-      app.manage_app_id,
       app.issuer_address,
       app.bond_id,
       app.bond_escrow_address,
@@ -243,7 +241,6 @@ function ClaimContainer(props: ClaimProps) {
     await claimDefault(
       selectedAccount.address,
       app.app_id,
-      app.manage_app_id,
       app.issuer_address,
       app.bond_id,
       app.bond_escrow_address,
@@ -277,8 +274,8 @@ function ClaimContainer(props: ClaimProps) {
             onClick={handleClaimCoupon}
           >
             You have claimed {getAppLocalCouponRoundsPaid(app.app_id)} / {app.bond_length} coupons <br/>
-            Multiplier for this coupon round is {getMultiplier(getRatingFromState(getAppLocalCouponRoundsPaid(app.app_id) + 1, app.manage_app_global_state)).toFixed(4)} <br/>
-            Can claim ${formatAlgoDecimalNumber(Math.floor(app.bond_coupon * getMultiplier(getRatingFromState(getAppLocalCouponRoundsPaid(app.app_id) + 1, app.manage_app_global_state))) * bondBalance)} <br/>
+            Multiplier for this coupon round is {getMultiplier(getRatingFromState(getAppLocalCouponRoundsPaid(app.app_id) + 1, app.app_global_state)).toFixed(4)} <br/>
+            Can claim ${formatAlgoDecimalNumber(Math.floor(app.bond_coupon * getMultiplier(getRatingFromState(getAppLocalCouponRoundsPaid(app.app_id) + 1, app.app_global_state))) * bondBalance)} <br/>
             CLAIM COUPON
           </Button>
         </div>

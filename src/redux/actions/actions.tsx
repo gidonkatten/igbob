@@ -50,11 +50,6 @@ export const setMainAppGlobalState = (appId: number | bigint, state: AppState) =
   payload: { appId, appState: state }
 });
 
-export const setManageAppGlobalState = (appId: number | bigint, state: AppState) => ({
-  type: "SET_MANAGE_APP_GLOBAL_STATE",
-  payload: { appId, appState: state }
-});
-
 export const setTrades = (trades: Trade[]) => ({
   type: "SET_TRADES",
   payload: { trades }

@@ -7,7 +7,7 @@ import { myAlgoWallet } from '../wallet/myAlgo/MyAlgoWallet';
  * Set green rating using MyAlgo
  */
 export async function rate(
-  manageAppId: number,
+  appId: number,
   greenVerifierAddr: string,
   rating: number,
 ) {
@@ -25,7 +25,7 @@ export async function rate(
     flatFee: true,
     type: "appl",
     from: greenVerifierAddr,
-    appIndex: manageAppId,
+    appIndex: appId,
     appOnComplete: OnApplicationComplete.NoOpOC,
     appArgs: manageAppArgs,
   }

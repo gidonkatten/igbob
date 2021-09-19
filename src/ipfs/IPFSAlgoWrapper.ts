@@ -53,8 +53,8 @@ export class IPFSAlgoWrapper {
   }
 
   public async getData(app: App): Promise<{ cid: string, time: number }[][]> {
-    const { issuer_address, manage_app_id, bond_length } = app;
-    const prefix: Uint8Array = new Uint8Array(Buffer.from(manage_app_id + '+'));
+    const { issuer_address, app_id, bond_length } = app;
+    const prefix: Uint8Array = new Uint8Array(Buffer.from(app_id + '+'));
 
     // TODO: Use afterTime() beforeTime() to verify upload time within bounds
     const res = await indexerClient.lookupAccountTransactions(issuer_address)

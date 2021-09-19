@@ -107,18 +107,6 @@ export function bondReducer(state = initialState, action: any) {
         apps: appsMap
       };
     }
-    case "SET_MANAGE_APP_GLOBAL_STATE": {
-      const { appId, appState } = action.payload;
-      const appsMap = state.apps;
-
-      if (!appsMap.has(appId)) return state;
-
-      appsMap.get(appId)!.manage_app_global_state = appState;
-      return {
-        ...state,
-        apps: appsMap
-      };
-    }
     case "SET_TRADES": {
       const { trades } = action.payload;
       const tradesMap = new Map<number, Trade>(trades.map(trade => [trade.trade_id, trade]));

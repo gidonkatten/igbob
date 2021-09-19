@@ -1,6 +1,6 @@
 import { App, Trade } from '../redux/types';
 import { algodClient, indexerClient } from '../algorand/utils/Utils';
-import { extractAppState, extractManageAppState } from '../utils/Utils';
+import { extractAppState } from '../utils/Utils';
 import {
   getAccountInformation,
   getAppAccountTrade,
@@ -33,14 +33,12 @@ async function updateApp(app: App) {
   await Promise.all(
     [
       algodClient.getApplicationByID(app.app_id).do(),
-      algodClient.getApplicationByID(app.manage_app_id).do(),
       indexerClient.lookupAssetByID(app.bond_id).do(),
       getAccountInformation(app.bond_escrow_address),
       getAccountInformation(app.stablecoin_escrow_address)
     ]
-  ).then(([mainApp, manageApp, asset, bondEscrow, stablecoinEscrow]) => {
+  ).then(([mainApp, asset, bondEscrow, stablecoinEscrow]) => {
     app.app_global_state = extractAppState(mainApp.params['global-state']);
-    app.manage_app_global_state = extractManageAppState(manageApp.params['global-state']);
     app.bonds_minted = asset.asset.params.total as number;
     app.bond_escrow_balance = getAssetBalance(bondEscrow, app.bond_id) as number;
     app.stablecoin_escrow_balance = getStablecoinBalance(stablecoinEscrow) as number;

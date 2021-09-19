@@ -92,8 +92,3 @@ export const getMainAppGlobalStateSelector = state => appId => {
   const apps: Map<number, App> = state.bondReducer.apps;
   return apps.has(appId) ? apps.get(appId)!.app_global_state : undefined;
 }
-
-export const getManageAppGlobalStateSelector = state => appId => {
-  const apps: Map<number, App> = state.bondReducer.apps;
-  return apps.has(appId) ? apps.get(appId)!.manage_app_global_state : undefined;
-}

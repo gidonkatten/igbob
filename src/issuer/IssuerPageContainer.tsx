@@ -95,7 +95,7 @@ function IssuerPageContainer(props: IssuerPageContainerProps) {
     await new IPFSAlgoWrapper().addData(
       file,
       selectedAccount.address,
-      selectedApp.manage_app_id,
+      selectedApp.app_id,
       reportRatingRound
     );
 

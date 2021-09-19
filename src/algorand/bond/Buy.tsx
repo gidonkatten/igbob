@@ -20,7 +20,7 @@ export async function buyBond(
 ) {
   let params: SuggestedParams = await algodClient.getTransactionParams().do();
   params.flatFee = true;
-  params.fee = 1000;
+  params.fee = 0;
 
   // 0. call app
   const enc = new TextEncoder();
@@ -28,6 +28,7 @@ export async function buyBond(
   const appArgs: Uint8Array[] = [buy];
   const callAppTxn: CallApplTxn = {
     ...params,
+    fee: 3000,
     flatFee: true,
     type: "appl",
     from: investorAddr,
@@ -36,17 +37,7 @@ export async function buyBond(
     appArgs: appArgs
   }
 
-  // 1. pay fee for tx2
-  const algoTransferTxn: PaymentTxn = {
-    ...params,
-    flatFee: true,
-    type: "pay",
-    from: investorAddr,
-    to: bondEscrowAddr,
-    amount: 1000,
-  };
-
-  // 2. bond transfer
+  // 1. bond transfer
   const compiledProgram = await algodClient.compile(bondEscrowProgram).do();
   const programBytes = new Uint8Array(
     Buffer.from(compiledProgram.result, 'base64')
@@ -63,7 +54,7 @@ export async function buyBond(
     params
   )
 
-  // 3. stablecoin payment
+  // 2. stablecoin payment
   const stablecoinTransferTxn: AssetTxn = {
     ...params,
     flatFee: true,
@@ -77,7 +68,6 @@ export async function buyBond(
   // Assign group id to transactions
   let txns = algosdk.assignGroupID([
     callAppTxn,
-    algoTransferTxn,
     bondTransferTxn,
     stablecoinTransferTxn
   ]);
@@ -85,23 +75,18 @@ export async function buyBond(
   // Override so can sign with myAlgo
   txns[0].from = investorAddr;
   txns[0].genesisHash = params.genesisHash;
-  txns[1].from = investorAddr;
-  txns[1].to = bondEscrowAddr;
-  txns[1].genesisHash = params.genesisHash;
-  txns[3].from = investorAddr;
-  txns[3].to = issuerAddr;
-  txns[3].genesisHash = params.genesisHash;
+  txns[2].from = investorAddr;
+  txns[2].to = issuerAddr;
+  txns[2].genesisHash = params.genesisHash;
 
   // Sign transactions
   const signedCallAppTxn: SignedTx = await myAlgoWallet.signTransaction(txns[0]);
-  const signedAlgoTransferTxn: SignedTx = await myAlgoWallet.signTransaction(txns[1]);
-  const signedBondTransferTxn: SignedTx = algosdk.signLogicSigTransaction(txns[2], lsig);
-  const signedStablecoinTransferTxn: SignedTx = await myAlgoWallet.signTransaction(txns[3]);
+  const signedBondTransferTxn: SignedTx = algosdk.signLogicSigTransaction(txns[1], lsig);
+  const signedStablecoinTransferTxn: SignedTx = await myAlgoWallet.signTransaction(txns[2]);
 
   // Group
   const signedTxs: Uint8Array[] = [
     signedCallAppTxn.blob,
-    signedAlgoTransferTxn.blob,
     signedBondTransferTxn.blob,
     signedStablecoinTransferTxn.blob
   ];

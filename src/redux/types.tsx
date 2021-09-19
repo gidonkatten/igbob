@@ -19,8 +19,6 @@ export interface AppAccount {
 export interface App {
   app_id: number;
   app_global_state?: AppState;
-  manage_app_id: number;
-  manage_app_global_state?: AppState;
   name: string;
   description: string;
   issuer_address: string;

@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { getManageAppGlobalStateSelector } from '../redux/selectors/bondSelector';
 import { connect } from 'react-redux';
 import { App, AppState } from '../redux/types';
 import { IPFSAlgoWrapper } from '../ipfs/IPFSAlgoWrapper';
@@ -33,12 +32,11 @@ function IPFSFileListContainer(props: IPFSFileListContainerProps) {
     new IPFSAlgoWrapper().getData(app).then(res => setAppFiles(app.app_id, res));
 
     // Get ratings
-    const manageAppState: AppState | undefined =  app.manage_app_global_state
-    if (!manageAppState) return;
+    if (!app.app_global_state) return;
     const newRatings: number[] = getRatingsFromState(app);
     setRatings(newRatings);
 
-  }, [app?.app_id, app?.manage_app_global_state])
+  }, [app?.app_id, app?.app_global_state])
 
 
   return (
@@ -60,7 +58,6 @@ function IPFSFileListContainer(props: IPFSFileListContainerProps) {
 }
 
 const mapStateToProps = (state: any) => ({
-  getManageAppGlobalState: getManageAppGlobalStateSelector(state)
 });
 
 const mapDispatchToProps = {
