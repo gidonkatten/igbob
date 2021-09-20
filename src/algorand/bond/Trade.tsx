@@ -80,7 +80,9 @@ export async function tradeBond(
     params,
     mainAppId,
     mainAppArgs,
-    [selectedAddr]
+    [selectedAddr],
+    undefined,
+    [bondId],
   )
 
   // 1. bond transfer
