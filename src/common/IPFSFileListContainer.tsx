@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
-import { App, AppState } from '../redux/types';
+import { App, AppFiles, AppState } from '../redux/types';
 import { IPFSAlgoWrapper } from '../ipfs/IPFSAlgoWrapper';
 import { IPFSFileList } from './IPFSFileList';
 import { getRatingsFromState } from '../investor/Utils';
 import { setAppFiles } from '../redux/actions/actions';
+import { getAppFilesSelector } from '../redux/selectors/bondSelector';
 
-interface StateProps {}
+interface StateProps {
+  getAppFiles: (appId: number) => AppFiles;
+}
 
 interface DispatchProps {
   setAppFiles: typeof setAppFiles;
@@ -23,7 +26,7 @@ function IPFSFileListContainer(props: IPFSFileListContainerProps) {
 
   const [ratings, setRatings] = useState<number[]>([]);
 
-  const { app, setAppFiles } = props;
+  const { app, getAppFiles, setAppFiles } = props;
 
   useEffect(() => {
     if (!app) return;
@@ -43,7 +46,7 @@ function IPFSFileListContainer(props: IPFSFileListContainerProps) {
     <>
       {app ?
         (<IPFSFileList
-          cids={app.cids ? app.cids : []}
+          cids={getAppFiles(app.app_id)}
           ratings={ratings}
           startBuyDate={app.start_buy_date}
           endBuyDate={app.end_buy_date}
@@ -58,6 +61,7 @@ function IPFSFileListContainer(props: IPFSFileListContainerProps) {
 }
 
 const mapStateToProps = (state: any) => ({
+  getAppFiles: getAppFilesSelector(state),
 });
 
 const mapDispatchToProps = {

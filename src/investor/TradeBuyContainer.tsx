@@ -67,7 +67,7 @@ function TradeBuyContainer(props: TradeProps) {
       getOptedIntoApp(app.app_id) &&
       currentTime < trade.expiry_date &&
       !trade.seller_frozen &&
-      getStateValue('Frozen', app.app_global_state) > 0 &&
+      getStateValue('frozen', app.app_global_state) > 0 &&
       !getAppLocalFrozen(app.app_id);
   }
 
@@ -81,7 +81,7 @@ function TradeBuyContainer(props: TradeProps) {
     if (!getOptedIntoApp(app.app_id)) err = err.concat('Must be opted into app\n');
     if (currentTime >= trade.expiry_date) err = err.concat("Trade offer has expired\n");
     if (trade.seller_frozen) err = err.concat("Seller's account is frozen\n");
-    if (getStateValue('Frozen', app.app_global_state) === 0) err = err.concat('All accounts are frozen\n');
+    if (getStateValue('frozen', app.app_global_state) === 0) err = err.concat('All accounts are frozen\n');
     if (getAppLocalFrozen(app.app_id)) err = err.concat('Your account is frozen\n');
     return err;
   }

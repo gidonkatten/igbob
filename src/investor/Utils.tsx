@@ -104,8 +104,8 @@ export function getHasDefaulted(app: App): Defaulted | undefined {
     stablecoin_escrow_balance === undefined
   ) return undefined;
 
-  const globalCouponRoundsPaid: number = getStateValue("CouponsPaid", app_global_state);
-  const reserve: number = getStateValue( "Reserve", app_global_state);
+  const globalCouponRoundsPaid: number = getStateValue("coupons_paid", app_global_state);
+  const reserve: number = getStateValue( "reserve", app_global_state);
 
   // Not defaulted if have already started paying out the curr round
   if (globalCouponRoundsPaid === coupon_round.round && globalCouponRoundsPaid !== bond_length) return undefined;

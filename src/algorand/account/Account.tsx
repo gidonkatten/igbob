@@ -68,7 +68,7 @@ export async function getAppAccounts(appId: number, bondId: number): Promise<App
       if (foundIndex >= 0) {
         const appLocalState: ApplicationLocalState = appLocalStates[foundIndex];
         const statePairs: TealKeyValue[] | undefined = appLocalState['key-value']
-        frozen = getStateValue('Frozen', extractAppState(statePairs)) === 0;
+        frozen = getStateValue('frozen', extractAppState(statePairs)) === 0;
       }
     }
 
@@ -99,10 +99,10 @@ export async function getAppAccountTrade(
   if (appsLocalState.has(appId)) {
     const localState: AppState = appsLocalState.get(appId)!;
     balance = Math.min(
-      getStateValue("Trade", localState),
+      getStateValue("trade", localState),
       acc.assets.has(bondId) ? acc.assets.get(bondId) as number : 0
     );
-    frozen = getStateValue('Frozen', localState) === 0;
+    frozen = getStateValue('frozen', localState) === 0;
   }
 
   return { balance, frozen };

@@ -26,7 +26,7 @@ export const appsTableSelector = state => {
       coupon_round: round,
       stablecoin_escrow_balance: app.stablecoin_escrow_balance === undefined ? 0 : app.stablecoin_escrow_balance,
       defaulted: app.defaulted !== undefined,
-      frozen: getStateValue('Frozen', app.app_global_state) === 0,
+      frozen: getStateValue('frozen', app.app_global_state) === 0,
       use_of_proceeds_rating: ratings[0],
       recent_rating: ratings.length > round ? ratings[round] : 0,
     }
@@ -38,6 +38,13 @@ export const appsTableSelector = state => {
 export const getAppSelector = state => appId => {
   const apps: Map<number, App> = state.bondReducer.apps;
   return apps.get(appId);
+};
+
+export const getAppFilesSelector = state => appId => {
+  const apps: Map<number, App> = state.bondReducer.apps;
+  const app: App | undefined = apps.get(appId);
+  if (!app) return [];
+  return app.cids ? app.cids : [];
 };
 
 export const selectedAppSelector = state => {

@@ -10,9 +10,10 @@ import DescriptionIcon from '@material-ui/icons/Description';
 import ListIcon from '@material-ui/icons/List';
 import { convertUnixTimeToDate, convertUnixTimeToTime } from '../utils/Utils';
 import Rating from '@material-ui/lab/Rating';
+import { AppFiles } from '../redux/types';
 
 interface IPFSFileListProps {
-  cids: { cid: string, time: number }[][],
+  cids: AppFiles,
   ratings: number[],
   startBuyDate: number,
   endBuyDate: number,

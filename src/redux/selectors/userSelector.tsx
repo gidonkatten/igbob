@@ -53,7 +53,7 @@ export const getAppLocalCouponRoundsPaidSelector = state => appId => {
   if (!appsLocalState.has(appId)) return 0;
 
   const localState: AppState = appsLocalState.get(appId)!;
-  return getStateValue("CouponsPaid", localState);
+  return getStateValue("coupons_paid", localState);
 }
 
 export const getAppLocalTradeSelector = state => appId => {
@@ -62,7 +62,7 @@ export const getAppLocalTradeSelector = state => appId => {
   if (!appsLocalState.has(appId)) return 0;
 
   const localState: AppState = appsLocalState.get(appId)!;
-  return getStateValue("Trade", localState);
+  return getStateValue("trade", localState);
 }
 
 export const getAppLocalFrozenSelector = state => appId => {
@@ -71,6 +71,6 @@ export const getAppLocalFrozenSelector = state => appId => {
   if (!appsLocalState.has(appId)) return true;
 
   const localState: AppState = appsLocalState.get(appId)!;
-  return getStateValue("Frozen", localState) === 0;
+  return getStateValue("frozen", localState) === 0;
 }
 

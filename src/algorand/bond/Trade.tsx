@@ -88,7 +88,7 @@ export async function tradeBond(
   const bondProgramBytes = new Uint8Array(
     Buffer.from(bondCompiledProgram.result, 'base64')
   );
-  const bondLsig: LogicSig = algosdk.makeLogicSig(bondProgramBytes);
+  const bondLsig = algosdk.makeLogicSig(bondProgramBytes);
   const bondTransferTxn = algosdk.makeAssetTransferTxnWithSuggestedParams(
     bondEscrowAddr,
     selectedAddr,
@@ -129,7 +129,7 @@ export async function tradeBond(
   const tradeProgramBytes = new Uint8Array(
     Buffer.from(tradeCompiledProgram.result, 'base64')
   );
-  const sellerLsig: LogicSig = algosdk.makeLogicSig(tradeProgramBytes);
+  const sellerLsig = algosdk.makeLogicSig(tradeProgramBytes);
   sellerLsig.sig = Uint8Array.from(lsig);
 
   // Sign transactions

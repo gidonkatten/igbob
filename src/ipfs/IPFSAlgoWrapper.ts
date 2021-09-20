@@ -36,6 +36,7 @@ export class IPFSAlgoWrapper {
     const txn: PaymentTxn = {
       ...params,
       flatFee: true,
+      fee: 1000,
       type: "pay",
       from: issuerAddr,
       to: issuerAddr,
