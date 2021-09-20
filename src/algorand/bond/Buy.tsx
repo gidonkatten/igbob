@@ -1,6 +1,6 @@
 import { algodClient, STABLECOIN_ID, waitForConfirmation } from '../utils/Utils';
 import { AssetTxn, CallApplTxn, PaymentTxn, SignedTx, } from '@randlabs/myalgo-connect';
-import { OnApplicationComplete, SuggestedParams } from 'algosdk';
+import { LogicSigAccount, OnApplicationComplete, SuggestedParams } from 'algosdk';
 import { myAlgoWallet } from '../wallet/myAlgo/MyAlgoWallet';
 
 const algosdk = require('algosdk');
@@ -42,7 +42,7 @@ export async function buyBond(
   const programBytes = new Uint8Array(
     Buffer.from(compiledProgram.result, 'base64')
   );
-  const lsig = algosdk.makeLogicSig(programBytes);
+  const lsig = new LogicSigAccount(programBytes).lsig;
   const bondTransferTxn = algosdk.makeAssetTransferTxnWithSuggestedParams(
     bondEscrowAddr,
     investorAddr,
@@ -72,17 +72,10 @@ export async function buyBond(
     stablecoinTransferTxn
   ]);
 
-  // Override so can sign with myAlgo
-  txns[0].from = investorAddr;
-  txns[0].genesisHash = params.genesisHash;
-  txns[2].from = investorAddr;
-  txns[2].to = issuerAddr;
-  txns[2].genesisHash = params.genesisHash;
-
   // Sign transactions
-  const signedCallAppTxn: SignedTx = await myAlgoWallet.signTransaction(txns[0]);
+  const signedCallAppTxn: SignedTx = await myAlgoWallet.signTransaction(txns[0].toByte());
   const signedBondTransferTxn: SignedTx = algosdk.signLogicSigTransaction(txns[1], lsig);
-  const signedStablecoinTransferTxn: SignedTx = await myAlgoWallet.signTransaction(txns[2]);
+  const signedStablecoinTransferTxn: SignedTx = await myAlgoWallet.signTransaction(txns[2].toByte());
 
   // Group
   const signedTxs: Uint8Array[] = [

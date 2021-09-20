@@ -64,13 +64,8 @@ export async function claimCoupon(
     stablecoinTransferTxn
   ]);
 
-  // Override so can sign with myAlgo
-  txns[0].from = investorAddr;
-  txns[0].genesisHash = params.genesisHash;
-  txns[0].appAccounts = [bondEscrowAddr];
-
   // Sign transactions
-  const signedCallMainAppTxn: SignedTx = await myAlgoWallet.signTransaction(txns[0]);
+  const signedCallMainAppTxn: SignedTx = await myAlgoWallet.signTransaction(txns[0].toByte());
   const signedStablecoinTransferTxn: SignedTx = algosdk.signLogicSigTransaction(txns[1], lsig);
 
   // Group

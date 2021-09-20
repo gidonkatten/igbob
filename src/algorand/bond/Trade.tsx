@@ -119,11 +119,6 @@ export async function tradeBond(
     stablecoinTransferTxn
   ]);
 
-  // Override so can sign with myAlgo
-  txns[2].from = selectedAddr;
-  txns[2].to = sellerAddr;
-  txns[2].genesisHash = params.genesisHash;
-
   // Get seller lsig
   const tradeCompiledProgram = await algodClient.compile(lsigProgram).do();
   const tradeProgramBytes = new Uint8Array(
@@ -135,7 +130,7 @@ export async function tradeBond(
   // Sign transactions
   const signedCallMainAppTxn: SignedTx = algosdk.signLogicSigTransaction(txns[0], sellerLsig);
   const signedBondTransferTxn: SignedTx = algosdk.signLogicSigTransaction(txns[1], bondLsig);
-  const signedStablecoinTransferTxn: SignedTx = await myAlgoWallet.signTransaction(txns[2]);
+  const signedStablecoinTransferTxn: SignedTx = await myAlgoWallet.signTransaction(txns[2].toByte());
 
   // Group
   const signedTxs: Uint8Array[] = [
