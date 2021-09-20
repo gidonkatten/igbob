@@ -24,7 +24,7 @@ type IPFSFileListContainerProps = StateProps & DispatchProps & OwnProps;
 
 function IPFSFileListContainer(props: IPFSFileListContainerProps) {
 
-  const [ratings, setRatings] = useState<number[]>([]);
+  const [ratings, setRatings] = useState<Uint8Array>(new Uint8Array());
 
   const { app, getAppFiles, setAppFiles } = props;
 
@@ -36,7 +36,7 @@ function IPFSFileListContainer(props: IPFSFileListContainerProps) {
 
     // Get ratings
     if (!app.app_global_state) return;
-    const newRatings: number[] = getRatingsFromState(app);
+    const newRatings: Uint8Array = getRatingsFromState(app);
     setRatings(newRatings);
 
   }, [app?.app_id, app?.app_global_state])

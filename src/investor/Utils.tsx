@@ -71,12 +71,12 @@ export function getStateValue(key: string, state?: Map<string, any>) {
 // Returns rating - 0 if key doesn't exist
 export function getRatingFromState(round: number, state?: Map<string, any>): number {
   if (!state) return 0;
-  return getStateValue('ratings', state)[round];
+  return Buffer.from(getStateValue('ratings', state))[round];
 }
 
 // Returns ratings - 0 if key doesn't exist
-export function getRatingsFromState(app: App): number[] {
-  return getStateValue('ratings', app.app_global_state);
+export function getRatingsFromState(app: App): Uint8Array {
+  return Buffer.from(getStateValue('ratings', app.app_global_state));
 }
 
 export function getMultiplier(rating: number): number {

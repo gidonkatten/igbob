@@ -14,7 +14,7 @@ import { AppFiles } from '../redux/types';
 
 interface IPFSFileListProps {
   cids: AppFiles,
-  ratings: number[],
+  ratings: Uint8Array,
   startBuyDate: number,
   endBuyDate: number,
   bondLength: number,

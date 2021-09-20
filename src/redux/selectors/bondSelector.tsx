@@ -8,7 +8,7 @@ export const appsTableSelector = state => {
 
   const appsTable: AppsTable = Array.from(apps.values()).map((app: App) => {
     const round: number = !app.coupon_round ? 0 : app.coupon_round.round;
-    const ratings: number[] = getRatingsFromState(app);
+    const ratings: Uint8Array = getRatingsFromState(app);
 
     return {
       id: app.app_id,
