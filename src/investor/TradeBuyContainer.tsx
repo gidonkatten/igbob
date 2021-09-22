@@ -89,7 +89,7 @@ function TradeBuyContainer(props: TradeProps) {
   const handleTrade = async () => {
     if (!selectedAccount) return;
 
-    await tradeBond(
+    const txId = await tradeBond(
       trade.lsig,
       trade.lsig_program,
       trade.seller_address,
@@ -109,7 +109,9 @@ function TradeBuyContainer(props: TradeProps) {
     });
     NotificationManager.success(
       `Bought ${noOfBondsToBuy} for $${(noOfBondsToBuy * trade.price).toFixed(6)}`,
-      "Bought Green Bonds"
+      "Bought Green Bonds",
+      5000,
+      () => window.open("https://testnet.algoexplorer.io/tx/" + txId, '_blank')
     );
   };
 

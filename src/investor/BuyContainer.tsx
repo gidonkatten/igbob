@@ -79,7 +79,7 @@ function BuyContainer(props: BuyProps) {
 
   const handleBuy = async () => {
     if (!selectedAccount || !app) return;
-    await buyBond(
+    const txId = await buyBond(
       selectedAccount.address,
       app.app_id,
       app.issuer_address,
@@ -96,8 +96,10 @@ function BuyContainer(props: BuyProps) {
     );
     NotificationManager.success(
       `Bought ${noOfBondsToBuy} for $${(noOfBondsToBuy * app.bond_cost).toFixed(6)}`,
-      "Bought Green Bonds"
-    );
+      "Bought Green Bonds",
+      5000,
+      () => window.open("https://testnet.algoexplorer.io/tx/" + txId, '_blank')
+  );
   }
 
   return (

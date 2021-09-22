@@ -42,19 +42,28 @@ function RegisterContainer(props: RegisterProps) {
   // BOND OPT IN
   const handleAssetOptIn = async () => {
     if (!selectedAccount || !app) return;
-    await optIntoAsset(app.bond_id, selectedAccount.address);
+    const txId = await optIntoAsset(app.bond_id, selectedAccount.address);
 
     getAccountInformation(selectedAccount.address).then(acc => setSelectedAccount(acc));
-    NotificationManager.success('', "Opted Into Green Bond");
+    NotificationManager.success(
+      '',
+      "Opted Into Green Bond",
+      5000,
+      () => window.open("https://testnet.algoexplorer.io/tx/" + txId, '_blank')
+    );
   }
 
   // APP OPT IN
   const handleAppOptIn = async () => {
     if (!selectedAccount || !app) return;
-    await optIntoApp(app.app_id, selectedAccount.address);
+    const txId = await optIntoApp(app.app_id, selectedAccount.address);
 
     getAccountInformation(selectedAccount.address).then(acc => setSelectedAccount(acc));
-    NotificationManager.success('', "Opted Into App");
+    NotificationManager.success(
+      '', "Opted Into App",
+      5000,
+      () => window.open("https://testnet.algoexplorer.io/tx/" + txId, '_blank')
+    );
   }
 
   const canRegister = () => {
@@ -66,8 +75,8 @@ function RegisterContainer(props: RegisterProps) {
   const handleRegister = async () => {
     if (!selectedAccount || !app) return;
 
-    if (!getOptedIntoBond(app.bond_id)) handleAssetOptIn();
-    if (!getOptedIntoApp(app.app_id)) handleAppOptIn();
+    if (!getOptedIntoBond(app.bond_id)) await handleAssetOptIn();
+    if (!getOptedIntoApp(app.app_id)) await handleAppOptIn();
   }
 
   return (

@@ -17,7 +17,7 @@ export async function buyBond(
   bondEscrowProgram: string,
   noOfBonds: number,
   bondCost: number,
-) {
+): Promise<string> {
   let params: SuggestedParams = await algodClient.getTransactionParams().do();
   params.flatFee = true;
   params.fee = 0;
@@ -90,4 +90,6 @@ export async function buyBond(
 
   // Wait for confirmation
   await waitForConfirmation(tx.txId);
+
+  return tx.txId;
 }

@@ -104,7 +104,7 @@ function ClaimContainer(props: ClaimProps) {
     const newLocalCouponRoundsPaid = getAppLocalCouponRoundsPaid(app.app_id) + 1;
     const rating = getRatingFromState(newLocalCouponRoundsPaid, app.app_global_state);
 
-    await claimCoupon(
+    const txId = await claimCoupon(
       selectedAccount.address,
       app.app_id,
       app.bond_id,
@@ -123,7 +123,12 @@ function ClaimContainer(props: ClaimProps) {
     getAccountInformation(app.stablecoin_escrow_address).then(acc =>
       setAppStablecoinEscrowBalance(app.app_id, getStablecoinBalance(acc) as number)
     );
-    NotificationManager.success('', "Claimed Coupon");
+    NotificationManager.success(
+      '',
+      "Claimed Coupon",
+      5000,
+      () => window.open("https://testnet.algoexplorer.io/tx/" + txId, '_blank')
+    );
   }
 
   // PRINCIPAL
@@ -159,7 +164,7 @@ function ClaimContainer(props: ClaimProps) {
   const handleClaimPrincipal = async (e: any) => {
     e.preventDefault();
     if (!selectedAccount || !app) return;
-    await claimPrincipal(
+    const txId = await claimPrincipal(
       selectedAccount.address,
       app.app_id,
       app.issuer_address,
@@ -179,7 +184,12 @@ function ClaimContainer(props: ClaimProps) {
     getAccountInformation(app.bond_escrow_address).then(acc =>
       setAppBondEscrowBalance(app.app_id, getAssetBalance(acc, app.bond_id) as number)
     );
-    NotificationManager.success('', "Claimed Principal");
+    NotificationManager.success(
+      '',
+      "Claimed Principal",
+      5000,
+      () => window.open("https://testnet.algoexplorer.io/tx/" + txId, '_blank')
+    );
   }
 
   // DEFAULT
@@ -238,7 +248,7 @@ function ClaimContainer(props: ClaimProps) {
       app.stablecoin_escrow_balance === undefined
     ) return;
 
-    await claimDefault(
+    const txId = await claimDefault(
       selectedAccount.address,
       app.app_id,
       app.issuer_address,
@@ -258,7 +268,12 @@ function ClaimContainer(props: ClaimProps) {
     getAccountInformation(app.bond_escrow_address).then(acc =>
       setAppBondEscrowBalance(app.app_id, getAssetBalance(acc, app.bond_id) as number)
     );
-    NotificationManager.success('', "Claimed Default");
+    NotificationManager.success(
+      '',
+      "Claimed Default",
+      5000,
+      () => window.open("https://testnet.algoexplorer.io/tx/" + txId, '_blank')
+    );
   }
 
   return (

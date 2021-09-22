@@ -13,7 +13,7 @@ export async function freeze(
   toFreeze: boolean,
   isAll: boolean,
   freezeAddr?: string,
-) {
+): Promise<string> {
   let params: SuggestedParams = await algodClient.getTransactionParams().do();
   params.fee = 1000;
 
@@ -40,4 +40,6 @@ export async function freeze(
 
   // Wait for confirmation
   await waitForConfirmation(tx.txId);
+
+  return tx.txId;
 }

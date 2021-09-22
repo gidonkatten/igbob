@@ -11,7 +11,7 @@ export async function transferAsset(
   from: string,
   to: string,
   amount: number
-) {
+): Promise<string> {
   const params: SuggestedParams = await algodClient.getTransactionParams().do();
 
   const txm: AssetTxn = {
@@ -32,11 +32,13 @@ export async function transferAsset(
 
   // Wait for confirmation
   await waitForConfirmation(tx.txId);
+
+  return tx.txId;
 }
 
 /**
  * Opt into asset using MyAlgo
  */
-export async function optIntoAsset(assetId: number, addr: string) {
-  await transferAsset(assetId, addr, addr, 0);
+export async function optIntoAsset(assetId: number, addr: string): Promise<string> {
+  return await transferAsset(assetId, addr, addr, 0);
 }

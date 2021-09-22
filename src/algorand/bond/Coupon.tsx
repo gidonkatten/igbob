@@ -19,7 +19,7 @@ export async function claimCoupon(
   noOfBonds: number,
   bondCoupon: number,
   rating: number,
-) {
+): Promise<string> {
   let params: SuggestedParams = await algodClient.getTransactionParams().do();
   params.flatFee = true;
   params.fee = 0;
@@ -38,7 +38,7 @@ export async function claimCoupon(
     appOnComplete: OnApplicationComplete.NoOpOC,
     appArgs: mainAppArgs,
     appAccounts: [bondEscrowAddr, stablecoinEscrowAddr],
-    appForeignAssets: [bondId]
+    appForeignAssets: [bondId, STABLECOIN_ID]
   }
 
   // 1. stablecoin payment
@@ -80,4 +80,6 @@ export async function claimCoupon(
 
   // Wait for confirmation
   await waitForConfirmation(tx.txId);
+
+  return tx.txId;
 }

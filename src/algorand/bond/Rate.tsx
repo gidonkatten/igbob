@@ -10,7 +10,7 @@ export async function rate(
   appId: number,
   greenVerifierAddr: string,
   rating: number,
-) {
+): Promise<string> {
   let params: SuggestedParams = await algodClient.getTransactionParams().do();
   params.fee = 1000;
 
@@ -37,4 +37,6 @@ export async function rate(
 
   // Wait for confirmation
   await waitForConfirmation(tx.txId);
+
+  return tx.txId;
 }

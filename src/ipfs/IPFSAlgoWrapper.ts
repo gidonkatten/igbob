@@ -21,7 +21,7 @@ export class IPFSAlgoWrapper {
     issuerAddr: string,
     manageAppId: number,
     couponRound: number
-  ) {
+  ): Promise<string> {
     const result = await IPFSAlgoWrapper.node.add(data);
     const cid: string = result.cid.toString();
     console.log("Content Identifier: " + cid);
@@ -51,6 +51,8 @@ export class IPFSAlgoWrapper {
 
     // Wait for confirmation
     await waitForConfirmation(tx.txId);
+
+    return tx.txId;
   }
 
   public async getData(app: App): Promise<{ cid: string, time: number }[][]> {

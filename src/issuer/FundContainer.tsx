@@ -59,7 +59,7 @@ function FundContainer(props: FundContainerProps) {
 
   const handleFund = async () => {
     if (!selectedAccount || !app) return;
-    await transferAsset(
+    const txId = await transferAsset(
       STABLECOIN_ID,
       selectedAccount.address,
       app.stablecoin_escrow_address,
@@ -71,7 +71,12 @@ function FundContainer(props: FundContainerProps) {
       setAppStablecoinEscrowBalance(app.app_id, getStablecoinBalance(acc) as number);
       setAppDefaulted(app.app_id, getHasDefaulted(app));
     });
-    NotificationManager.success(`Transferred $${noOfStablecoins.toFixed(6)}`, 'Funded Escrow');
+    NotificationManager.success(
+      `Transferred $${noOfStablecoins.toFixed(6)}`,
+      'Funded Escrow',
+      5000,
+      () => window.open("https://testnet.algoexplorer.io/tx/" + txId, '_blank')
+    );
   }
 
   return (

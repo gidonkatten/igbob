@@ -13,7 +13,7 @@ export async function setTrade(
   mainAppId: number,
   selectedAddr: string,
   trade: number,
-) {
+): Promise<string> {
   let params: SuggestedParams = await algodClient.getTransactionParams().do();
   params.fee = 1000;
 
@@ -40,6 +40,8 @@ export async function setTrade(
 
   // Wait for confirmation
   await waitForConfirmation(tx.txId);
+
+  return tx.txId;
 }
 
 /**
@@ -66,7 +68,7 @@ export async function tradeBond(
   bondEscrowProgram: string,
   noOfBonds: number,
   price: number,
-) {
+): Promise<string> {
   let params: SuggestedParams = await algodClient.getTransactionParams().do();
   params.flatFee = true;
   params.fee = 0;
@@ -147,4 +149,6 @@ export async function tradeBond(
 
   // Wait for confirmation
   await waitForConfirmation(tx.txId);
+
+  return tx.txId;
 }

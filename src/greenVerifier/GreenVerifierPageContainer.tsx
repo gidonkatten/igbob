@@ -70,12 +70,17 @@ function GreenVerifierPageContainer(props: GreenVerifierPageContainerProps) {
   const handleRate = async () => {
     if (!selectedAccount || !selectedApp || !rating) return;
 
-    await rate(selectedApp.app_id, selectedAccount.address, rating);
+    const txId = await rate(selectedApp.app_id, selectedAccount.address, rating);
 
     // Update ratings
     algodClient.getApplicationByID(selectedApp.app_id).do().then(app => {
       setMainAppGlobalState(selectedApp.app_id, extractAppState(app.params['global-state']));
-      NotificationManager.success('', 'Rating Added');
+      NotificationManager.success(
+        '',
+        'Rating Added',
+        5000,
+        () => window.open("https://testnet.algoexplorer.io/tx/" + txId, '_blank')
+      );
     })
   }
 

@@ -92,7 +92,7 @@ function IssuerPageContainer(props: IssuerPageContainerProps) {
 
     // Check file is defined and upload
     if (!file) return;
-    await new IPFSAlgoWrapper().addData(
+    const txId = await new IPFSAlgoWrapper().addData(
       file,
       selectedAccount.address,
       selectedApp.app_id,
@@ -100,7 +100,12 @@ function IssuerPageContainer(props: IssuerPageContainerProps) {
     );
 
     // Get new uploaded file
-    NotificationManager.success('File should appear in a few seconds', 'Uploaded File');
+    NotificationManager.success(
+      'File should appear in a few seconds',
+      'Uploaded File',
+      5000,
+      () => window.open("https://testnet.algoexplorer.io/tx/" + txId, '_blank')
+    );
     setTimeout(() => {
       new IPFSAlgoWrapper().getData(selectedApp).then(res => setAppFiles(selectedApp.app_id, res));
     }, 5000); // TODO: Investigate why need delay - does indexer not update

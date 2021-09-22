@@ -80,20 +80,25 @@ function FinancialRegulatorPageContainer(props: FinancialRegulatorPageContainerP
   // FREEZE
   const freezeAll = async (toFreeze: boolean) => {
     if (!selectedAccount || !selectedApp) return;
-    await freeze(selectedApp.app_id, selectedAccount.address, toFreeze, true);
+    const txId = await freeze(selectedApp.app_id, selectedAccount.address, toFreeze, true);
 
     // Update frozen value
     algodClient.getApplicationByID(selectedApp.app_id).do().then(mainApp => {
       setMainAppGlobalState(selectedApp.app_id, extractAppState(mainApp.params['global-state']));
       const isFrozen = getStateValue('frozen', selectedApp?.app_global_state) === 0;
       setIsAllFrozen(isFrozen);
-      NotificationManager.success('', `Issuance ${isFrozen ? 'Frozen' : 'Unfrozen'}`);
+      NotificationManager.success(
+        '',
+        `Issuance ${isFrozen ? 'Frozen' : 'Unfrozen'}`,
+        5000,
+        () => window.open("https://testnet.algoexplorer.io/tx/" + txId, '_blank')
+      );
     })
   }
 
   const freezeAddress = async (toFreeze: boolean, addr: string) => {
     if (!selectedAccount || !selectedApp) return;
-    await freeze(selectedApp.app_id, selectedAccount.address, toFreeze, false, addr);
+    const txId = await freeze(selectedApp.app_id, selectedAccount.address, toFreeze, false, addr);
 
     // Update frozen value
     getAccountInformation(addr).then(account => {
@@ -103,7 +108,12 @@ function FinancialRegulatorPageContainer(props: FinancialRegulatorPageContainerP
       const isFrozen = getStateValue('frozen', localState) === 0
       accs[foundIndex].frozen = isFrozen;
       setAppAccounts(accs);
-      NotificationManager.success('', `Account ${isFrozen ? 'Frozen' : 'Unfrozen'}`);
+      NotificationManager.success(
+        '',
+        `Account ${isFrozen ? 'Frozen' : 'Unfrozen'}`,
+        5000,
+        () => window.open("https://testnet.algoexplorer.io/tx/" + txId, '_blank')
+      );
     });
   }
 

@@ -73,7 +73,7 @@ function TradeSellContainer(props: TradeProps) {
 
   const handleSetTrade= async () => {
     if (!selectedAccount) return;
-    await setTrade(
+    const txId = await setTrade(
       app.app_id,
       selectedAccount.address,
       noOfBonds * 1e6,
@@ -82,7 +82,12 @@ function TradeSellContainer(props: TradeProps) {
     // Update max no of bonds to be traded
     const userAccount = await getAccountInformation(selectedAccount.address);
     setSelectedAccount(userAccount);
-    NotificationManager.success(`Can trade up to ${noOfBonds} bonds`, "Updated Trade Vault Balance");
+    NotificationManager.success(
+      `Can trade up to ${noOfBonds} bonds`,
+      "Updated Trade Vault Balance",
+      5000,
+      () => window.open("https://testnet.algoexplorer.io/tx/" + txId, '_blank')
+    );
   };
 
   const handleGenTradeLSig = async () => {

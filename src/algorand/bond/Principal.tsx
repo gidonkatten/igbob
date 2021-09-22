@@ -19,7 +19,7 @@ export async function claimPrincipal(
   stablecoinEscrowProgram: string,
   noOfBonds: number,
   bondPrincipal: number,
-) {
+): Promise<string> {
   let params: SuggestedParams = await algodClient.getTransactionParams().do();
   params.flatFee = true;
   params.fee = 0;
@@ -38,7 +38,7 @@ export async function claimPrincipal(
     appOnComplete: OnApplicationComplete.NoOpOC,
     appArgs: mainAppArgs,
     appAccounts: [bondEscrowAddr, stablecoinEscrowAddr],
-    appForeignAssets: [bondId]
+    appForeignAssets: [bondId, STABLECOIN_ID]
   }
 
   // 1. bond transfer
@@ -100,4 +100,6 @@ export async function claimPrincipal(
 
   // Wait for confirmation
   await waitForConfirmation(tx.txId);
+
+  return tx.txId;
 }

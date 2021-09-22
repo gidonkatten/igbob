@@ -6,7 +6,7 @@ import { myAlgoWallet } from '../wallet/myAlgo/MyAlgoWallet';
 /**
  * Opt into asset using MyAlgo
  */
-export async function optIntoApp(appId: number, addr: string) {
+export async function optIntoApp(appId: number, addr: string): Promise<string> {
   const params: SuggestedParams = await algodClient.getTransactionParams().do();
 
   const optTxn: OptInApplTxn = {
@@ -26,4 +26,6 @@ export async function optIntoApp(appId: number, addr: string) {
 
   // Wait for confirmation
   await waitForConfirmation(tx.txId);
+
+  return tx.txId;
 }
